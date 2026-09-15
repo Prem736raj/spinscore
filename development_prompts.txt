@@ -1,0 +1,1686 @@
+================================================================================
+SPIN BOTTLE: TRUTH DARE GAMES - DEVELOPMENT PROMPTS
+================================================================================
+App Name: Spin Bottle: Truth Dare Games
+Package: com.spinbottle.truthdare.games
+Platform: Android (Kotlin + Jetpack Compose)
+Total Prompts: 45
+================================================================================
+
+================================================================================
+PHASE 1: CORE GAME EXPERIENCE (Prompts 1-12)
+================================================================================
+
+[COPY START]
+PROMPT 1: Home Screen & App Theme
+
+Create a stunning home screen for a Truth or Dare party game app called "Spin Bottle". 
+The design should feel premium, modern, and party-ready with vibrant gradients and 
+glassmorphism effects.
+
+The home screen should show:
+- App logo/title with an animated glow effect
+- A big, inviting "Start Game" button that pulses subtly
+- Quick access buttons for "How to Play" and "Settings"
+- A "Kids Mode" quick-launch button (prominently visible for parents)
+- Beautiful background with subtle animated particles or confetti
+- Dark theme by default with rich purple/pink/orange gradient accents
+
+Also set up the app's color palette, typography, and reusable design elements that 
+will be used throughout all screens for visual consistency.
+
+Make everything feel alive with micro-animations. The first impression should make 
+users think "wow, this looks way better than other truth or dare apps!"
+
+VERIFY:
+- I see a beautiful home screen with the app name displayed prominently
+- The Start Game button stands out and has a subtle animation
+- Kids Mode button is visible and accessible from home
+- The overall design feels premium and modern, not cheap or dated
+- Colors are vibrant but not overwhelming
+- I can access How to Play and Settings from home
+- The app has a consistent visual language ready for future screens
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 2: Navigation & Screen Structure
+
+Set up the app's screen navigation so I can move between different sections smoothly:
+
+Main screens the app needs:
+- Home Screen (already built)
+- Game Setup Flow (players → mode → difficulty → play)
+- Active Game Screen (bottle spin and prompts)
+- Settings Screen
+- Custom Prompts Screen
+- How to Play / Help Screen
+
+Navigation requirements:
+- Smooth transitions between screens with animations
+- Back button/gesture works correctly everywhere
+- App remembers where I was if I leave and come back
+- No crashes or blank screens when navigating quickly
+
+Also add a splash screen that shows briefly when app launches (logo animation, 
+2-3 seconds max) before going to home screen.
+
+VERIFY:
+- Splash screen shows on launch then goes to home
+- I can navigate from home to other sections
+- Back button returns me to previous screen
+- Transitions feel smooth and polished
+- App doesn't crash when navigating between screens
+- If I close app mid-game and reopen, it remembers my state
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 3: Player Setup Screen
+
+When I tap Start Game, take me to a player setup screen where I add everyone who's playing.
+
+I want to:
+- Add player names one by one (just type name and tap add)
+- See all added players as colorful avatar cards
+- Each player gets a randomly assigned cute avatar/icon automatically
+- Tap a player card to remove them
+- Need minimum 2 players to continue
+- Support up to 16 players maximum
+- Big "Next" button at bottom that only activates when 2+ players added
+
+The avatars should be fun and diverse - animals, emojis, or abstract shapes. 
+Players don't need to pick - just auto-assign to keep setup fast.
+
+Make adding players feel snappy and satisfying with little animations when cards appear.
+
+VERIFY:
+- I can type a name and add a player quickly
+- Each player shows with a unique colorful avatar
+- I can see all my players in a nice grid or list
+- I can remove a player by tapping their card
+- The continue button is disabled until I have 2+ players
+- Adding/removing players has smooth animations
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 4: Game Mode Selection
+
+After adding players, show me a game mode selection screen with beautiful cards for each mode:
+
+1. **Classic Mode** - Standard truth or dare, take turns, spin the bottle
+2. **Quick Fire** - Fast 30-second rounds, rapid gameplay (no bottle spin)
+3. **Couples Mode** - Romantic and flirty prompts for partners (show a heart icon)
+4. **Party Mode** - Wild and crazy dares for big groups
+5. **Kids Safe** - Family-friendly, nothing inappropriate (show a child-safe badge)
+
+Each mode card should have:
+- Attractive icon representing the mode
+- Mode name and short 1-line description
+- Visual indication if it requires special access (like PIN for adult content)
+
+Couples Mode and Party Mode should show a small lock icon indicating these need 
+age verification. Kids Safe mode should look obviously child-friendly with bright 
+cheerful colors.
+
+VERIFY:
+- I see all 5 game modes as beautiful selectable cards
+- Each mode has an icon and clear description
+- I can tell which modes are for adults vs kids
+- Tapping a mode selects it visually
+- The design is consistent with the premium feel of home screen
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 5: Age Verification & Parental PIN System
+
+Create a PIN-based protection system for age-restricted content.
+
+When someone selects Couples Mode or Party Mode for the first time:
+- Ask user to confirm they are 18+ with a simple checkbox
+- Require setting a 4-digit PIN to access adult content
+- Explain briefly why we have this protection
+
+For subsequent access when PIN is set:
+- Show PIN entry screen with nice numpad
+- After 3 wrong attempts, lock for 5 minutes
+- Option to reset PIN (which clears and requires re-setup)
+
+For Kids Safe mode - it should work instantly, no gates.
+
+Store the PIN securely on device. This PIN will also be used later to:
+- Lock Kids Mode so children can't exit it
+- Access Drinking Game features
+- Access Extreme difficulty level
+
+Make the PIN screen look clean and not scary - this is about safety, not punishment.
+
+VERIFY:
+- Selecting adult modes shows age verification
+- I must set a 4-digit PIN to access adult content
+- Entering correct PIN lets me access adult content
+- Wrong PIN shows error, 3 failures locks temporarily  
+- Kids Safe mode opens directly without any verification
+- PIN is remembered between app sessions
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 6: Difficulty Selection
+
+After choosing a game mode, let me pick the difficulty/intensity level:
+
+- **Easy** 🟢 - Light, casual, nothing embarrassing (good for icebreakers)
+- **Medium** 🟡 - Moderate challenges, some personal questions (normal play)
+- **Hard** 🔴 - Spicy dares, deep truths, push your limits (for brave players)
+- **Extreme** 🟣 - Only for the fearless! Maximum intensity (adults only, requires PIN)
+- **Mixed** 🌈 - Randomly varies between Easy/Medium/Hard throughout the game
+
+Show these as tappable cards with color coding.
+Extreme difficulty should only be available for adult modes and require PIN.
+
+After selecting difficulty, show a summary of game settings (players, mode, difficulty)
+with a big "Start Game!" button.
+
+VERIFY:
+- I see 4+ difficulty levels with clear color coding
+- Easy/Medium/Hard are always available
+- Extreme only shows for adult modes and needs PIN
+- Mixed mode option is available
+- I see a summary of my choices before starting
+- Start Game button takes me to the actual game
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 7: The Bottle Spin Experience
+
+This is the CORE of the game - make the bottle spin magical and satisfying!
+
+Create a gorgeous spinning bottle experience:
+- Show all players arranged in a circle around the screen edges (their avatars/names)
+- A beautiful 3D-looking bottle in the center
+- Tap anywhere or swipe to spin the bottle
+- The bottle should spin with realistic physics - fast at first, gradually slowing
+- When bottle stops, it clearly points to one player
+- That player's avatar glows/highlights dramatically
+- Show their name big and announce "It's [NAME]'s turn!"
+
+The spin should feel random and fair - never predictable. Use a proper randomization
+algorithm that gives every player equal chances over time.
+
+Add visual feedback when spinning (motion blur) and when landing (particle effects, spotlight).
+
+Make this moment exciting - it's the heart of the game!
+
+VERIFY:
+- I see players arranged around a center bottle
+- Swiping or tapping makes the bottle spin beautifully
+- The spin physics feel natural - fast to slow
+- When stopped, one player is clearly selected
+- The selected player is highlighted with fanfare
+- It feels random and fair, not rigged
+- The whole experience is visually stunning
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 8: Truth or Dare Choice & Prompt Display
+
+After the bottle picks a player, show them the classic choice and then their prompt.
+
+Step 1 - The Choice:
+- Display two big, beautiful buttons: TRUTH and DARE
+- Show current player's name: "[NAME], choose your fate!"
+- Optional countdown timer (default 10 seconds to choose)
+- If timer runs out, randomly pick one for them
+
+Step 2 - The Prompt (after choosing):
+- Big, readable text showing the truth question or dare instruction
+- Icon indicating if it's truth (question mark) or dare (lightning)
+- Current player's avatar and name
+- Timer if this is a timed dare (some dares say "for 30 seconds")
+- Two buttons at bottom: "✓ DONE" (completed) and "✗ SKIP" (chickened out)
+- Small heart icon to favorite/save this prompt
+
+The prompt text should be large enough to read from across a table at a party.
+
+For now, show placeholder prompts (like "Sample Truth Question Here"). 
+We'll add the real prompts database in later prompts.
+
+VERIFY:
+- I see Truth and Dare as two big attractive buttons
+- The current player's name is displayed clearly
+- After choosing, I see the prompt in large readable text
+- I can mark it as Done or Skip
+- I can favorite a prompt with the heart icon
+- Timer shows and counts down when applicable
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 9: Game Completion Flow & Scoring
+
+Handle what happens when players complete or skip prompts, and track scores:
+
+When they tap DONE:
+- Celebrate with confetti and "+X points!" animation
+- Truth = +1 point, Dare = +2 points
+- Extreme difficulty = +3 bonus points
+- Play a victory sound
+- Return to bottle spin for next player
+
+When they tap SKIP:
+- Show a "chicken" or playful shame animation
+- No points awarded
+- Return to bottle spin for next player
+
+Show a mini scoreboard during gameplay that can be:
+- Collapsed (just shows current leader with crown icon)
+- Expanded (tap to see full leaderboard of all players)
+
+The player in first place should have a crown next to their avatar.
+Show position changes with up/down arrows when someone overtakes.
+
+VERIFY:
+- Completing prompts shows celebration and awards points
+- Skipping shows playful shame feedback
+- I can see current scores during gameplay
+- Correct points are awarded (truth=1, dare=2, extreme bonus=3)
+- Leader has a crown icon
+- Game continues to next spin after each prompt
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 10: In-Game Menu & Session Controls
+
+Add essential game controls accessible during active gameplay:
+
+A subtle menu button that reveals options:
+- **Pause Game** - Pauses timer, dims screen, can resume
+- **Add Player** - Add someone who joined late
+- **Remove Player** - Remove someone who left
+- **Change Difficulty** - Switch difficulty mid-game
+- **End Game** - Finish session and see final results
+
+Also show during gameplay:
+- Current round number
+- How many turns each player has had
+- Quick skip button to skip current player's entire turn (they stepped away)
+
+Back button/gesture should show "Exit game?" confirmation (not just exit!).
+
+Don't clutter the main game screen - these should be tucked away but accessible.
+
+VERIFY:
+- I can access game controls without disrupting the game
+- I can pause and resume
+- I can add/remove players mid-game
+- I can change difficulty during play
+- I can see round count and turn counts
+- Ending game takes me to final results
+- Back button asks for confirmation before exiting
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 11: Game End & Results Screen
+
+Create a satisfying game conclusion when End Game is selected or tournament ends:
+
+Results screen shows:
+- 🏆 Winner (highest score) with crown and celebration animation
+- Full leaderboard with all final scores
+- Stats for each player: truths answered, dares completed, skips
+- "Most Daring" award (highest dare completion %)
+- "Most Honest" award (highest truth completion %)
+- Total game duration
+
+Post-game options:
+- "Play Again" with same players/settings
+- "New Game" start fresh with new settings
+- "Share Results" create shareable image of scoreboard
+- "Return Home" go back to main menu
+
+Make winning feel amazing! Confetti, trophy animation, sound effects.
+Even non-winners should see fun stats about their play.
+
+VERIFY:
+- Results screen appears when I end the game
+- Winner is celebrated with animation and trophy
+- I can see everyone's final scores and stats
+- Awards are given for Most Daring / Most Honest
+- I can start new game with same players
+- Share creates a nice image of results
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 12: Sound Effects & Haptic Feedback
+
+Add delightful sound and vibration feedback throughout ALL existing screens:
+
+Sound effects to add:
+- Bottle spin: wooshing rotation sound
+- Bottle landing: satisfying "clink"
+- Truth selected: gentle chime
+- Dare selected: dramatic beat
+- Task complete: victory fanfare
+- Task skipped: sad trombone
+- Button taps: subtle click
+- Player added: pop sound
+- Game start: exciting intro
+- Winner celebration: triumph music
+
+Haptic feedback:
+- Bottle spinning: subtle continuous vibration
+- Button taps: light haptic
+- Selection made: medium haptic
+- Victory/completion: celebratory burst pattern
+- Timer urgent: escalating pulses
+
+Settings for audio (add to Settings screen):
+- Master volume slider
+- Sound effects on/off
+- Haptics on/off
+
+Make it feel polished like a premium game!
+
+VERIFY:
+- Sound effects play at appropriate moments throughout the game
+- Haptic feedback enhances interactions
+- I can toggle sounds and haptics in settings
+- The overall feel is polished and satisfying
+- Sounds aren't annoying or too loud
+[COPY END]
+
+
+================================================================================
+PHASE 2: CONTENT DATABASE - 1200+ PROMPTS (Prompts 13-18)
+================================================================================
+
+[COPY START]
+PROMPT 13: Prompts Database Structure & Friends Truths
+
+Create the prompts database and populate it with TRUTH questions for the FRIENDS category.
+
+Database should store for each prompt:
+- Unique ID
+- Type (truth or dare)
+- Category (friends, couples, kids, family, students, party)
+- Difficulty level (easy, medium, hard, extreme)
+- Is safe for kids flag
+- The actual text
+- Play count (how many times shown)
+
+Add at least 150 truth prompts for FRIENDS category:
+
+**Easy (50+ prompts):**
+- Light questions about favorites, preferences, opinions
+- Examples: "What's your favorite movie?", "If you could have any superpower?"
+
+**Medium (50+ prompts):**  
+- More personal but not invasive
+- Examples: "What's your most embarrassing moment?", "Who was your first crush?"
+
+**Hard (50+ prompts):**
+- Deep personal truths, secrets, confessions
+- Examples: "What's a lie you've told a friend?", "What's your biggest insecurity?"
+
+Make questions engaging, fun, and conversation-starting! Avoid generic boring questions.
+
+VERIFY:
+- Database structure is created and working
+- 150+ truth prompts exist for Friends category
+- Prompts are distributed across Easy/Medium/Hard
+- Each prompt has proper tagging
+- When I play the game, these prompts now appear instead of placeholders
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 14: Couples & Romance Truth Prompts
+
+Add 150+ truth prompts specifically for COUPLES/ROMANTIC situations to the database:
+
+**Easy Romance (50+):**
+- Sweet, cute questions for partners
+- Safe for new couples
+- Examples: "What made you first attracted to me?", "What's your favorite memory of us?"
+
+**Medium Romance (50+):**
+- More intimate but tasteful
+- Relationship deepening questions
+- Examples: "What's something you've never told me?", "What do you find most attractive about me?"
+
+**Hard/Spicy Romance (50+):**
+- Flirty, provocative, adults-only
+- Requires PIN to access
+- Examples: "What's your secret fantasy?", "What drives you crazy about me?"
+
+All Couples prompts should:
+- Feel romantic and relationship-focused, not crude
+- Work for both new and established couples
+- Medium/Hard marked as requiring age verification
+
+VERIFY:
+- 150+ truth prompts added for Couples category
+- Easy Romance prompts are sweet and accessible  
+- Medium/Hard Romance are properly age-gated (require PIN)
+- When I select Couples mode, I see these romantic prompts
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 15: Kids, Family & Student Truth Prompts
+
+Add 200+ truth prompts for family-friendly and student contexts:
+
+**Kids Safe (80+ prompts):**
+- 100% appropriate for ages 8-12
+- Fun, silly, imaginative questions
+- Examples: "If you were a superhero, what would your power be?", "What's the yuckiest food ever?"
+
+**Family Night (60+ prompts):**
+- Safe for all ages including parents/grandparents
+- Questions that spark family discussion
+- Examples: "What's your proudest family memory?", "What family tradition do you love most?"
+
+**Students/School (60+ prompts):**
+- Appropriate for teens in school setting
+- About school life, friendships
+- Examples: "Who's your favorite teacher?", "What's the most embarrassing school moment?"
+
+All these categories must be:
+- Completely clean - no innuendo, no adult themes
+- Fun without being boring
+
+Kids Safe mode should ONLY pull from these kid-safe prompts, never from adult content.
+
+VERIFY:
+- 80+ Kids Safe prompts that are truly child-appropriate
+- 60+ Family Night prompts for all ages
+- 60+ Student prompts for school settings
+- Kids Safe mode exclusively shows these safe prompts
+- A parent would be comfortable with every prompt shown in Kids mode
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 16: Friends & Party Dare Prompts
+
+Create 200+ DARE challenges for friends and party settings:
+
+**Easy Dares (70+):**
+- Simple, quick, not embarrassing
+- Can be done immediately at a party
+- Examples: "Do your best celebrity impression", "Speak in an accent for 2 rounds"
+
+**Medium Dares (70+):**
+- Requires stepping out of comfort zone
+- Mildly embarrassing but fun
+- Examples: "Let someone post on your social media", "Call a random contact and sing to them"
+
+**Hard Dares (60+):**
+- Challenging, embarrassing, memorable
+- Creates party stories
+- Examples: "Wear your clothes inside out for rest of game", "Do 20 pushups right now"
+
+Dares should be:
+- Physically safe (nothing dangerous!)
+- Doable indoors at a party
+- Inclusive (don't require specific items)
+- Time-bound when needed ("for 5 minutes", "for 3 rounds")
+
+Some dares can reference other players: "Give [random player] a compliment"
+When such dares appear, randomly insert another player's name.
+
+VERIFY:
+- 200+ dare prompts added for party/friends context
+- Dares are fun but physically safe
+- Difficulty levels feel appropriately escalated
+- Dares with [player name] insert actual player names
+- Timer-based dares show countdown when relevant
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 17: Couples & Adults-Only Dare Prompts
+
+Add 150+ dares for COUPLES and ADULT party modes:
+
+**Couples - Sweet (50+):**
+- Cute, romantic dares for partners
+- PG-13 level, no PIN required
+- Examples: "Slow dance together right now", "Write 3 things you love about your partner"
+
+**Couples - Spicy (50+ adults only):**
+- Flirty, physical, adults only
+- Requires PIN
+- Examples: "Give your partner a 30-second massage", "Whisper something flirty in their ear"
+
+**Party Wild (50+ adults only):**
+- Crazy but consensual party dares
+- Requires PIN
+- Examples: "Do your best dance move for 30 seconds", "Prank call someone and keep character for 1 minute"
+
+All adult dares must:
+- Respect consent and boundaries
+- Never pressure unsafe behavior
+- Be clearly marked as adults-only
+- Not be explicit or inappropriate, just mature fun
+
+VERIFY:
+- 50+ sweet couples dares work without PIN
+- 50+ spicy couples dares require PIN verification
+- 50+ wild party dares require PIN
+- Adult content is properly gated
+- Dares are fun and mature but not crude
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 18: Kids & Family Safe Dare Prompts
+
+Add 150+ DARES that are 100% appropriate for kids and family:
+
+**Kids Safe Dares (80+):**
+- Fun, silly, creative challenges
+- Safe physically and emotionally
+- Examples: "Do your best animal impression", "Sing the alphabet backwards", "Make a funny face for 10 seconds"
+
+**Family Fun Dares (70+):**
+- Appropriate for grandma to participate
+- Wholesome and bonding-focused
+- Examples: "Share a happy memory about the person on your left", "Teach everyone a dance move"
+
+These dares must:
+- Be completely clean and child-safe
+- Not involve any risk of injury
+- Not target or embarrass in mean ways
+- Be doable by people of all physical abilities
+
+Kids Safe mode must ONLY draw from this pool plus the kids truths.
+
+VERIFY:
+- 80+ kids dares that are truly child-appropriate
+- 70+ family dares safe for all ages
+- Dares are silly/fun, never mean or risky
+- Kids Safe mode has enough variety to play without repetition
+- A parent would be comfortable with every dare shown
+[COPY END]
+
+
+================================================================================
+PHASE 3: CUSTOM CONTENT & PERSONALIZATION (Prompts 19-23)
+================================================================================
+
+[COPY START]
+PROMPT 19: Custom Prompts Creator
+
+Let users create their own truth questions and dares!
+
+From the main menu or settings, access "My Prompts" where I can:
+- Create new prompts with a simple form:
+  - Toggle: Truth or Dare
+  - Text input for the prompt (max 200 characters)
+  - Select difficulty: Easy, Medium, Hard
+  - Select category: Friends, Couples, Family, Party
+- See all my saved custom prompts in a list
+- Edit any custom prompt
+- Delete custom prompts
+- Toggle each prompt on/off (include/exclude from games)
+
+Show a preview of how the prompt will look in-game before saving.
+
+When I play a game with matching settings, my custom prompts should appear
+in normal rotation alongside the built-in prompts.
+
+Show a small "✨ Custom!" badge when a custom prompt appears during gameplay.
+
+VERIFY:
+- I can access My Prompts from home screen or settings
+- I can create new Truth or Dare prompts
+- I can set difficulty and category
+- My prompts appear in My Prompts list after saving
+- I can edit, delete, or toggle prompts on/off
+- When I play, custom prompts definitely appear with a badge
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 20: Player Profiles & Returning Player Recognition
+
+Enhance the player system to remember returning players:
+
+When adding a player whose name matches a previously played name:
+- Show "Welcome back, [NAME]!" message
+- Remember their avatar choice from last time
+- Display their all-time stats: games played, truths answered, dares completed, skips
+- Show badges they've earned
+
+Let players optionally customize their profile:
+- Choose from 50+ avatar options (animals, emojis, food, abstract shapes, etc.)
+- Pick their color theme
+- These choices are saved for next time
+
+Avatar selection should be:
+- Quick visual grid of all options
+- Grouped by category (Animals, Food, Faces, etc.)
+- Optional (auto-assign is fine for speed)
+
+VERIFY:
+- If I use a name I've used before, app recognizes me
+- My avatar from last time is remembered
+- I can see my all-time stats
+- I can choose from 50+ avatars if I want to change
+- New players get auto-assigned avatars for quick setup
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 21: Favorites & Prompt History
+
+Let me save prompts I love and track what's been played:
+
+**Favorites:**
+- During gameplay, the heart icon on prompts saves them to favorites
+- Access "My Favorites" from main menu
+- View all favorited prompts
+- Option to play a game using ONLY my favorites
+- Remove prompts from favorites
+
+**Prompt History:**
+- Track which prompts I've seen before (stored locally)
+- In settings, add "Avoid Recently Played" toggle
+- When enabled, prioritize prompts I haven't seen recently
+- Show stat: "You've seen X of 1000+ prompts"
+- Option to reset history (mark all as unseen)
+
+This helps repeat players always get fresh experiences.
+
+VERIFY:
+- Tapping heart during gameplay saves prompt to favorites
+- I can view all my favorites from home/menu
+- I can play a game with only favorite prompts
+- Avoid Recently Played toggle exists in settings
+- Fresh prompts appear more often when enabled
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 22: Themes & Visual Customization
+
+Let users personalize the app's appearance from Settings:
+
+**Bottle Designs (10+ options):**
+- Classic green glass bottle (default)
+- Champagne bottle
+- Wine bottle
+- Potion bottle (magical purple)
+- Crystal/Diamond bottle
+- Neon glowing bottle
+- Galaxy bottle
+- More bottles unlockable via achievements
+
+**Background Themes (8+ options):**
+- Default party gradient
+- Romantic rose petals (for couples)
+- Neon nightclub
+- Cozy campfire
+- Space/Galaxy
+- Minimalist dark
+- Minimalist light
+
+Show preview before selecting. Changes apply to actual game screen.
+Some special themes are locked until achievements are earned (show lock icon).
+
+Also add Light/Dark/Auto theme toggle for general app appearance.
+
+VERIFY:
+- I can access theme selection in settings
+- Multiple bottle designs are available to choose
+- Multiple background themes are available
+- Preview shows how it will look
+- My choices apply to actual gameplay
+- Some themes show locked (need achievements)
+- Light/Dark toggle works
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 23: Prompt Packs & Collections
+
+Organize prompts into themed packs for game customization:
+
+Create these built-in packs:
+- 🎉 Party Starter (general party fun, default selection)
+- 💕 Date Night (couples romantic)
+- 🌶️ Spicy Night (adults intense, PIN required)
+- 👨‍👩‍👧‍👦 Family Game Night (all ages safe)
+- 🎓 Back to School (students)
+- 🏆 Extreme Challenges (difficult dares only)
+
+Each pack shows:
+- Pack name and icon
+- Number of prompts included
+- Difficulty range
+- Lock icon if requires PIN
+
+Before starting a game (on difficulty selection screen), add option to:
+- See selected packs (default based on mode)
+- Toggle packs on/off
+- See total prompt count for selection
+
+This gives users control over exactly what content appears.
+
+VERIFY:
+- I can see available prompt packs before playing
+- Each pack shows what's inside
+- I can select/deselect packs
+- Game uses prompts from selected packs only
+- Adult packs require PIN to enable
+[COPY END]
+
+
+================================================================================
+PHASE 4: GAME MODES & SPECIAL FEATURES (Prompts 24-30)
+================================================================================
+
+[COPY START]
+PROMPT 24: Quick Fire Mode Implementation
+
+Make Quick Fire mode work differently from Classic mode:
+
+Quick Fire gameplay:
+- NO bottle spinning - just rapid-fire prompts
+- Turns go in a fixed rotation order
+- Each player gets 30 seconds max to choose Truth/Dare AND complete it
+- Visual countdown timer that gets urgent (color change when low)
+- If time runs out: automatic SKIP, lose points
+- Immediately jump to next player - no breaks!
+
+Quick Fire specific features:
+- Show "QUICK FIRE!" text/badge on screen
+- Shorter/simpler prompts prioritized
+- Faster animations and transitions
+- Track "fastest round" record
+
+The interface should feel urgent, exciting, and high-energy!
+
+VERIFY:
+- Quick Fire mode is selectable and plays differently
+- No bottle spinning, turns go in rotation
+- 30-second timer is visible and urgent
+- Running out of time forces a skip
+- Pace feels significantly faster than Classic
+- The urgency is exciting not stressful
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 25: Couples Mode Special Experience
+
+Make Couples Mode feel romantic and intimate, different from party modes:
+
+Couples mode differences:
+- Restrict to exactly 2 players only
+- Romantic UI theme: hearts, rose colors, soft lighting effects
+- Turns alternate between partners fairly
+- No competitive scoring - just alternating turns
+- Replace difficulty selection with "Intimacy Level" slider (1-5)
+
+Special couples features:
+- Intimacy 1-2: Sweet, getting-to-know-you prompts
+- Intimacy 3-4: Deeper, more personal prompts
+- Intimacy 5: Spicy/flirty prompts (requires PIN)
+
+Add romantic ambiance:
+- Floating hearts animation in background
+- Romantic glow effects
+- Sweeter celebration animations
+- Option for soft background music
+
+The whole vibe should feel like date-night, not party game.
+
+VERIFY:
+- Couples mode only allows exactly 2 players
+- UI changes to romantic aesthetic
+- Intimacy Level slider replaces difficulty
+- Higher intimacy = more personal prompts
+- Level 5 requires PIN
+- No competitive scoring, just taking turns
+- Feels romantic and intimate
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 26: Kids Safe Mode - Extra Protection
+
+Make Kids Safe mode bulletproof for parents:
+
+When Kids Safe is launched (from home screen quick button):
+- Skip all setup - go straight to simple player entry
+- Auto-select only kids-safe prompts
+- Hide all adult options completely
+- Simplified UI with bigger buttons, cheerful colors
+- Fun child-friendly sounds and animations
+- No timer pressure - kids can take their time
+
+Critical safety features:
+- Exiting Kids Mode requires entering the parental PIN
+- No way to access adult content or change settings
+- Even the Settings button is hidden in Kids Mode
+
+For parents:
+- "Parents" button (small, in corner) opens PIN entry
+- After PIN, can exit Kids Mode or adjust settings
+- Activity summary available: what prompts kids saw
+
+A parent should feel 100% safe handing their phone to children.
+
+VERIFY:
+- Kids Mode is easily accessible from home screen
+- Only kid-safe content ever appears
+- UI is simplified and child-friendly
+- Exiting Kids Mode requires PIN
+- No way for kids to access adult content
+- Parents can enter PIN to manage or exit
+[COPY END]what does tournament 
+
+---
+
+[COPY START]
+PROMPT 27: Tournament Mode
+
+Create a competitive tournament option for game setup:
+
+When configuring a game, add Tournament toggle that enables:
+- Set target score to win (25, 50, or 100 points)
+- OR set number of rounds (10, 20, 50 rounds)
+- Show "race to finish" progress bar during game
+- Track cumulative scores with more drama
+
+Tournament-specific gameplay:
+- Show how close each player is to winning
+- "On Point Match!" when someone is 1 away from winning
+- Optional: Elimination mode (lowest scorer each round is out)
+- Comeback indicator when behind
+
+Tournament finale:
+- When someone wins, dramatic finale sequence
+- Crown animation for winner
+- Confetti explosion
+- Trophy display with winner photo
+
+Perfect for competitive friend groups!
+
+VERIFY:
+- Tournament mode toggle exists in game setup
+- I can set target score or round limit
+- Progress toward winning is visible during game
+- Elimination mode removes losers (optional)
+- Winning triggers dramatic celebration
+- Trophy/crown displayed for winner
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 28: Challenge Mode - Escalating Difficulty
+
+Create a Challenge Mode variant where difficulty increases over time:
+
+How it works:
+- Everyone starts with Easy prompts
+- Every 5 rounds, difficulty increases automatically
+- Easy → Medium → Hard → Extreme (if adult mode)
+- Players who complete harder prompts get bonus points
+- Visual "Level Up!" notification when difficulty increases
+
+Visual progression:
+- Show current Level (Level 1: Easy, Level 2: Medium, etc.)
+- Progress bar showing rounds until next level
+- Warning at 1 round before increase
+- Celebration animation on level up
+
+Optional "Mercy Rule":
+- If someone skips 3 in a row, they can tap "Mercy!" to drop difficulty
+- But they lose points for using mercy
+
+Great for groups that want to warm up before crazy challenges!
+
+VERIFY:
+- Challenge Mode is selectable
+- Starts easy and gets harder over time
+- Level indicator shows current difficulty
+- Level up notification appears when difficulty increases
+- Mercy rule available if someone is struggling
+- Bonus points for harder completions
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 29: Photo Proof for Dares
+
+Let players optionally capture photo proof of completing dares:
+
+When a DARE appears, show a camera icon in the corner.
+Tapping it opens:
+- In-app camera (request permission first time)
+- Take photo (or short 15-sec video)
+- Preview and confirm or retake
+- Photo is saved with that dare completion
+
+"Dare Gallery" accessible from menu:
+- View all proof photos/videos from current session
+- Attached to the dare description
+- Share individual proofs
+- Delete proofs locally
+
+Post-game: 
+- Results screen shows "View Gallery" option
+- Create shareable collage of session highlights
+
+Privacy first:
+- Everything stored locally only
+- Nothing uploaded without explicit user action
+- Clear delete option
+
+VERIFY:
+- Camera icon appears during dares
+- I can take photos or short videos
+- Proofs save and appear in Dare Gallery
+- I can view, share, or delete proofs
+- Nothing uploads without my permission
+- Gallery accessible after game ends
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 30: Drinking Game Mode (21+ Adults Only)
+
+Add an optional drinking game overlay for adult parties:
+
+In Settings, under Adult Features (requires PIN):
+- "Drinking Mode" toggle
+- Drink options: Shots, Sips, Gulps
+
+When Drinking Mode is ON during gameplay:
+- Skipping any prompt = take a drink
+- Some dares have built-in drink penalty shown
+- "Drink Roulette" icon appears randomly (everyone drinks!)
+
+Mandatory safety features (cannot be disabled):
+- "Drink Responsibly" message always visible during drinking mode
+- "Call a Ride" quick button always accessible
+- Hydration reminder pops up every 20 minutes
+- One-tap button to turn off drinking mode instantly
+- Drink counter visible (optional, for awareness)
+
+Never glorify excessive drinking. This is for responsible adults adding stakes to games.
+
+VERIFY:
+- Drinking Mode requires PIN to enable
+- Skip penalties become drink penalties when active
+- Safety messages are always visible
+- Call a Ride button is easy to find
+- Hydration reminders appear periodically
+- I can quickly disable drinking mode at any time
+[COPY END]
+
+
+================================================================================
+PHASE 5: ONLINE MULTIPLAYER (Prompts 31-34)
+================================================================================
+
+[COPY START]
+PROMPT 31: Online Multiplayer - Room System
+
+Allow friends to play together remotely!
+
+From home screen, add "Online Play" option that shows:
+- "Create Room" button - generates 6-character room code (like ABC123)
+- "Join Room" button - enter a code to join someone else's room
+
+Room lobby features:
+- Show all connected players with their avatars
+- Host can set game settings (mode, difficulty)
+- Players see settings in real-time
+- Chat or emoji reactions while waiting
+- Room supports 2-8 players for online
+- "Start Game" button for host when 2+ players ready
+
+Connection handling:
+- Show connection status for each player
+- If someone disconnects, show "Reconnecting..." status
+- If host leaves, migrate to next player as host
+- Room code expires after 1 hour of inactivity
+
+Share room code easily via system share sheet.
+
+VERIFY:
+- I can create a room and get a shareable code
+- Friends can join my room using the code
+- We see each other in the lobby with avatars
+- Host can set game options
+- Game starts when host taps Start
+- Disconnections are handled gracefully
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 32: Online Multiplayer - Synchronized Gameplay
+
+Make the actual game work smoothly for remote players:
+
+Synchronization:
+- All players see bottle spin simultaneously
+- Selected player highlighted for everyone
+- Prompt appears on all screens at same time
+- Timer synchronized across all devices
+- Score updates show for everyone in real-time
+
+Turn flow:
+- Only the active player can choose Truth/Dare
+- Others see "Waiting for [NAME] to choose..."
+- When prompt shown, all players can read it
+- Only active player has Done/Skip buttons
+- Others can send emoji reactions while watching
+
+Interactive reactions:
+- Floating emoji reactions (😂🔥👏😱) anyone can send
+- Reactions appear on everyone's screen
+- "Peer Pressure" vote: others can tap "THEY MUST DO IT!"
+- Votes visible to encourage/pressure the player playfully
+
+Low latency is critical - keep the experience smooth!
+
+VERIFY:
+- Bottle spin shows at same time for all players
+- Everyone sees the same prompt together
+- Only active player can mark Done/Skip
+- Emoji reactions appear in real-time
+- Peer pressure voting works
+- Experience feels synchronized and fair
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 33: Text Chat for Online Games
+
+Add text-based communication for online multiplayer:
+
+During online games, add a chat option:
+- Small chat icon that opens chat overlay
+- Type messages to send to all players
+- Messages appear floating on screen briefly, then stored in chat history
+- Show who sent each message
+
+Quick reactions (no typing needed):
+- Emoji reaction bar: 😂 🔥 👏 😱 💀 🙈
+- Tapping sends to everyone instantly
+- Pre-set quick messages: "Nice!", "No way!", "Your turn!", "Hurry up!"
+
+Chat should:
+- Not block gameplay view
+- Be completely optional (can close/ignore)
+- Clear between game sessions
+- Have option to mute specific players
+
+VERIFY:
+- I can send text messages during online games
+- Messages appear for all players
+- Quick emoji reactions work without typing
+- Pre-set messages available for common phrases
+- Chat doesn't block gameplay
+- I can mute other players
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 34: Share & Invite System
+
+Make inviting friends to online games easy:
+
+When creating an online room, show share options:
+- "Copy Code" button (ABC123 copied to clipboard)
+- "Share" button that opens system share sheet with message:
+  "Join my Spin Bottle game! 🍾
+   Room Code: ABC123
+   Download: [Play Store link when published]
+   Let's play Truth or Dare!"
+- Generate QR code for in-person scanning
+
+Deep linking:
+- If friend has app installed, link opens app and goes to Join Room with code filled in
+- If friend doesn't have app, link goes to Play Store
+
+Also let users share:
+- End-of-game results (image of scoreboard)
+- Funny dare photos from gallery
+
+VERIFY:
+- Share button generates invite with room code
+- Copy code works
+- QR code generates and is scannable
+- Sharing opens system share sheet
+- If friend has the app, they can tap invite and join easily
+[COPY END]
+
+
+================================================================================
+PHASE 6: SETTINGS, HELP & POLISH (Prompts 35-40)
+================================================================================
+
+[COPY START]
+PROMPT 35: Complete Settings Screen
+
+Build a comprehensive settings screen with all options organized clearly:
+
+**Game Settings:**
+- Default game mode
+- Default difficulty level
+- Timer on/off and duration (10s, 20s, 30s, off)
+- Enable/disable skip penalty
+
+**Content & Custom:**
+- Parental PIN: set/change/reset
+- My Custom Prompts (link to prompt creator)
+- Prompt Packs selection
+- Avoid Recently Played toggle
+- Reset prompt history
+
+**Audio & Display:**
+- Sound effects on/off
+- Haptic feedback on/off
+- Theme: Light/Dark/Auto
+- Bottle design selection
+- Background theme selection
+
+**Adult Features (PIN protected):**
+- Drinking Mode toggle
+- Access to adult content modes
+
+**Support:**
+- How to Play
+- Rate This App (link to store)
+- Contact/Feedback
+- Privacy Policy
+- Version info
+
+Use clear grouping, searchable if many options.
+
+VERIFY:
+- Settings screen is well-organized by category
+- All mentioned options exist and work
+- Changes save and persist
+- PIN-protected items require PIN
+- I can find any setting easily
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 36: How to Play & Help Center
+
+Create helpful guidance for new users:
+
+**How to Play (interactive tutorial):**
+- Animated walkthrough showing game flow
+- Step by step: Add Players → Pick Mode → Spin → Choose → Complete → Score
+- Option to try a practice spin
+- Under 2 minutes total
+
+**Rules Reference:**
+- Scoring rules: Truth=1pt, Dare=2pts, Extreme bonus=3pts
+- What happens when you skip (no points, chicken badge)
+- Explanation of each game mode
+- Explanation of difficulty levels
+
+**FAQ Section:**
+- "How do I add custom prompts?"
+- "How do I set up parental controls?"
+- "Can I play with remote friends?"
+- "How do I unlock themes?"
+- "How do I turn off sounds?"
+
+**Contact:**
+- Report a problem button (opens email/form)
+- Rate the app (link to Play Store)
+
+Use icons and visuals. Design for quick scanning, not walls of text.
+
+VERIFY:
+- Tutorial is clear and completes in under 2 minutes
+- Rules page explains scoring clearly
+- FAQ answers common questions
+- I can easily find how to do things
+- Contact/feedback option works
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 37: First-Launch Onboarding
+
+Create a beautiful experience for brand new users:
+
+When app opens for the very first time:
+
+1. Splash screen with logo animation (2-3 seconds)
+
+2. Welcome carousel (3-4 swipeable slides):
+   - "Spin the bottle - the classic party game!"
+   - "1000+ truths and dares included FREE"
+   - "Safe modes for kids and families"
+   - "Play with friends online!"
+   - Each slide has attractive illustration
+
+3. Quick optional setup:
+   - "What's your name?" (pre-fill for player profile)
+   - "Light or Dark theme?" (two tappable options)
+   - "Done!" button
+
+4. Arrives at home screen, ready to play
+
+Requirements:
+- Skippable at any point (show Skip button)
+- Beautiful animations between slides
+- Under 60 seconds total
+- Only shows once (remember first-launch state)
+- Not pushy or preachy
+
+VERIFY:
+- First launch shows splash then welcome carousel
+- I can swipe through or skip at any time
+- Quick setup asks minimal questions
+- After finish, I'm at home screen ready to play
+- Reopening app does NOT show onboarding again
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 38: Achievements & Badges System
+
+Add achievements to gamify the experience:
+
+Create these achievement categories:
+
+🎯 **Play Achievements:**
+- First Spin (complete 1 game)
+- Party Animal (play 10 games)
+- Veteran (play 100 games)
+
+💪 **Dare Achievements:**
+- Brave Soul (complete 25 dares)
+- Fearless (complete 100 dares)
+- Daredevil (complete 50 Hard/Extreme dares)
+
+🏆 **Competitive:**
+- First Win (win a game)
+- Champion (win 10 games)
+- Streak Master (win 3 games in a row)
+
+🔓 **Special:**
+- Night Owl (play after midnight)
+- Social Butterfly (play online game)
+- Collector (use 500+ unique prompts)
+- Completionist (try all game modes)
+
+Show achievements in a profile/achievements screen.
+Achievement unlocks should:
+- Show notification popup with animation
+- Some unlock special bottles or themes
+- Progress visible for incomplete achievements
+
+VERIFY:
+- Achievements track automatically based on play
+- I see notification when I unlock one
+- Profile/achievements screen shows all achievements
+- Progress towards incomplete ones is visible
+- Some achievements unlock themes/bottles
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 39: Accessibility Features
+
+Make the game playable by everyone:
+
+**Visual accessibility:**
+- Large text mode option (bigger text throughout)
+- High contrast mode (stronger colors, thicker borders)
+- Screen reader (TalkBack) support for all interactive elements
+- Reduce motion option (simpler animations)
+
+**Motor accessibility:**
+- All buttons are large enough (minimum 48dp)
+- No double-taps or complex gestures required
+- Extended timer option for those needing more time
+
+**General:**
+- All images have descriptions for screen readers
+- Buttons are clearly labeled
+- Consistent layout across screens
+
+Add Accessibility section in Settings with:
+- Large Text toggle
+- High Contrast toggle  
+- Reduce Motion toggle
+- Extended Timers toggle
+
+Test with TalkBack to ensure screen reader works!
+
+VERIFY:
+- Large Text mode makes everything bigger
+- High Contrast mode makes things easier to see
+- Screen reader can navigate the entire app
+- Reduce Motion simplifies animations
+- Extended timer option adds more time
+- Accessibility options are easy to find
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 40: Performance & Reliability Polish
+
+Ensure the app is bulletproof and fast:
+
+**Performance:**
+- App cold start under 3 seconds
+- Bottle spin animation is smooth (60fps)
+- No lag when transitioning between screens
+- APK size reasonable (under 30MB)
+
+**Reliability:**
+- Game state auto-saves continuously
+- Survive phone calls, switching apps
+- Resume exactly where left off after interruption
+- Handle screen rotation without crashing
+- Work completely offline (except online multiplayer)
+
+**Data safety:**
+- Custom prompts persist across app restarts
+- Settings persist
+- Player profiles and stats persist
+- Favorites and history persist
+
+**Edge cases to test:**
+- 16 players with long names
+- Very fast navigation between screens
+- Low memory situations (2GB RAM phone)
+- Rapid button tapping
+
+VERIFY:
+- App launches quickly
+- Animations are smooth throughout
+- Interrupted games resume correctly
+- All my data persists after closing/reopening app
+- Works fine offline
+- No crashes during normal use
+[COPY END]
+
+
+================================================================================
+PHASE 7: MONETIZATION & FINAL (Prompts 41-45)
+================================================================================
+
+[COPY START]
+PROMPT 41: Monetization - Supporter Pack (Optional Purchase)
+
+Implement ethical monetization that respects users:
+
+**What's 100% FREE (forever):**
+- All 1000+ built-in prompts
+- All game modes (Classic, Quick Fire, Couples, Party, Kids)
+- Unlimited local multiplayer (up to 16 players)
+- Online multiplayer
+- Custom prompt creation
+- Most themes and bottles
+
+**Optional "Supporter Pack" (one-time purchase, $2.99):**
+- Removes the small "Get Supporter Pack" button in settings
+- Unlocks 5 exclusive premium bottle designs
+- Unlocks 5 exclusive premium background themes
+- Shows "Supporter" badge on their profile
+- Thank you message from developer
+
+Where to show premium prompt:
+- Small banner in Settings (dismissible, not intrusive)
+- On locked premium themes (explains how to unlock)
+- NEVER popup during gameplay
+- NEVER block any features
+
+**NO:**
+- ❌ No ads anywhere ever
+- ❌ No subscriptions
+- ❌ No gameplay features locked behind money
+- ❌ No aggressive upsell popups
+
+VERIFY:
+- All features work without paying
+- Premium themes exist and are marked as "Supporter Pack"
+- Purchase option is visible but not pushy
+- No ads anywhere in the app
+- Purchasing unlocks cosmetics only
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 42: Multi-Language Support Setup
+
+Set up the app for multiple languages:
+
+For launch, support these languages:
+- English (default)
+- Spanish
+- Portuguese (Brazil)
+- Hindi
+- French
+- German
+
+Implementation:
+- All UI text externalized to string resources
+- All 1000+ prompts need translations (can be placeholder for non-English initially)
+- Date/time formats localized
+- Language selection in Settings
+- Auto-detect device language on first launch
+
+If translations aren't ready yet:
+- Set up the structure so translations can be added easily
+- Use placeholder text or English fallback for missing translations
+- Mark prompts with language availability
+
+VERIFY:
+- Language option appears in Settings
+- Changing language updates all UI text
+- App auto-detects my device language on first launch
+- Prompts work in available languages
+- Adding new languages later is straightforward
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 43: Play Store Assets & Metadata
+
+Prepare everything needed for Play Store submission:
+
+**App Icons:**
+- App icon that looks great at all sizes
+- Follows Android icon guidelines (adaptive icon)
+- Bottle + sparkles concept, eye-catching colors
+
+**Store Listing Assets:**
+- Feature graphic (1024x500)
+- Screenshots (at least 4): Home, Gameplay, Modes, Results
+- Short description (80 chars): "Spin the bottle! 1000+ free truths & dares for parties"
+- Long description covering key features
+
+**Store Metadata:**
+- App category: Party Games
+- Content rating: Teen (due to optional adult content)
+- Privacy policy (link required)
+
+**Technical:**
+- Signed release APK/Bundle
+- Version code and name set correctly
+- Package name: com.spinbottle.truthdare.games
+
+VERIFY:
+- App icon looks great
+- Feature graphic and screenshots are ready
+- Short and long descriptions are written
+- Release build generates without errors
+- All Play Store requirements met
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 44: Final Testing Checklist
+
+Do a complete quality pass on the entire app:
+
+**Core Flow Testing:**
+- [ ] Launch → Home → New Game → Add Players → Select Mode → Play → End
+- [ ] All 5 game modes work correctly
+- [ ] All 4 difficulty levels work
+- [ ] Scoring calculates correctly
+- [ ] Results screen shows accurate stats
+
+**Content Testing:**
+- [ ] Kids Mode only shows safe content
+- [ ] Adult content requires PIN
+- [ ] Custom prompts appear during gameplay
+- [ ] Favorites save and load
+
+**Online Testing:**
+- [ ] Create and join rooms
+- [ ] Gameplay syncs between devices
+- [ ] Handle disconnections
+
+**Settings Testing:**
+- [ ] All toggles work
+- [ ] Theme changes apply
+- [ ] Sound/haptic toggles work
+- [ ] Pin setup/change works
+
+**Edge Cases:**
+- [ ] Works offline
+- [ ] Survives phone call interruption
+- [ ] 16 players with long names
+- [ ] Rapid navigation doesn't crash
+
+Fix any issues found!
+
+VERIFY:
+- Every item on checklist passes
+- No crashes during any flow
+- All features work as designed
+- App feels polished and complete
+[COPY END]
+
+---
+
+[COPY START]
+PROMPT 45: Release Preparation & Final Polish
+
+Final touches before Play Store submission:
+
+**Visual Polish:**
+- Consistent spacing and padding everywhere
+- Smooth transitions between all screens
+- Loading states where needed
+- Error messages are friendly (no technical jargon)
+- Empty states have helpful guidance
+
+**Remove Debug Stuff:**
+- No debug logs in release build
+- No test buttons or hidden menus
+- No placeholder text remaining
+- All TODOs resolved
+
+**Legal & Compliance:**
+- Privacy policy accessible in app and linked in store
+- COPPA compliance for Kids mode (no data collection from children)
+- Content rating questionnaire completed honestly
+- In-app purchase follows Google's policies
+
+**Pre-Launch Checklist:**
+- [ ] Release build tested thoroughly
+- [ ] All crashes fixed
+- [ ] Store listing complete
+- [ ] Privacy policy published online
+- [ ] Support email set up
+
+App should be 100% ready to publish!
+
+VERIFY:
+- Every screen looks polished and intentional
+- No debug or placeholder content remains
+- Privacy policy is linked and accessible
+- Release APK generates and runs correctly
+- Ready to submit to Google Play Store
+[COPY END]
+
+
+================================================================================
+END OF DEVELOPMENT PROMPTS
+================================================================================
+
+Total Prompts: 45
+Phases: 7
+
+Phase 1: Core Game Experience (Prompts 1-12)
+Phase 2: Content Database (Prompts 13-18)  
+Phase 3: Custom Content & Personalization (Prompts 19-23)
+Phase 4: Game Modes & Special Features (Prompts 24-30)
+Phase 5: Online Multiplayer (Prompts 31-34)
+Phase 6: Settings, Help & Polish (Prompts 35-40)
+Phase 7: Monetization & Final (Prompts 41-45)
+
+Tips for using these prompts:
+1. Complete each prompt fully before moving to next
+2. Test VERIFY section after each prompt
+3. If something breaks, fix before continuing
+4. You can run and test the app after prompt 12 (basic game works!)
+5. Keep track of what's built
+
+Good luck building Spin Bottle: Truth Dare Games! 🍾🎯
+================================================================================

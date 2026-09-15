@@ -1,0 +1,244 @@
+package com.spinbottle.truthdare.games.screens
+
+import androidx.compose.animation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.spinbottle.truthdare.games.data.GameMode
+import com.spinbottle.truthdare.games.data.PinManager
+import com.spinbottle.truthdare.games.data.PinResult
+import com.spinbottle.truthdare.games.ui.components.ModeCard
+import com.spinbottle.truthdare.games.ui.theme.*
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+
+@Composable
+fun ModeSelectionScreen(
+    onBack: () -> Unit,
+    onModeSelected: () -> Unit
+) {
+    val context = LocalContext.current
+    val pinManager = remember { PinManager(context) }
+    val scope = rememberCoroutineScope()
+    
+    var selectedMode by remember { mutableStateOf<GameMode?>(null) }
+    var showAgeDialog by remember { mutableStateOf(false) }
+    var showPinScreen by remember { mutableStateOf(false) }
+    var pinScreenMode by remember { mutableStateOf(PinScreenMode.SETUP) }
+    var pendingMode by remember { mutableStateOf<GameMode?>(null) }
+    
+    // Age verification dialog
+    if (showAgeDialog) {
+        AgeVerificationDialog(
+            onConfirm = {
+                showAgeDialog = false
+                showPinScreen = true
+                pinScreenMode = PinScreenMode.SETUP
+            },
+            onDismiss = {
+                showAgeDialog = false
+                pendingMode = null
+            }
+        )
+    }
+    
+    // PIN screen overlay
+    if (showPinScreen) {
+        PinScreen(
+            mode = pinScreenMode,
+            onBack = {
+                showPinScreen = false
+                pendingMode = null
+            },
+            onSuccess = {
+                showPinScreen = false
+                selectedMode = pendingMode
+                // Update game session with selected mode
+                pendingMode?.let { com.spinbottle.truthdare.games.data.GameSessionHolder.gameMode = it }
+                pendingMode = null
+            }
+        )
+        return
+    }
+    
+    fun handleModeSelect(mode: GameMode) {
+        if (mode.requiresPin) {
+            pendingMode = mode
+            scope.launch {
+                val isPinSet = pinManager.isPinSet.first()
+                if (isPinSet) {
+                    // PIN exists, verify it
+                    pinScreenMode = PinScreenMode.VERIFY
+                    showPinScreen = true
+                } else {
+                    // No PIN, show age verification first
+                    showAgeDialog = true
+                }
+            }
+        } else {
+            selectedMode = mode
+            // Update game session with selected mode
+            com.spinbottle.truthdare.games.data.GameSessionHolder.gameMode = mode
+        }
+    }
+    
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(DarkBackground, DarkBackgroundSecondary, DarkBackground)
+                )
+            )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+        ) {
+            // Top bar
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = onBack,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(GlassWhite)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = TextWhite
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
+                    Text(
+                        text = "Choose Game Mode",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextWhite
+                    )
+                    Text(
+                        text = "Select how you want to play",
+                        fontSize = 14.sp,
+                        color = TextMuted
+                    )
+                }
+            }
+            
+            // Mode cards
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // In Kids Mode flow, hide modes that require PIN (Couples, Party)
+                val isKidsModeFlow = com.spinbottle.truthdare.games.data.GameSessionHolder.isKidsModeFlow
+                
+                val availableModes = if (isKidsModeFlow) {
+                    GameMode.values().filter { !it.requiresPin }
+                } else {
+                    GameMode.values().toList()
+                }
+                
+                availableModes.forEach { mode ->
+                    ModeCard(
+                        mode = mode,
+                        isSelected = selectedMode == mode,
+                        onClick = { handleModeSelect(mode) }
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            
+            // Bottom section
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                // Next button
+                Button(
+                    onClick = onModeSelected,
+                    enabled = selectedMode != null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(60.dp)
+                        .clip(RoundedCornerShape(30.dp)),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent
+                    ),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                if (selectedMode != null) {
+                                    Brush.horizontalGradient(
+                                        colors = listOf(
+                                            selectedMode!!.color,
+                                            selectedMode!!.color.copy(alpha = 0.7f)
+                                        )
+                                    )
+                                } else {
+                                    Brush.horizontalGradient(
+                                        colors = listOf(
+                                            AccentPurple.copy(alpha = 0.3f),
+                                            AccentPink.copy(alpha = 0.3f)
+                                        )
+                                    )
+                                }
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = if (selectedMode != null) "Choose Difficulty" else "Select a Mode",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (selectedMode != null) Color.White else Color.White.copy(alpha = 0.5f)
+                            )
+                            if (selectedMode != null) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    imageVector = Icons.Default.ArrowForward,
+                                    contentDescription = null,
+                                    tint = Color.White
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
