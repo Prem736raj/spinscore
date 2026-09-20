@@ -213,16 +213,6 @@ fun SpinBottleNavHost(
             )
         }
         
-        composable(Screen.CustomPrompts.route) {
-            MyPromptsScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onAddPrompt = { navController.navigate(Screen.AddPrompt.route) },
-                onEditPrompt = { promptId ->
-                    navController.navigate(Screen.EditPrompt.createRoute(promptId))
-                }
-            )
-        }
-        
         composable(Screen.MyPrompts.route) {
             MyPromptsScreen(
                 onNavigateBack = { navController.popBackStack() },
