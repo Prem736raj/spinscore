@@ -187,22 +187,12 @@ enum class BackgroundTheme(
 }
 
 /**
- * App color mode
- */
-enum class AppColorMode {
-    LIGHT,
-    DARK,
-    AUTO
-}
-
-/**
  * Manager for theme preferences
  */
 object ThemeManager {
     private const val PREFS_NAME = "theme_prefs"
     private const val KEY_BOTTLE_DESIGN = "bottle_design"
     private const val KEY_BACKGROUND_THEME = "background_theme"
-    private const val KEY_COLOR_MODE = "color_mode"
     private const val KEY_GAMES_PLAYED = "total_games_played"
     private const val KEY_DARES_COMPLETED = "total_dares_completed"
     private const val KEY_TRUTHS_ANSWERED = "total_truths_answered"
@@ -216,40 +206,33 @@ object ThemeManager {
     var selectedBottle: BottleDesign
         get() {
             val name = prefs?.getString(KEY_BOTTLE_DESIGN, BottleDesign.CLASSIC.name)
-            return try {
+            val candidate = try {
                 BottleDesign.valueOf(name ?: BottleDesign.CLASSIC.name)
             } catch (e: Exception) {
                 BottleDesign.CLASSIC
             }
+            return candidate.takeIf(::isBottleUnlocked) ?: BottleDesign.CLASSIC
         }
         set(value) {
-            prefs?.edit()?.putString(KEY_BOTTLE_DESIGN, value.name)?.apply()
+            if (isBottleUnlocked(value)) {
+                prefs?.edit()?.putString(KEY_BOTTLE_DESIGN, value.name)?.apply()
+            }
         }
     
     var selectedBackground: BackgroundTheme
         get() {
             val name = prefs?.getString(KEY_BACKGROUND_THEME, BackgroundTheme.PARTY.name)
-            return try {
+            val candidate = try {
                 BackgroundTheme.valueOf(name ?: BackgroundTheme.PARTY.name)
             } catch (e: Exception) {
                 BackgroundTheme.PARTY
             }
+            return candidate.takeIf(::isBackgroundUnlocked) ?: BackgroundTheme.PARTY
         }
         set(value) {
-            prefs?.edit()?.putString(KEY_BACKGROUND_THEME, value.name)?.apply()
-        }
-    
-    var colorMode: AppColorMode
-        get() {
-            val name = prefs?.getString(KEY_COLOR_MODE, AppColorMode.DARK.name)
-            return try {
-                AppColorMode.valueOf(name ?: AppColorMode.DARK.name)
-            } catch (e: Exception) {
-                AppColorMode.DARK
+            if (isBackgroundUnlocked(value)) {
+                prefs?.edit()?.putString(KEY_BACKGROUND_THEME, value.name)?.apply()
             }
-        }
-        set(value) {
-            prefs?.edit()?.putString(KEY_COLOR_MODE, value.name)?.apply()
         }
     
     // Track stats for unlocking themes
