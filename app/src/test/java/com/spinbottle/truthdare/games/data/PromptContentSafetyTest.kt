@@ -42,7 +42,8 @@ class PromptContentSafetyTest {
         "wall sit",
         "spotify top artists",
         "secret about someone",
-        "stalked online"
+        "stalked online",
+        "go through your camera"
     )
 
     @Test
