@@ -34,7 +34,15 @@ class PromptContentSafetyTest {
         "hold your breath as long as",
         "handstand (or try",
         "guide your hands wherever",
-        "surprise kiss"
+        "surprise kiss",
+        "last 10 texts",
+        "order something online",
+        "whatever the group decides",
+        "pick a dare for you from the internet",
+        "wall sit",
+        "spotify top artists",
+        "secret about someone",
+        "stalked online"
     )
 
     @Test
@@ -65,9 +73,17 @@ class PromptContentSafetyTest {
     fun builtInTruthsDoNotRequireSearchHistoryDisclosure() {
         val truths = PromptsDatabase.getTruths().map { it.text.lowercase() }
 
-        assertFalse(
-            "Built-in truth asks for private search-history disclosure",
-            truths.any { "search history" in it }
+        val privateDisclosureFragments = listOf(
+            "search history",
+            "last thing you searched on google",
+            "most recent search on social media"
         )
+
+        privateDisclosureFragments.forEach { fragment ->
+            assertFalse(
+                "Built-in truth asks for private search disclosure: $fragment",
+                truths.any { fragment in it }
+            )
+        }
     }
 }
