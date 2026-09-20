@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.spinbottle.truthdare.games.data.GameMode
 import com.spinbottle.truthdare.games.data.PinManager
-import com.spinbottle.truthdare.games.data.PinResult
 import com.spinbottle.truthdare.games.ui.components.ModeCard
 import com.spinbottle.truthdare.games.ui.theme.*
 import kotlinx.coroutines.flow.first
@@ -49,8 +48,16 @@ fun ModeSelectionScreen(
         AgeVerificationDialog(
             onConfirm = {
                 showAgeDialog = false
-                showPinScreen = true
-                pinScreenMode = PinScreenMode.SETUP
+                scope.launch {
+                    val isPinSet = pinManager.isPinSet.first()
+                    pinManager.setAgeVerified(true)
+                    pinScreenMode = if (isPinSet) {
+                        PinScreenMode.VERIFY
+                    } else {
+                        PinScreenMode.SETUP
+                    }
+                    showPinScreen = true
+                }
             },
             onDismiss = {
                 showAgeDialog = false
@@ -73,29 +80,62 @@ fun ModeSelectionScreen(
                 // Update game session with selected mode
                 pendingMode?.let { com.spinbottle.truthdare.games.data.GameSessionHolder.gameMode = it }
                 pendingMode = null
-            }
+            },
+            markAgeVerifiedOnSetup = pendingMode != GameMode.KIDS_SAFE
         )
         return
     }
     
     fun handleModeSelect(mode: GameMode) {
-        if (mode.requiresPin) {
-            pendingMode = mode
-            scope.launch {
-                val isPinSet = pinManager.isPinSet.first()
-                if (isPinSet) {
-                    // PIN exists, verify it
-                    pinScreenMode = PinScreenMode.VERIFY
-                    showPinScreen = true
-                } else {
-                    // No PIN, show age verification first
-                    showAgeDialog = true
+        if (mode == GameMode.COUPLES &&
+            com.spinbottle.truthdare.games.data.GameSessionHolder.players.size != 2
+        ) {
+            return
+        }
+
+        when {
+            mode == GameMode.KIDS_SAFE -> {
+                pendingMode = mode
+                scope.launch {
+                    val isPinSet = pinManager.isPinSet.first()
+                    if (isPinSet) {
+                        selectedMode = mode
+                        com.spinbottle.truthdare.games.data.GameSessionHolder.gameMode = mode
+                        pendingMode = null
+                    } else {
+                        // Establish a parent PIN before entering a mode whose exit is PIN-gated.
+                        pinScreenMode = PinScreenMode.SETUP
+                        showPinScreen = true
+                    }
                 }
             }
-        } else {
-            selectedMode = mode
-            // Update game session with selected mode
-            com.spinbottle.truthdare.games.data.GameSessionHolder.gameMode = mode
+
+            mode.requiresPin -> {
+                pendingMode = mode
+                scope.launch {
+                    val isPinSet = pinManager.isPinSet.first()
+                    val isAgeVerified = pinManager.isAgeVerified.first()
+
+                    when {
+                        !isAgeVerified -> showAgeDialog = true
+                        isPinSet -> {
+                            pinScreenMode = PinScreenMode.VERIFY
+                            showPinScreen = true
+                        }
+                        else -> {
+                            // Recover cleanly if age state exists but the PIN was cleared.
+                            pinScreenMode = PinScreenMode.SETUP
+                            showPinScreen = true
+                        }
+                    }
+                }
+            }
+
+            else -> {
+                selectedMode = mode
+                // Update game session with selected mode
+                com.spinbottle.truthdare.games.data.GameSessionHolder.gameMode = mode
+            }
         }
     }
     
@@ -157,20 +197,32 @@ fun ModeSelectionScreen(
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // In Kids Mode flow, hide modes that require PIN (Couples, Party)
-                val isKidsModeFlow = com.spinbottle.truthdare.games.data.GameSessionHolder.isKidsModeFlow
-                
+                // Defense in depth: a Kids Safe flow may only select the dedicated
+                // Kids Safe mode. Do not rely on PIN flags or UI hiding alone.
+                val isKidsModeFlow =
+                    com.spinbottle.truthdare.games.data.GameSessionHolder.isKidsModeFlow
+
                 val availableModes = if (isKidsModeFlow) {
-                    GameMode.values().filter { !it.requiresPin }
+                    listOf(GameMode.KIDS_SAFE)
                 } else {
                     GameMode.values().toList()
                 }
                 
                 availableModes.forEach { mode ->
+                    val requiresExactlyTwo =
+                        mode == GameMode.COUPLES &&
+                            com.spinbottle.truthdare.games.data.GameSessionHolder.players.size != 2
+
                     ModeCard(
                         mode = mode,
                         isSelected = selectedMode == mode,
-                        onClick = { handleModeSelect(mode) }
+                        onClick = { handleModeSelect(mode) },
+                        enabled = !requiresExactlyTwo,
+                        disabledReason = if (requiresExactlyTwo) {
+                            "Requires exactly 2 players"
+                        } else {
+                            null
+                        }
                     )
                 }
                 

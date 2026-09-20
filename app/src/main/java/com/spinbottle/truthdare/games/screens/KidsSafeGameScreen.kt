@@ -1,5 +1,6 @@
 package com.spinbottle.truthdare.games.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -16,7 +17,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -25,7 +25,6 @@ import com.spinbottle.truthdare.games.audio.rememberHapticManager
 import com.spinbottle.truthdare.games.audio.rememberSoundManager
 import com.spinbottle.truthdare.games.data.*
 import com.spinbottle.truthdare.games.ui.theme.*
-import kotlinx.coroutines.delay
 import kotlin.random.Random
 
 // Kids mode colors - bright and cheerful
@@ -45,18 +44,23 @@ fun KidsSafeGameScreen(
 ) {
     val soundManager = rememberSoundManager()
     val hapticManager = rememberHapticManager()
-    val context = LocalContext.current
-    val pinManager = remember { PinManager(context) }
-    
     val players = remember { GameSessionHolder.players }
     
-    var currentPlayerIndex by remember { mutableIntStateOf(0) }
+    var currentPlayerIndex by remember {
+        mutableIntStateOf(
+            if (players.isNotEmpty()) GameSessionHolder.totalRounds % players.size else 0
+        )
+    }
     var currentPrompt by remember { mutableStateOf("") }
     var promptType by remember { mutableStateOf<PromptType?>(null) }
-    var round by remember { mutableIntStateOf(1) }
+    var round by remember { mutableIntStateOf(GameSessionHolder.totalRounds + 1) }
     var showPrompt by remember { mutableStateOf(false) }
     var showPinScreen by remember { mutableStateOf(false) }
     var showExitConfirm by remember { mutableStateOf(false) }
+
+    BackHandler {
+        showPinScreen = true
+    }
     
     // Fun bouncing animation
     val infiniteTransition = rememberInfiniteTransition(label = "bounce")
@@ -90,10 +94,11 @@ fun KidsSafeGameScreen(
         PinScreen(
             mode = PinScreenMode.VERIFY,
             onBack = { showPinScreen = false },
-            onSuccess = { 
+            onSuccess = {
                 showPinScreen = false
                 showExitConfirm = true
-            }
+            },
+            allowSetupWhenMissing = false
         )
         return
     }
@@ -175,7 +180,7 @@ fun KidsSafeGameScreen(
                 IconButton(
                     onClick = { showPinScreen = true },
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(48.dp)
                         .clip(CircleShape)
                         .background(Color.White.copy(alpha = 0.1f))
                 ) {
@@ -232,7 +237,10 @@ fun KidsSafeGameScreen(
                     
                     // Big colorful buttons
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(24.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         // Truth button - big and blue
                         Button(
@@ -244,7 +252,8 @@ fun KidsSafeGameScreen(
                                 showPrompt = true
                             },
                             modifier = Modifier
-                                .size(140.dp)
+                                .weight(1f)
+                                .heightIn(min = 120.dp)
                                 .scale(bounce),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = KidsBlue
@@ -271,7 +280,8 @@ fun KidsSafeGameScreen(
                                 showPrompt = true
                             },
                             modifier = Modifier
-                                .size(140.dp)
+                                .weight(1f)
+                                .heightIn(min = 120.dp)
                                 .scale(bounce),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = KidsOrange
@@ -449,7 +459,7 @@ fun getKidsSafePrompt(type: PromptType): String {
             "Do 5 jumping jacks!",
             "Make a silly face and hold it for 10 seconds!",
             "Tell a joke!",
-            "Spin around 3 times!",
+            "Pretend to move in slow motion for 10 seconds!",
             "Act like your favorite animal!",
             "Give everyone a high five!",
             "Do your best superhero pose!",

@@ -1,24 +1,26 @@
 package com.spinbottle.truthdare.games.ui.components
 
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import com.spinbottle.truthdare.games.ui.theme.*
+import kotlin.math.abs
 import kotlin.random.Random
 
 data class ConfettiParticle(
-    var x: Float,
-    var y: Float,
+    val xFraction: Float,
+    val yStartFraction: Float,
     val color: Color,
     val size: Float,
-    val speedX: Float,
-    val speedY: Float,
-    val rotation: Float,
-    val rotationSpeed: Float
+    val driftFraction: Float
 )
 
 @Composable
@@ -30,60 +32,57 @@ fun ConfettiAnimation(
         AccentPurple, AccentPink, AccentOrange, AccentTeal,
         AccentGreen, AccentBlue, AccentYellow, ParticlePurple
     )
-    
-    var particles by remember { mutableStateOf(listOf<ConfettiParticle>()) }
-    var time by remember { mutableFloatStateOf(0f) }
-    
-    // Initialize particles when animation starts
-    LaunchedEffect(isPlaying) {
-        if (isPlaying) {
-            particles = List(150) {
+
+    val particles = remember(isPlaying) {
+        if (!isPlaying) {
+            emptyList()
+        } else {
+            List(150) {
                 ConfettiParticle(
-                    x = Random.nextFloat() * 1200f,
-                    y = Random.nextFloat() * -500f - 100f,
+                    xFraction = Random.nextFloat(),
+                    yStartFraction = -0.35f * Random.nextFloat(),
                     color = colors.random(),
                     size = Random.nextFloat() * 12f + 6f,
-                    speedX = Random.nextFloat() * 4f - 2f,
-                    speedY = Random.nextFloat() * 8f + 4f,
-                    rotation = Random.nextFloat() * 360f,
-                    rotationSpeed = Random.nextFloat() * 10f - 5f
+                    driftFraction = (Random.nextFloat() - 0.5f) * 0.35f
                 )
             }
         }
     }
-    
-    // Animation loop
-    val infiniteTransition = rememberInfiniteTransition(label = "confetti")
-    val animatedTime by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1000f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(10000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "time"
-    )
-    
-    // Update particles
-    LaunchedEffect(animatedTime) {
+
+    val progress = remember { Animatable(0f) }
+
+    LaunchedEffect(isPlaying) {
         if (isPlaying) {
-            particles = particles.map { p ->
-                p.copy(
-                    x = p.x + p.speedX,
-                    y = p.y + p.speedY
+            progress.snapTo(0f)
+            progress.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(
+                    durationMillis = 4_000,
+                    easing = LinearEasing
                 )
-            }
+            )
+        } else {
+            progress.snapTo(0f)
         }
     }
-    
+
     if (isPlaying) {
         Canvas(modifier = modifier.fillMaxSize()) {
+            val animationProgress = progress.value
+
             particles.forEach { particle ->
-                if (particle.y < size.height + 50) {
+                val rawX = particle.xFraction + particle.driftFraction * animationProgress
+                val wrappedX = rawX - kotlin.math.floor(rawX.toDouble()).toFloat()
+                val x = wrappedX * size.width
+                val y = (particle.yStartFraction + animationProgress * 1.45f) * size.height
+
+                if (y in -50f..(size.height + 50f)) {
+                    val fade = (1f - abs(animationProgress - 0.55f) * 0.6f)
+                        .coerceIn(0.45f, 1f)
                     drawCircle(
-                        color = particle.color,
+                        color = particle.color.copy(alpha = fade),
                         radius = particle.size,
-                        center = Offset(particle.x, particle.y)
+                        center = Offset(x, y)
                     )
                 }
             }

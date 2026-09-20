@@ -3,6 +3,8 @@ package com.spinbottle.truthdare.games.navigation
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -12,6 +14,9 @@ import com.spinbottle.truthdare.games.screens.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.spinbottle.truthdare.games.billing.BillingManager
+import com.spinbottle.truthdare.games.data.GameMode
+import com.spinbottle.truthdare.games.data.GameSessionHolder
+import com.spinbottle.truthdare.games.data.PinManager
 
 @Composable
 fun SpinBottleNavHost(
@@ -19,6 +24,10 @@ fun SpinBottleNavHost(
     navController: NavHostController = rememberNavController(),
     startDestination: String = Screen.Splash.route
 ) {
+    val context = LocalContext.current
+    val pinManager = remember { PinManager(context.applicationContext) }
+    val isPinSet by pinManager.isPinSet.collectAsState(initial = false)
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -52,17 +61,33 @@ fun SpinBottleNavHost(
         composable(Screen.Home.route) {
             val isPremium by billingManager.isPremium.collectAsState()
             HomeScreen(
-                onStartGame = { 
-                    // Normal game flow - reset Kids Mode flag
-                    com.spinbottle.truthdare.games.data.GameSessionHolder.isKidsModeFlow = false
-                    navController.navigate(Screen.GameSetup.route) 
-                },
-                onKidsMode = { 
-                    // Kids Mode flow - set flag and go to setup
-                    com.spinbottle.truthdare.games.data.GameSessionHolder.isKidsModeFlow = true
-                    com.spinbottle.truthdare.games.data.GameSessionHolder.gameMode = 
-                        com.spinbottle.truthdare.games.data.GameMode.KIDS_SAFE
+                onStartGame = {
+                    GameSessionHolder.clear()
+                    GameSessionHolder.isKidsModeFlow = false
                     navController.navigate(Screen.GameSetup.route)
+                },
+                onResumeGame = {
+                    if (GameSessionHolder.hasRestorableSession()) {
+                        navController.navigate(
+                            SessionResumeRouter.routeFor(GameSessionHolder.gameMode)
+                        ) {
+                            launchSingleTop = true
+                        }
+                    } else {
+                        GameSessionHolder.clear()
+                        navController.navigate(Screen.GameSetup.route)
+                    }
+                },
+                canResumeGame = GameSessionHolder.hasRestorableSession(),
+                onKidsMode = {
+                    GameSessionHolder.clear()
+                    if (isPinSet) {
+                        GameSessionHolder.isKidsModeFlow = true
+                        GameSessionHolder.gameMode = GameMode.KIDS_SAFE
+                        navController.navigate(Screen.GameSetup.route)
+                    } else {
+                        navController.navigate(Screen.PinSetup.route)
+                    }
                 },
                 onHowToPlay = { navController.navigate(Screen.HowToPlay.route) },
                 onSettings = { navController.navigate(Screen.Settings.route) },
@@ -75,7 +100,14 @@ fun SpinBottleNavHost(
         composable(Screen.GameSetup.route) {
             GameSetupScreen(
                 onBack = { navController.popBackStack() },
-                onNext = { navController.navigate(Screen.ModeSelection.route) }
+                onNext = {
+                    if (GameSessionHolder.isKidsModeFlow) {
+                        GameSessionHolder.gameMode = GameMode.KIDS_SAFE
+                        navController.navigate(Screen.KidsSafeGame.route)
+                    } else {
+                        navController.navigate(Screen.ModeSelection.route)
+                    }
+                }
             )
         }
         
@@ -154,7 +186,8 @@ fun SpinBottleNavHost(
         
         composable(Screen.KidsSafeGame.route) {
             KidsSafeGameScreen(
-                onExitWithPin = { 
+                onExitWithPin = {
+                    GameSessionHolder.clear()
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.KidsSafeGame.route) { inclusive = true }
                     }
@@ -172,11 +205,13 @@ fun SpinBottleNavHost(
                 players = com.spinbottle.truthdare.games.data.GameSessionHolder.players,
                 totalRounds = com.spinbottle.truthdare.games.data.GameSessionHolder.totalRounds,
                 onPlayAgain = {
+                    GameSessionHolder.clear()
                     navController.navigate(Screen.GameSetup.route) {
                         popUpTo(Screen.Home.route)
                     }
                 },
                 onGoHome = {
+                    GameSessionHolder.clear()
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Home.route) { inclusive = true }
                     }
@@ -188,16 +223,6 @@ fun SpinBottleNavHost(
             SettingsScreen(
                 onBack = { navController.popBackStack() },
                 onViewGallery = { navController.navigate(Screen.DareGallery.route) }
-            )
-        }
-        
-        composable(Screen.CustomPrompts.route) {
-            MyPromptsScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onAddPrompt = { navController.navigate(Screen.AddPrompt.route) },
-                onEditPrompt = { promptId ->
-                    navController.navigate(Screen.EditPrompt.createRoute(promptId))
-                }
             )
         }
         
@@ -234,6 +259,21 @@ fun SpinBottleNavHost(
             )
         }
         
+        composable(Screen.PinSetup.route) {
+            PinScreen(
+                mode = PinScreenMode.SETUP,
+                onBack = { navController.popBackStack() },
+                onSuccess = {
+                    GameSessionHolder.isKidsModeFlow = true
+                    GameSessionHolder.gameMode = GameMode.KIDS_SAFE
+                    navController.navigate(Screen.GameSetup.route) {
+                        popUpTo(Screen.PinSetup.route) { inclusive = true }
+                    }
+                },
+                markAgeVerifiedOnSetup = false
+            )
+        }
+
         composable(Screen.DareGallery.route) {
             DareGalleryScreen(
                 onBack = { navController.popBackStack() }

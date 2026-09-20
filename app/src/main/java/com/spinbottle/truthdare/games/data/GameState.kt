@@ -81,111 +81,142 @@ object GamePrompts {
             "Let someone draw on your hand"
         ),
         Difficulty.MEDIUM to listOf(
-            "Let the group look through your camera roll for 30 seconds",
-            "Send a text to your crush (we pick the message)",
+            "Choose a photo you are comfortable showing and tell the story behind it",
+            "Make up a silly message to an imaginary crush and read it aloud",
             "Do an embarrassing TikTok dance",
             "Speak only in whispers for the next 3 rounds",
-            "Let someone post something on your social media",
-            "Call a random contact and sing happy birthday",
+            "Pretend to record a dramatic social-media intro without posting it",
+            "Sing happy birthday dramatically to the group",
             "Exchange an item of clothing with someone",
             "Let the group give you a new hairstyle"
         ),
         Difficulty.HARD to listOf(
-            "Let someone go through your messages for 1 minute",
-            "Post an embarrassing selfie on social media",
+            "Share a harmless message you choose, or make one up",
+            "Take a silly selfie for yourself; keep or delete it as you prefer",
             "Do your best impression of someone here",
-            "Reveal your screen time for today",
-            "Show the last 5 people you texted",
-            "Let someone write a status update for you",
+            "Guess your screen time; checking it is optional and private",
+            "Name five people or characters you would invite to a dream party",
+            "Let the group invent a fake status you do not have to post",
             "Act out an embarrassing moment from your life",
-            "Call someone and tell them you love them"
+            "Tell someone in the room one thing you appreciate about them"
         ),
         Difficulty.EXTREME to listOf(
-            "Read aloud the last text you sent",
-            "Show your most embarrassing photo",
-            "Let someone send a message from your phone",
-            "Do an embarrassing dare of the group's choice",
-            "Reveal your browser history"
+            "Read a harmless sentence from any screen you choose",
+            "Describe a funny photo without showing it",
+            "Let someone dictate a fictional message; do not send it",
+            "Do a silly group-approved dare that avoids pain, privacy, spending, substances, and third parties",
+            "Name a harmless topic you have been curious about lately"
         ),
         Difficulty.MIXED to listOf(
             "Do something silly for 30 seconds",
-            "Share something from your gallery",
-            "Perform a dare chosen by the group"
+            "Describe or show one photo only if you are comfortable",
+            "Do a harmless group-chosen dare that respects privacy and physical comfort"
         )
     )
     
+    private fun <T> avoidSeen(items: List<T>, textOf: (T) -> String): List<T> {
+        if (!PromptHistoryManager.avoidRecentlyPlayed) return items
+        val unseen = items.filterNot { PromptHistoryManager.hasBeenSeen(textOf(it)) }
+        // Once this exact pool is exhausted, allow reuse instead of looping forever.
+        return unseen.ifEmpty { items }
+    }
+
+    private fun enabledCategories(): Set<PromptCategory> =
+        PromptPackManager.getEnabledCategories().ifEmpty { setOf(PromptCategory.FRIENDS) }
+
+    private fun selectDatabasePrompt(
+        type: PromptItemType,
+        difficulty: Difficulty
+    ): PromptItem? {
+        val categories = enabledCategories()
+        val all = when (type) {
+            PromptItemType.TRUTH -> PromptsDatabase.getTruths(difficulty = difficulty)
+            PromptItemType.DARE -> PromptsDatabase.getDares(difficulty = difficulty)
+        }.filter { it.category in categories }
+            // Party prompts can intentionally exist in more than one category.
+            // Collapse identical text before selection so enabling overlapping packs
+            // cannot make the same prompt more likely or repeat as a separate item.
+            .distinctBy { it.text }
+
+        val eligible = avoidSeen(all) { it.text }
+            .sortedBy { it.playCount }
+
+        if (eligible.isEmpty()) return null
+
+        // Prefer prompts with lower play counts while retaining randomness.
+        val poolSize = (eligible.size / 2).coerceAtLeast(1)
+        return eligible.take(poolSize).random().also { it.playCount++ }
+    }
+
     fun getRandomTruth(difficulty: Difficulty): String {
-        // If FAVORITES mode, only use favorite prompts
         if (difficulty == Difficulty.FAVORITES) {
-            val fav = FavoritesManager.getRandomFavoriteTruth()
-            if (fav != null) {
-                PromptHistoryManager.markAsSeen(fav.text)
-                return "❤️ ${fav.text}"
+            val favorites = avoidSeen(FavoritesManager.getFavoriteTruths()) { it.text }
+            val selected = favorites.randomOrNull()
+            if (selected != null) {
+                PromptHistoryManager.markAsSeen(selected.text)
+                return "❤️ ${selected.text}"
             }
             return "No favorite truths yet! Tap ❤️ during gameplay to save some."
         }
-        
-        // If CUSTOM mode, only use custom prompts
+
         if (difficulty == Difficulty.CUSTOM) {
-            val customPrompt = CustomPromptsManager.getRandomCustomTruth(null, null)
-            if (customPrompt != null) {
-                PromptHistoryManager.markAsSeen(customPrompt.text)
-                return "✨ ${customPrompt.text}"
+            val custom = avoidSeen(
+                CustomPromptsManager.getEnabledPrompts().filter { it.type == PromptItemType.TRUTH }
+            ) { it.text }
+            val selected = custom.randomOrNull()
+            if (selected != null) {
+                PromptHistoryManager.markAsSeen(selected.text)
+                return "✨ ${selected.text}"
             }
             return "No custom truths yet! Create some in My Prompts."
         }
-        
-        // Try to get from database first
-        val dbPrompt = PromptsDatabase.getRandomTruth(
-            category = PromptCategory.FRIENDS,
-            difficulty = difficulty
-        )
+
+        val dbPrompt = selectDatabasePrompt(PromptItemType.TRUTH, difficulty)
         if (dbPrompt != null) {
             PromptHistoryManager.markAsSeen(dbPrompt.text)
             return dbPrompt.text
         }
-        // Fallback to hardcoded
-        val prompts = truths[difficulty] ?: truths[Difficulty.MEDIUM]!!
+
+        val prompts = avoidSeen(truths[difficulty] ?: truths[Difficulty.MEDIUM]!!) { it }
         val selected = prompts.random()
         PromptHistoryManager.markAsSeen(selected)
         return selected
     }
-    
+
     fun getRandomDare(difficulty: Difficulty): String {
-        // If FAVORITES mode, only use favorite prompts
         if (difficulty == Difficulty.FAVORITES) {
-            val fav = FavoritesManager.getRandomFavoriteDare()
-            if (fav != null) {
-                PromptHistoryManager.markAsSeen(fav.text)
-                return "❤️ ${fav.text}"
+            val favorites = avoidSeen(FavoritesManager.getFavoriteDares()) { it.text }
+            val selected = favorites.randomOrNull()
+            if (selected != null) {
+                PromptHistoryManager.markAsSeen(selected.text)
+                return "❤️ ${selected.text}"
             }
             return "No favorite dares yet! Tap ❤️ during gameplay to save some."
         }
-        
-        // If CUSTOM mode, only use custom prompts
+
         if (difficulty == Difficulty.CUSTOM) {
-            val customPrompt = CustomPromptsManager.getRandomCustomDare(null, null)
-            if (customPrompt != null) {
-                PromptHistoryManager.markAsSeen(customPrompt.text)
-                return "✨ ${customPrompt.text}"
+            val custom = avoidSeen(
+                CustomPromptsManager.getEnabledPrompts().filter { it.type == PromptItemType.DARE }
+            ) { it.text }
+            val selected = custom.randomOrNull()
+            if (selected != null) {
+                PromptHistoryManager.markAsSeen(selected.text)
+                return "✨ ${selected.text}"
             }
             return "No custom dares yet! Create some in My Prompts."
         }
-        
-        // Try to get from database first
-        val dbPrompt = PromptsDatabase.getRandomDare(
-            category = PromptCategory.FRIENDS,
-            difficulty = difficulty
-        )
+
+        val dbPrompt = selectDatabasePrompt(PromptItemType.DARE, difficulty)
         if (dbPrompt != null) {
             PromptHistoryManager.markAsSeen(dbPrompt.text)
             return dbPrompt.text
         }
-        // Fallback to hardcoded
-        val prompts = dares[difficulty] ?: dares[Difficulty.MEDIUM]!!
+
+        val prompts = avoidSeen(dares[difficulty] ?: dares[Difficulty.MEDIUM]!!) { it }
         val selected = prompts.random()
         PromptHistoryManager.markAsSeen(selected)
         return selected
     }
+
 }
 

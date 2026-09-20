@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.spinbottle.truthdare.games"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.spinbottle.truthdare.games"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
 
@@ -96,5 +96,5 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     
     // Google Play Billing
-    implementation("com.android.billingclient:billing-ktx:6.1.0")
+    implementation("com.android.billingclient:billing:9.1.0")
 }

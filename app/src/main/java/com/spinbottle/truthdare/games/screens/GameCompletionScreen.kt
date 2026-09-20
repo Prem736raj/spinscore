@@ -30,8 +30,10 @@ import com.spinbottle.truthdare.games.audio.rememberSoundManager
 import com.spinbottle.truthdare.games.data.GameSessionHolder
 import com.spinbottle.truthdare.games.data.Player
 import com.spinbottle.truthdare.games.data.PlayerProfileManager
+import com.spinbottle.truthdare.games.data.ThemeManager
 import com.spinbottle.truthdare.games.ui.components.ConfettiAnimation
 import com.spinbottle.truthdare.games.ui.theme.*
+import kotlinx.coroutines.delay
 
 @Composable
 fun GameCompletionScreen(
@@ -52,17 +54,31 @@ fun GameCompletionScreen(
     LaunchedEffect(Unit) {
         soundManager.playCelebration()
         
-        // Save stats for each player to their profile
-        players.forEach { player ->
-            PlayerProfileManager.recordGamePlayed(
-                name = player.name,
-                truthsAnswered = player.truthsCompleted,
-                daresCompleted = player.daresCompleted,
-                skips = player.skips
-            )
+        // Completion side effects must run once per finished session, even if
+        // this screen is recreated after rotation/process restoration.
+        if (GameSessionHolder.markCompletionRecorded()) {
+            players.forEach { player ->
+                PlayerProfileManager.recordGamePlayed(
+                    name = player.name,
+                    truthsAnswered = player.truthsCompleted,
+                    daresCompleted = player.daresCompleted,
+                    skips = player.skips
+                )
+            }
+
+            ThemeManager.incrementGamesPlayed()
+            ThemeManager.addTruthsAnswered(players.sumOf { it.truthsCompleted })
+            ThemeManager.addDaresCompleted(players.sumOf { it.daresCompleted })
         }
     }
     
+    LaunchedEffect(showConfetti) {
+        if (showConfetti) {
+            delay(4_000)
+            showConfetti = false
+        }
+    }
+
     // Sort players by score (truths + dares completed)
     val rankedPlayers = remember(players) {
         players.sortedByDescending { it.truthsCompleted + it.daresCompleted }
@@ -275,7 +291,7 @@ fun GameCompletionScreen(
                     onClick = onGoHome,
                     modifier = Modifier
                         .weight(1f)
-                        .height(52.dp),
+                        .heightIn(min = 52.dp),
                     shape = RoundedCornerShape(14.dp)
                 ) {
                     Icon(
@@ -293,7 +309,7 @@ fun GameCompletionScreen(
                     onClick = onPlayAgain,
                     modifier = Modifier
                         .weight(1f)
-                        .height(52.dp),
+                        .heightIn(min = 52.dp),
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = AccentGreen

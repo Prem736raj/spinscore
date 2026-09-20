@@ -16,7 +16,6 @@ sealed class Screen(val route: String) {
     object KidsSafeGame : Screen("kids_safe_game")
     object GameCompletion : Screen("game_completion")
     object Settings : Screen("settings")
-    object CustomPrompts : Screen("custom_prompts")
     object MyPrompts : Screen("my_prompts")
     object AddPrompt : Screen("add_prompt")
     object EditPrompt : Screen("edit_prompt/{promptId}") {

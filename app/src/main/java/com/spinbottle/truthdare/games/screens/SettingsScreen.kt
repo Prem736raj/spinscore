@@ -31,6 +31,7 @@ import com.spinbottle.truthdare.games.data.BottleDesign
 import com.spinbottle.truthdare.games.data.DareProofManager
 import com.spinbottle.truthdare.games.data.FavoritesManager
 import com.spinbottle.truthdare.games.data.PromptHistoryManager
+import com.spinbottle.truthdare.games.data.PromptsDatabase
 import com.spinbottle.truthdare.games.data.SettingsHolder
 import com.spinbottle.truthdare.games.data.ThemeManager
 import com.spinbottle.truthdare.games.ui.theme.*
@@ -123,7 +124,7 @@ fun SettingsScreen(
                 SettingsOptionRow(
                     emoji = "🎯",
                     title = "Default Difficulty",
-                    options = listOf("Easy", "Medium", "Hard", "Spicy"),
+                    options = listOf("Easy", "Medium", "Hard"),
                     selectedOption = defaultDifficulty,
                     onOptionSelected = {
                         defaultDifficulty = it
@@ -292,6 +293,7 @@ fun SettingsScreen(
                 
                 // Prompt Statistics
                 val seenCount = remember { PromptHistoryManager.getSeenCount() }
+                val builtInPromptCount = remember { PromptsDatabase.getUniquePromptCount() }
                 val favoritesCount = remember { FavoritesManager.getFavoriteCount() }
                 
                 Box(
@@ -314,7 +316,7 @@ fun SettingsScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text("Prompts Seen", fontSize = 14.sp, color = TextMuted)
-                            Text("$seenCount / 1200+", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = AccentTeal)
+                            Text("$seenCount / $builtInPromptCount", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = AccentTeal)
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(

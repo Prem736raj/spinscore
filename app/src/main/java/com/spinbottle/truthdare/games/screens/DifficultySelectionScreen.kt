@@ -26,6 +26,7 @@ import com.spinbottle.truthdare.games.data.Difficulty
 import com.spinbottle.truthdare.games.data.FavoritesManager
 import com.spinbottle.truthdare.games.data.GameSessionHolder
 import com.spinbottle.truthdare.games.data.PinManager
+import com.spinbottle.truthdare.games.data.SettingsHolder
 import com.spinbottle.truthdare.games.data.PromptPack
 import com.spinbottle.truthdare.games.data.PromptPackManager
 import com.spinbottle.truthdare.games.ui.components.DifficultyCard
@@ -43,7 +44,14 @@ fun DifficultySelectionScreen(
     val pinManager = remember { PinManager(context) }
     val scope = rememberCoroutineScope()
     
-    var selectedDifficulty by remember { mutableStateOf<Difficulty?>(null) }
+    var selectedDifficulty by remember {
+        mutableStateOf(
+            Difficulty.values().firstOrNull { difficulty ->
+                !difficulty.requiresPin &&
+                    difficulty.displayName == SettingsHolder.defaultDifficulty
+            } ?: Difficulty.MEDIUM
+        )
+    }
     var showPinScreen by remember { mutableStateOf(false) }
     var pendingDifficulty by remember { mutableStateOf<Difficulty?>(null) }
     
@@ -90,7 +98,7 @@ fun DifficultySelectionScreen(
             },
             onSuccess = {
                 showPinScreen = false
-                selectedDifficulty = pendingDifficulty
+                pendingDifficulty?.let { selectedDifficulty = it }
                 pendingDifficulty = null
             }
         )
@@ -114,9 +122,8 @@ fun DifficultySelectionScreen(
                 if (isPinSet) {
                     showPinScreen = true
                 } else {
-                    // No PIN set, can't access Extreme without adult verification
-                    // They should set up PIN in mode selection first
-                    selectedDifficulty = null
+                    // Keep the previous safe selection when no adult PIN exists.
+                    pendingDifficulty = null
                 }
             }
         } else {
@@ -219,7 +226,6 @@ fun DifficultySelectionScreen(
                 
                 var isTournament by remember { mutableStateOf(GameSessionHolder.isTournament) }
                 var targetScore by remember { mutableIntStateOf(GameSessionHolder.targetScore) }
-                var eliminationMode by remember { mutableStateOf(GameSessionHolder.eliminationMode) }
                 
                 // Tournament toggle
                 Card(
@@ -318,43 +324,7 @@ fun DifficultySelectionScreen(
                             Text("+", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = TextWhite)
                         }
                     }
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    // Elimination mode toggle
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(GlassWhite.copy(alpha = 0.05f))
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "⚔️ Elimination Mode",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = TextWhite
-                            )
-                            Text(
-                                text = "Lowest scorer each round is out!",
-                                fontSize = 12.sp,
-                                color = TextMuted
-                            )
-                        }
-                        Switch(
-                            checked = eliminationMode,
-                            onCheckedChange = { 
-                                eliminationMode = it
-                                GameSessionHolder.eliminationMode = it
-                            },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = DareOrange,
-                                checkedTrackColor = DareOrange.copy(alpha = 0.5f)
-                            )
-                        )
-                    }
+
                 }
                 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -398,7 +368,12 @@ fun DifficultySelectionScreen(
                 
                 // Start Game button
                 Button(
-                    onClick = onStartGame,
+                    onClick = {
+                        selectedDifficulty?.let { difficulty ->
+                            GameSessionHolder.difficulty = difficulty
+                            onStartGame()
+                        }
+                    },
                     enabled = selectedDifficulty != null,
                     modifier = Modifier
                         .fillMaxWidth()

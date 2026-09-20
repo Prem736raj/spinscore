@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -30,10 +31,12 @@ fun ModeCard(
     mode: GameMode,
     isSelected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    disabledReason: String? = null
 ) {
     val scale by animateFloatAsState(
-        targetValue = if (isSelected) 1.02f else 1f,
+        targetValue = if (isSelected && enabled) 1.02f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessLow
@@ -46,6 +49,7 @@ fun ModeCard(
     
     Box(
         modifier = modifier
+            .alpha(if (enabled) 1f else 0.55f)
             .scale(scale)
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
@@ -58,7 +62,7 @@ fun ModeCard(
                 )
             )
             .border(borderWidth, borderColor, RoundedCornerShape(20.dp))
-            .clickable { onClick() }
+            .clickable(enabled = enabled) { onClick() }
             .padding(16.dp)
     ) {
         Row(
@@ -141,6 +145,15 @@ fun ModeCard(
                     fontSize = 14.sp,
                     color = TextMuted
                 )
+                if (!enabled && disabledReason != null) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = disabledReason,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = AccentOrange
+                    )
+                }
             }
             
             // Selection indicator

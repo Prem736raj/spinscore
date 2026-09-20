@@ -22,6 +22,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -30,6 +34,7 @@ import androidx.core.content.FileProvider
 import com.spinbottle.truthdare.games.audio.rememberSoundManager
 import com.spinbottle.truthdare.games.audio.rememberHapticManager
 import com.spinbottle.truthdare.games.data.*
+import com.spinbottle.truthdare.games.game.SpinSelection
 import com.spinbottle.truthdare.games.ui.components.PlayerCircle
 import com.spinbottle.truthdare.games.ui.components.SpinningBottle
 import com.spinbottle.truthdare.games.ui.components.InGameMenuSheet
@@ -69,38 +74,49 @@ fun GameScreen(
     var pendingProofDare by remember { mutableStateOf("") }
     var pendingProofPlayer by remember { mutableStateOf<Player?>(null) }
     var pendingPhotoUri by remember { mutableStateOf<Uri?>(null) }
-    var shouldLaunchCamera by remember { mutableStateOf(false) }
+    var pendingPhotoFileName by remember { mutableStateOf<String?>(null) }
     
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
-        if (success && pendingPhotoUri != null && pendingProofPlayer != null) {
+        val fileName = pendingPhotoFileName
+        if (success && fileName != null && pendingProofPlayer != null) {
             DareProofManager.addProof(
                 DareProof(
                     dareText = pendingProofDare,
                     playerName = pendingProofPlayer!!.name,
                     playerEmoji = pendingProofPlayer!!.avatar,
-                    photoUri = pendingPhotoUri.toString()
+                    fileName = fileName
                 )
             )
+        } else {
+            DareProofManager.deleteUntrackedFile(fileName)
         }
         pendingProofDare = ""
         pendingProofPlayer = null
-        shouldLaunchCamera = false
+        pendingPhotoUri = null
+        pendingPhotoFileName = null
     }
     
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
-        if (granted && pendingPhotoUri != null) {
-            cameraLauncher.launch(pendingPhotoUri!!)
-        }
-    }
-    
-    // Launch camera when permission granted
-    LaunchedEffect(shouldLaunchCamera) {
-        if (shouldLaunchCamera && pendingPhotoUri != null) {
-            cameraLauncher.launch(pendingPhotoUri!!)
+        val uri = pendingPhotoUri
+        if (granted && uri != null) {
+            runCatching { cameraLauncher.launch(uri) }
+                .onFailure {
+                    DareProofManager.deleteUntrackedFile(pendingPhotoFileName)
+                    pendingPhotoUri = null
+                    pendingPhotoFileName = null
+                    pendingProofDare = ""
+                    pendingProofPlayer = null
+                }
+        } else {
+            DareProofManager.deleteUntrackedFile(pendingPhotoFileName)
+            pendingPhotoUri = null
+            pendingPhotoFileName = null
+            pendingProofDare = ""
+            pendingProofPlayer = null
         }
     }
     
@@ -129,6 +145,13 @@ fun GameScreen(
         mutableStateOf(
             GameState(
                 players = players,
+                currentSpinnerIndex = if (players.isNotEmpty()) {
+                    GameSessionHolder.totalRounds % players.size
+                } else {
+                    0
+                },
+                round = GameSessionHolder.totalRounds + 1,
+                gameMode = GameSessionHolder.gameMode,
                 difficulty = GameSessionHolder.difficulty
             )
         )
@@ -137,17 +160,7 @@ fun GameScreen(
     var currentPrompt by remember { mutableStateOf("") }
     var showTruthDareChoice by remember { mutableStateOf(false) }
     
-    // Calculate which player the bottle points to based on rotation
-    fun getSelectedPlayerIndex(rotation: Float): Int {
-        val playerCount = gameState.players.size
-        val anglePerPlayer = 360f / playerCount
-        // Normalize rotation and calculate index
-        val normalizedRotation = ((rotation % 360f) + 360f) % 360f
-        // The bottle points up (0 degrees), but we rotated players to start from top
-        val selectedIndex = ((normalizedRotation / anglePerPlayer).toInt()) % playerCount
-        return selectedIndex
-    }
-    
+
     // Exit confirmation dialog
     if (showExitDialog) {
         AlertDialog(
@@ -361,25 +374,34 @@ fun GameScreen(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(20.dp))
                                 .background(GlassWhite.copy(alpha = 0.1f))
-                                .clickable {
-                                    hapticManager.lightTap()
-                                    // Create photo file and launch camera
-                                    try {
-                                        val photoFile = DareProofManager.createProofFile(context)
-                                        val uri = FileProvider.getUriForFile(
-                                            context,
-                                            "${context.packageName}.fileprovider",
-                                            photoFile
-                                        )
-                                        pendingPhotoUri = uri
-                                        pendingProofDare = currentPrompt.removePrefix("✨ ").removePrefix("❤️ ")
-                                        pendingProofPlayer = selectedPlayer
-                                        // Request camera permission
-                                        permissionLauncher.launch(android.Manifest.permission.CAMERA)
-                                    } catch (e: Exception) {
-                                        // Camera not available
-                                    }
+                                .heightIn(min = 48.dp)
+                                .semantics {
+                                    role = Role.Button
+                                    contentDescription = "Take dare proof photo"
                                 }
+                                .clickable(
+                                    role = Role.Button,
+                                    onClick = {
+                                        hapticManager.lightTap()
+                                        // Create photo file and launch camera
+                                        try {
+                                            val photoFile = DareProofManager.createProofFile(context)
+                                            val uri = FileProvider.getUriForFile(
+                                                context,
+                                                "${context.packageName}.fileprovider",
+                                                photoFile
+                                            )
+                                            pendingPhotoUri = uri
+                                            pendingPhotoFileName = photoFile.name
+                                            pendingProofDare = currentPrompt.removePrefix("✨ ").removePrefix("❤️ ")
+                                            pendingProofPlayer = selectedPlayer
+                                            // Request camera permission
+                                            permissionLauncher.launch(android.Manifest.permission.CAMERA)
+                                        } catch (e: Exception) {
+                                            // Camera not available
+                                        }
+                                    }
+                                )
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                         ) {
                             Text("📸", fontSize = 20.sp)
@@ -509,7 +531,7 @@ fun GameScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Exit",
+                        contentDescription = "Exit game",
                         tint = TextWhite
                     )
                 }
@@ -602,7 +624,10 @@ fun GameScreen(
                 // Spinning bottle in center
                 SpinningBottle(
                     onSpinComplete = { rotation ->
-                        val selectedIndex = getSelectedPlayerIndex(rotation)
+                        val selectedIndex = SpinSelection.playerIndexForRotation(
+                            rotation = rotation,
+                            playerCount = gameState.players.size
+                        )
                         gameState = gameState.copy(
                             selectedPlayerIndex = selectedIndex
                         )

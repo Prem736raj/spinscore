@@ -44,17 +44,54 @@ fun CouplesGameScreen(
     val soundManager = rememberSoundManager()
     val hapticManager = rememberHapticManager()
     
-    val players = remember { GameSessionHolder.players.take(2) } // Max 2 players
-    val intimacyLevel = remember { mutableIntStateOf(3) } // 1-5
+    val players = remember { GameSessionHolder.players }
+    val intimacyLevel = remember {
+        mutableIntStateOf(GameSessionHolder.couplesIntimacyLevel)
+    }
     
-    var currentPlayerIndex by remember { mutableIntStateOf(0) }
+    var currentPlayerIndex by remember {
+        mutableIntStateOf(
+            GameSessionHolder.currentPlayerIndex
+                .coerceIn(0, (players.size - 1).coerceAtLeast(0))
+        )
+    }
     var currentPrompt by remember { mutableStateOf("") }
     var promptType by remember { mutableStateOf<PromptType?>(null) }
-    var round by remember { mutableIntStateOf(1) }
+    var round by remember { mutableIntStateOf(GameSessionHolder.totalRounds + 1) }
     var showExitDialog by remember { mutableStateOf(false) }
     var showPrompt by remember { mutableStateOf(false) }
     var showIntimacySelector by remember { mutableStateOf(true) }
     
+    
+    if (players.size != 2) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(RomanticDark)
+                .statusBarsPadding()
+                .navigationBarsPadding(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Couples Mode requires exactly 2 players.",
+                    color = TextWhite,
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = onBack) {
+                    Text("Back to setup")
+                }
+            }
+        }
+        return
+    }
+
     // Floating hearts animation
     val hearts = remember { 
         List(15) { 
@@ -141,7 +178,7 @@ fun CouplesGameScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Exit",
+                        contentDescription = "Exit game",
                         tint = TextWhite
                     )
                 }
@@ -226,7 +263,11 @@ fun CouplesGameScreen(
                     // Slider
                     Slider(
                         value = intimacyLevel.intValue.toFloat(),
-                        onValueChange = { intimacyLevel.intValue = it.toInt() },
+                        onValueChange = {
+                            val level = it.toInt().coerceIn(1, 5)
+                            intimacyLevel.intValue = level
+                            GameSessionHolder.couplesIntimacyLevel = level
+                        },
                         valueRange = 1f..5f,
                         steps = 3,
                         colors = SliderDefaults.colors(
@@ -314,7 +355,10 @@ fun CouplesGameScreen(
                     
                     // Truth/Dare buttons - romantic style
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(20.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Button(
                             onClick = {
@@ -324,7 +368,9 @@ fun CouplesGameScreen(
                                 promptType = PromptType.TRUTH
                                 showPrompt = true
                             },
-                            modifier = Modifier.size(130.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .heightIn(min = 120.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = RomanticPink.copy(alpha = 0.8f)
                             ),
@@ -344,7 +390,9 @@ fun CouplesGameScreen(
                                 promptType = PromptType.DARE
                                 showPrompt = true
                             },
-                            modifier = Modifier.size(130.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .heightIn(min = 120.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = RomanticRose
                             ),
@@ -414,6 +462,7 @@ fun CouplesGameScreen(
                                     GameSessionHolder.incrementRound()
                                     
                                     currentPlayerIndex = (currentPlayerIndex + 1) % players.size
+                                    GameSessionHolder.currentPlayerIndex = currentPlayerIndex
                                     round++
                                     showPrompt = false
                                     currentPrompt = ""
