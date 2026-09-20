@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <full-backup-content>
-    <include domain="sharedpref" path="."/>
-    <include domain="database" path="."/>
+    <!-- Restore user-created prompts, favorites, profiles and ordinary preferences. -->
+    <include domain="sharedpref" path="." />
+    <!-- Files are intentionally not included: dare photos, their metadata and PIN DataStore stay local. -->
 </full-backup-content>
