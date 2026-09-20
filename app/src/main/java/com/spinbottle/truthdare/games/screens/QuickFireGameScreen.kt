@@ -1,5 +1,6 @@
 package com.spinbottle.truthdare.games.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -20,6 +21,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.spinbottle.truthdare.games.audio.rememberHapticManager
 import com.spinbottle.truthdare.games.audio.rememberSoundManager
 import com.spinbottle.truthdare.games.data.*
@@ -38,16 +42,42 @@ fun QuickFireGameScreen(
     val players = remember { GameSessionHolder.players }
     val difficulty = remember { GameSessionHolder.difficulty }
     
-    var currentPlayerIndex by remember { mutableIntStateOf(0) }
+    var currentPlayerIndex by remember {
+        mutableIntStateOf(
+            if (players.isNotEmpty()) GameSessionHolder.totalRounds % players.size else 0
+        )
+    }
     var currentPrompt by remember { mutableStateOf("") }
     var promptType by remember { mutableStateOf<PromptType?>(null) }
-    var round by remember { mutableIntStateOf(1) }
+    var round by remember { mutableIntStateOf(GameSessionHolder.totalRounds + 1) }
     var showExitDialog by remember { mutableStateOf(false) }
     
     // Timer state
     var timeRemaining by remember { mutableIntStateOf(30) }
     var isTimerRunning by remember { mutableStateOf(false) }
     var showChoosePrompt by remember { mutableStateOf(true) }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var isResumed by remember {
+        mutableStateOf(lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> isResumed = true
+                Lifecycle.Event.ON_PAUSE,
+                Lifecycle.Event.ON_STOP -> isResumed = false
+                else -> Unit
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    BackHandler {
+        showExitDialog = true
+    }
     
     // Start game timer
     LaunchedEffect(Unit) {
@@ -57,10 +87,11 @@ fun QuickFireGameScreen(
     }
     
     // Countdown timer
-    LaunchedEffect(isTimerRunning, currentPlayerIndex) {
-        if (isTimerRunning) {
-            while (timeRemaining > 0) {
+    LaunchedEffect(isTimerRunning, currentPlayerIndex, isResumed) {
+        if (isTimerRunning && isResumed) {
+            while (timeRemaining > 0 && isResumed) {
                 delay(1000)
+                if (!isResumed || !isTimerRunning) break
                 timeRemaining--
                 
                 // Urgent haptic at 10, 5, 3, 2, 1 seconds
