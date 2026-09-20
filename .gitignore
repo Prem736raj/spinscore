@@ -15,3 +15,9 @@
 local.properties
 build/
 app/build/
+
+# IDE-local metadata
+/.idea/
+
+# Local build diagnostics
+build_log.txt
