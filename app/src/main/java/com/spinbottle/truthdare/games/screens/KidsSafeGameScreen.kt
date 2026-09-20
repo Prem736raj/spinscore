@@ -17,7 +17,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -26,7 +25,6 @@ import com.spinbottle.truthdare.games.audio.rememberHapticManager
 import com.spinbottle.truthdare.games.audio.rememberSoundManager
 import com.spinbottle.truthdare.games.data.*
 import com.spinbottle.truthdare.games.ui.theme.*
-import kotlinx.coroutines.delay
 import kotlin.random.Random
 
 // Kids mode colors - bright and cheerful
@@ -46,9 +44,6 @@ fun KidsSafeGameScreen(
 ) {
     val soundManager = rememberSoundManager()
     val hapticManager = rememberHapticManager()
-    val context = LocalContext.current
-    val pinManager = remember { PinManager(context) }
-    
     val players = remember { GameSessionHolder.players }
     
     var currentPlayerIndex by remember {
@@ -99,10 +94,11 @@ fun KidsSafeGameScreen(
         PinScreen(
             mode = PinScreenMode.VERIFY,
             onBack = { showPinScreen = false },
-            onSuccess = { 
+            onSuccess = {
                 showPinScreen = false
                 showExitConfirm = true
-            }
+            },
+            allowSetupWhenMissing = false
         )
         return
     }
@@ -184,7 +180,7 @@ fun KidsSafeGameScreen(
                 IconButton(
                     onClick = { showPinScreen = true },
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(48.dp)
                         .clip(CircleShape)
                         .background(Color.White.copy(alpha = 0.1f))
                 ) {
