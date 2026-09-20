@@ -58,12 +58,24 @@ jobs:
       - name: Bundle release
         run: ./gradlew bundleRelease
 
+      - name: Assemble Android test APK
+        run: ./gradlew assembleDebugAndroidTest
+
       - name: Upload release bundle
         uses: actions/upload-artifact@v4
         with:
           name: spin-bottle-release-aab
           path: app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: app/build/reports/tests/testDebugUnitTest/
+          if-no-files-found: ignore
           retention-days: 7
 
       - name: Upload lint reports
