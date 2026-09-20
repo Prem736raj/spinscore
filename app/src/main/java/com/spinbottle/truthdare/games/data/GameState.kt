@@ -114,78 +114,105 @@ object GamePrompts {
         )
     )
     
+    private fun <T> avoidSeen(items: List<T>, textOf: (T) -> String): List<T> {
+        if (!PromptHistoryManager.avoidRecentlyPlayed) return items
+        val unseen = items.filterNot { PromptHistoryManager.hasBeenSeen(textOf(it)) }
+        // Once this exact pool is exhausted, allow reuse instead of looping forever.
+        return unseen.ifEmpty { items }
+    }
+
+    private fun enabledCategories(): Set<PromptCategory> =
+        PromptPackManager.getEnabledCategories().ifEmpty { setOf(PromptCategory.FRIENDS) }
+
+    private fun selectDatabasePrompt(
+        type: PromptItemType,
+        difficulty: Difficulty
+    ): PromptItem? {
+        val categories = enabledCategories()
+        val all = when (type) {
+            PromptItemType.TRUTH -> PromptsDatabase.getTruths(difficulty = difficulty)
+            PromptItemType.DARE -> PromptsDatabase.getDares(difficulty = difficulty)
+        }.filter { it.category in categories }
+
+        val eligible = avoidSeen(all) { it.text }
+            .sortedBy { it.playCount }
+
+        if (eligible.isEmpty()) return null
+
+        // Prefer prompts with lower play counts while retaining randomness.
+        val poolSize = (eligible.size / 2).coerceAtLeast(1)
+        return eligible.take(poolSize).random().also { it.playCount++ }
+    }
+
     fun getRandomTruth(difficulty: Difficulty): String {
-        // If FAVORITES mode, only use favorite prompts
         if (difficulty == Difficulty.FAVORITES) {
-            val fav = FavoritesManager.getRandomFavoriteTruth()
-            if (fav != null) {
-                PromptHistoryManager.markAsSeen(fav.text)
-                return "❤️ ${fav.text}"
+            val favorites = avoidSeen(FavoritesManager.getFavoriteTruths()) { it.text }
+            val selected = favorites.randomOrNull()
+            if (selected != null) {
+                PromptHistoryManager.markAsSeen(selected.text)
+                return "❤️ ${selected.text}"
             }
             return "No favorite truths yet! Tap ❤️ during gameplay to save some."
         }
-        
-        // If CUSTOM mode, only use custom prompts
+
         if (difficulty == Difficulty.CUSTOM) {
-            val customPrompt = CustomPromptsManager.getRandomCustomTruth(null, null)
-            if (customPrompt != null) {
-                PromptHistoryManager.markAsSeen(customPrompt.text)
-                return "✨ ${customPrompt.text}"
+            val custom = avoidSeen(
+                CustomPromptsManager.getEnabledPrompts().filter { it.type == PromptItemType.TRUTH }
+            ) { it.text }
+            val selected = custom.randomOrNull()
+            if (selected != null) {
+                PromptHistoryManager.markAsSeen(selected.text)
+                return "✨ ${selected.text}"
             }
             return "No custom truths yet! Create some in My Prompts."
         }
-        
-        // Try to get from database first
-        val dbPrompt = PromptsDatabase.getRandomTruth(
-            category = PromptCategory.FRIENDS,
-            difficulty = difficulty
-        )
+
+        val dbPrompt = selectDatabasePrompt(PromptItemType.TRUTH, difficulty)
         if (dbPrompt != null) {
             PromptHistoryManager.markAsSeen(dbPrompt.text)
             return dbPrompt.text
         }
-        // Fallback to hardcoded
-        val prompts = truths[difficulty] ?: truths[Difficulty.MEDIUM]!!
+
+        val prompts = avoidSeen(truths[difficulty] ?: truths[Difficulty.MEDIUM]!!) { it }
         val selected = prompts.random()
         PromptHistoryManager.markAsSeen(selected)
         return selected
     }
-    
+
     fun getRandomDare(difficulty: Difficulty): String {
-        // If FAVORITES mode, only use favorite prompts
         if (difficulty == Difficulty.FAVORITES) {
-            val fav = FavoritesManager.getRandomFavoriteDare()
-            if (fav != null) {
-                PromptHistoryManager.markAsSeen(fav.text)
-                return "❤️ ${fav.text}"
+            val favorites = avoidSeen(FavoritesManager.getFavoriteDares()) { it.text }
+            val selected = favorites.randomOrNull()
+            if (selected != null) {
+                PromptHistoryManager.markAsSeen(selected.text)
+                return "❤️ ${selected.text}"
             }
             return "No favorite dares yet! Tap ❤️ during gameplay to save some."
         }
-        
-        // If CUSTOM mode, only use custom prompts
+
         if (difficulty == Difficulty.CUSTOM) {
-            val customPrompt = CustomPromptsManager.getRandomCustomDare(null, null)
-            if (customPrompt != null) {
-                PromptHistoryManager.markAsSeen(customPrompt.text)
-                return "✨ ${customPrompt.text}"
+            val custom = avoidSeen(
+                CustomPromptsManager.getEnabledPrompts().filter { it.type == PromptItemType.DARE }
+            ) { it.text }
+            val selected = custom.randomOrNull()
+            if (selected != null) {
+                PromptHistoryManager.markAsSeen(selected.text)
+                return "✨ ${selected.text}"
             }
             return "No custom dares yet! Create some in My Prompts."
         }
-        
-        // Try to get from database first
-        val dbPrompt = PromptsDatabase.getRandomDare(
-            category = PromptCategory.FRIENDS,
-            difficulty = difficulty
-        )
+
+        val dbPrompt = selectDatabasePrompt(PromptItemType.DARE, difficulty)
         if (dbPrompt != null) {
             PromptHistoryManager.markAsSeen(dbPrompt.text)
             return dbPrompt.text
         }
-        // Fallback to hardcoded
-        val prompts = dares[difficulty] ?: dares[Difficulty.MEDIUM]!!
+
+        val prompts = avoidSeen(dares[difficulty] ?: dares[Difficulty.MEDIUM]!!) { it }
         val selected = prompts.random()
         PromptHistoryManager.markAsSeen(selected)
         return selected
     }
+
 }
 
