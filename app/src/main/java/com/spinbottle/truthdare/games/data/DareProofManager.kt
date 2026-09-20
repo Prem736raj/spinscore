@@ -29,6 +29,8 @@ data class DareProof(
  */
 object DareProofManager {
     private const val METADATA_FILE = "dare_proofs_metadata.json"
+    private const val PREFS_NAME = "dare_proof_migration_prefs"
+    private const val KEY_LEGACY_IMPORT_COMPLETE = "legacy_import_complete"
 
     private val gson = Gson()
     private val proofs = mutableListOf<DareProof>()
@@ -134,8 +136,20 @@ object DareProofManager {
             }
         }
 
-        // Preserve legacy photos created before metadata persistence existed.
+        // One-time legacy import and stale orphan cleanup
+        importLegacyProofFilesOnce(context)
+        cleanupOrphanFiles(context)
+
+        proofs.sortBy { it.timestamp }
+        persistMetadata(context)
+    }
+
+    private fun importLegacyProofFilesOnce(context: Context) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        if (prefs.getBoolean(KEY_LEGACY_IMPORT_COMPLETE, false)) return
+
         val knownFiles = proofs.mapTo(mutableSetOf()) { it.fileName }
+
         getProofDirectory(context)
             .listFiles()
             ?.filter { it.isFile && it.extension.equals("jpg", ignoreCase = true) }
@@ -152,8 +166,35 @@ object DareProofManager {
                 )
             }
 
-        proofs.sortBy { it.timestamp }
-        persistMetadata(context)
+        prefs.edit().putBoolean(KEY_LEGACY_IMPORT_COMPLETE, true).apply()
+    }
+
+    private fun cleanupOrphanFiles(context: Context) {
+        val tracked = proofs.mapTo(mutableSetOf()) { it.fileName }
+        val cutoff = System.currentTimeMillis() - 24L * 60L * 60L * 1000L
+
+        getProofDirectory(context)
+            .listFiles()
+            ?.filter { it.isFile }
+            ?.filter { it.name !in tracked && it.lastModified() < cutoff }
+            ?.forEach { it.delete() }
+    }
+
+    fun deleteAllProofs(): Boolean {
+        val context = requireContext()
+        val directory = getProofDirectory(context)
+
+        val filesDeleted = directory
+            .listFiles()
+            .orEmpty()
+            .all { !it.exists() || it.delete() }
+
+        if (filesDeleted) {
+            proofs.clear()
+            persistMetadata(context)
+        }
+
+        return filesDeleted
     }
 
     private fun persistMetadata(context: Context) {
