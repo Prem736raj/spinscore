@@ -641,7 +641,7 @@ object PromptsDatabase {
             "Clean up after someone for a week (joke promise)",
             "Let the group invent a fictional account you would follow and explain why",
             "Voice your inner monologue for 2 minutes",
-            "Let someone go through your camera for 2 minutes",
+            "Describe a fictional photo album for 30 seconds without opening any device",
             "Say 'I love you' dramatically to an imaginary character",
             "Name a celebrity or fictional character whose public profile you find entertaining",
             "Let the group suggest a playful fictional nickname and use one you approve for one round"
