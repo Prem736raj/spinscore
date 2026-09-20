@@ -36,11 +36,12 @@ enum class PinScreenMode {
 fun PinScreen(
     mode: PinScreenMode,
     onBack: () -> Unit,
-    onSuccess: () -> Unit
+    onSuccess: () -> Unit,
+    allowSetupWhenMissing: Boolean = true,
+    markAgeVerifiedOnSetup: Boolean = true
 ) {
     val context = LocalContext.current
     val pinManager = remember { PinManager(context) }
-    val scope = rememberCoroutineScope()
     
     var pin by remember { mutableStateOf("") }
     var firstPin by remember { mutableStateOf("") }
@@ -73,7 +74,9 @@ fun PinScreen(
                 PinScreenMode.CONFIRM -> {
                     if (pin == firstPin) {
                         pinManager.setPin(pin)
-                        pinManager.setAgeVerified(true)
+                        if (markAgeVerifiedOnSetup) {
+                            pinManager.setAgeVerified(true)
+                        }
                         onSuccess()
                     } else {
                         errorMessage = "PINs don't match. Try again."
@@ -98,7 +101,12 @@ fun PinScreen(
                             pin = ""
                         }
                         is PinResult.NO_PIN_SET -> {
-                            currentMode = PinScreenMode.SETUP
+                            pin = ""
+                            if (allowSetupWhenMissing) {
+                                currentMode = PinScreenMode.SETUP
+                            } else {
+                                errorMessage = "No parent PIN is configured for this action."
+                            }
                         }
                     }
                 }
