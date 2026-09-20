@@ -66,6 +66,19 @@ fun SpinBottleNavHost(
                     GameSessionHolder.isKidsModeFlow = false
                     navController.navigate(Screen.GameSetup.route)
                 },
+                onResumeGame = {
+                    if (GameSessionHolder.hasRestorableSession()) {
+                        navController.navigate(
+                            SessionResumeRouter.routeFor(GameSessionHolder.gameMode)
+                        ) {
+                            launchSingleTop = true
+                        }
+                    } else {
+                        GameSessionHolder.clear()
+                        navController.navigate(Screen.GameSetup.route)
+                    }
+                },
+                canResumeGame = GameSessionHolder.hasRestorableSession(),
                 onKidsMode = {
                     GameSessionHolder.clear()
                     if (isPinSet) {

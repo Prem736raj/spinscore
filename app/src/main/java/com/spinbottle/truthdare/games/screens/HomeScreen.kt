@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.*
@@ -22,6 +23,8 @@ import kotlinx.coroutines.delay
 @Composable
 fun HomeScreen(
     onStartGame: () -> Unit,
+    onResumeGame: () -> Unit,
+    canResumeGame: Boolean,
     onKidsMode: () -> Unit,
     onHowToPlay: () -> Unit,
     onSettings: () -> Unit,
@@ -125,6 +128,15 @@ fun HomeScreen(
                         ),
                         onClick = onStartGame
                     )
+                    
+                    if (canResumeGame) {
+                        GlassButton(
+                            text = "Resume Game",
+                            icon = Icons.Default.Refresh,
+                            iconTint = AccentTeal,
+                            onClick = onResumeGame
+                        )
+                    }
                     
                     // Kids Mode Button - Glassmorphic with friendly colors
                     GlassButton(
