@@ -130,6 +130,11 @@ object PlayerProfileManager {
     fun getRecentPlayers(limit: Int = 10): List<PlayerProfile> {
         return getAllProfiles().take(limit)
     }
+
+    fun clearProfiles() {
+        profiles.clear()
+        prefs?.edit()?.remove(KEY_PROFILES)?.apply()
+    }
 }
 
 /**

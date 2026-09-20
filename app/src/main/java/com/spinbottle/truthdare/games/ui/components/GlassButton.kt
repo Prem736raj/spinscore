@@ -26,7 +26,7 @@ import com.spinbottle.truthdare.games.ui.theme.*
 @Composable
 fun GlassButton(
     text: String,
-    icon: ImageVector,
+    icon: ImageVector? = null,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     iconTint: Color = AccentPurple,
@@ -74,13 +74,15 @@ fun GlassButton(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = iconTint,
-                modifier = Modifier.size(26.dp)
-            )
-            Spacer(modifier = Modifier.width(12.dp))
+            if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier.size(26.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+            }
             Text(
                 text = text,
                 fontSize = 18.sp,

@@ -13,6 +13,8 @@ sealed class Screen(val route: String) {
     object Game : Screen("game")
     object QuickFireGame : Screen("quick_fire_game")
     object CouplesGame : Screen("couples_game")
+    object CouplesComfortSetup : Screen("couples_comfort_setup")
+    object CouplesPackSelection : Screen("couples_pack_selection")
     object KidsSafeGame : Screen("kids_safe_game")
     object GameCompletion : Screen("game_completion")
     object Settings : Screen("settings")

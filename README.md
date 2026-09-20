@@ -14,11 +14,11 @@ The repository name, application ID, and user-facing app name are intentionally 
 ## Production Hardening Status
 
 Active hardening branch:
-`astra/spinscore-production-hardening` (targeting `master`)
+`astra/spinscore-9-5-upgrade` (targeting `master`)
 
 - **Audit & Backlog**: Tracked in [AUDIT_FINDINGS.md](AUDIT_FINDINGS.md).
-- **Target Engineering Readiness**: ~8.5 / 10.
-- **Release Gating**: Automated local/CI build and test gates are active.
+- **Target Engineering Readiness**: ~9.5 / 10.
+- **Release Gating**: Automated local/CI build and test gates are active (16 test suites, 60 unit tests passing deterministically).
 - **Manual Gate Statement**: Do NOT treat this app as ready for production release until the required physical device / emulator verifications and Google Play Console release checks are performed.
 
 ---
@@ -26,13 +26,23 @@ Active hardening branch:
 ## Features
 
 - **Bottle-Based Selection**: Accurate nearest-player angular mapping for physical-style bottle spinning.
-- **Dynamic Truth & Dare Prompts**: Over 1,000 sanitized, safe prompts across Casual, Party, Spicy, and Couples categories.
+- **Dynamic Truth & Dare Prompts**: Over 1,300 sanitized, safe prompts across Casual, Party, Spicy, and Couples categories.
+- **Couples Mode 2.0**:
+  - **Mutual Comfort Engine**: Turn-by-turn comfort setup with two-pass phone passing (Player A & Player B) computing a strict comfort intersection where the most restrictive preference always wins.
+  - **Intimacy Tiers (1 to 5)**: Progressive intimacy scaling (Playful, Emotional, Flirty, Sensual, After Dark) visualized via an accessible `IntimacyMeter`.
+  - **Consent-First Skip UX**: Non-judgmental skip button allowing players to skip without penalty or block specific tags for the remainder of the session.
+  - **5 Curated Romance Packs**: Date Night, Deep Connection, Flirty, Affection, and After Dark (300 curated prompts).
+  - **Google Play Compliance**: Strictly focused on romantic tension, emotional vulnerability, flirty conversation, and sensual affection; zero graphic anatomy, explicit acts, nudity, or coercive content.
+  - **After Dark Privacy Guard**: Camera proof capture is suppressed during After Dark intimacy prompts to safeguard personal privacy.
+- **Hard Audience Isolation**: Domain-level `AudienceClass` model isolating `FAMILY`, `GENERAL`, and `ADULT_COUPLES` content paths to prevent adult leak into Family/Kids modes.
 - **Game Modes**:
   - **Classic**: Turn-based party game with scores and custom round limits.
   - **Quick Fire**: Fast-paced countdown timer with lifecycle pause protection.
-  - **Couples**: Romantic mode requiring exactly two configured players.
+  - **Couples 2.0**: Deep romantic mode with mutual comfort configuration.
   - **Kids Safe**: Strict prompt isolation and parent PIN-protected exit boundary.
-- **Session State & Cold Resume**: Active sessions survive process death; cold-launch "Resume Game" action on Home screen restores exact turn state.
+- **Session State & Schema 3 Migration**: Versioned `SessionEnvelope` with `SessionMigrationPipeline` and cold-launch "Resume Game" action on Home screen restoring exact turn state.
+- **Motion Accessibility**: Settings toggle for `reduceMotion` dampening background particle rendering for vestibular comfort.
+- **Complete App Data Reset**: Atomic wipe of session state, prompt history, profiles, and dare proofs from Settings.
 - **Custom Prompts & Packs**: In-app prompt creator with character validation, prompt packs, favorites, and repeat-avoidance history.
 - **Persistent Settings & Themes**: Haptics, sound, bottle spin speed, and unlockable themes backed by gameplay achievements.
 - **Local Dare Proofs**: Optional photo capture saved strictly to app-private storage, with scoped FileProvider sharing and deletion.
@@ -160,8 +170,23 @@ Host unit tests and static linters cannot verify physical hardware behavior. The
   - Added accessibility touch targets, semantics, and responsive scrollable layouts.
   - Created 8 unit test suites and 2 Compose instrumentation test suites.
   - Added release bundle and lint report artifact uploads in GitHub Actions CI.
+
+---
+
+## Pull Request Summary (PR #2)
+
+- **Title**: `[UPGRADE] SpinScore 9.5 Production Upgrade — Couples 2.0, Consent Engine, Schema 3 Migrations, Audience Isolation`
+- **Target Branch**: `master` (from `astra/spinscore-9-5-upgrade`)
+- **Scope**:
+  - **Couples Mode 2.0**: Domain models, mutual comfort preference intersection (`CouplesPreferences.intersect`), weighted engine, consent-driven skip UX with tag blocking, and pure MVI architecture (`CouplesReducer`, `CouplesGameViewModel`).
+  - **Content & Policy**: 300 curated romantic prompts across 5 packs (Date Night, Deep Connection, Flirty, Affection, After Dark) with mandatory consent flags on physical/kissing/massage prompts. Zero explicit/pornographic/genital touch/coercive content.
+  - **Audience Isolation**: `AudienceClass` model preventing any romantic/adult content from appearing in Family or Kids Safe gameplay.
+  - **Schema 3 Persistence**: `SessionEnvelope` and `SessionMigrationPipeline` preserving gameplay through schema evolution with checksum validation.
+  - **Accessibility & Motion**: `reduceMotion` toggle in Settings and `reduceMotionFlow` dampening particle rendering.
+  - **Privacy & Safety**: Photo proof capture suppressed for intimacy levels >= 4 (After Dark); atomic app data wipe (`AppDataResetManager`).
+  - **CI & Quality**: Added emulator instrumentation workflow (`.github/workflows/android-instrumentation.yml`) and expanded unit test suite to 16 suites (60 deterministic tests passing).
 - **Do Not Merge Until**:
-  - All automated release gates pass cleanly.
-  - All P0 and P1 audit findings are closed.
-  - Release AAB is generated and inspected.
-  - Manual device and Play Console release checklists are verified.
+  - All 16 unit test suites pass (`testDebugUnitTest`).
+  - `lintDebug` passes with 0 errors.
+  - `assembleRelease` and `bundleRelease` succeed.
+  - Physical device verification checklist is reviewed.

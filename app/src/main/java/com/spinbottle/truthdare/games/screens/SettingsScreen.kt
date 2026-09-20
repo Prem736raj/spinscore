@@ -46,6 +46,7 @@ fun SettingsScreen(
 ) {
     var soundEnabled by remember { mutableStateOf(SettingsHolder.soundEnabled) }
     var hapticEnabled by remember { mutableStateOf(SettingsHolder.hapticEnabled) }
+    var reduceMotion by remember { mutableStateOf(SettingsHolder.reduceMotion) }
     
     Box(
         modifier = Modifier
@@ -166,6 +167,24 @@ fun SettingsScreen(
                         SettingsHolder.hapticEnabled = it
                     },
                     accentColor = AccentOrange
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // ===== ACCESSIBILITY =====
+                SettingsSectionHeader("♿ Accessibility")
+                
+                // Reduce Motion Toggle
+                SettingsToggleRow(
+                    icon = Icons.Default.Vibration,
+                    title = "Reduce Motion",
+                    description = "Minimizes background particles and floating motion",
+                    isChecked = reduceMotion,
+                    onCheckedChange = { 
+                        reduceMotion = it
+                        SettingsHolder.reduceMotion = it
+                    },
+                    accentColor = AccentTeal
                 )
                 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -385,6 +404,44 @@ fun SettingsScreen(
                         },
                         dismissButton = {
                             OutlinedButton(onClick = { showResetDialog = false }) {
+                                Text("Cancel", color = TextWhite)
+                            }
+                        },
+                        containerColor = DarkCard
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Reset All Data Button
+                val context = androidx.compose.ui.platform.LocalContext.current
+                var showResetAllDialog by remember { mutableStateOf(false) }
+                OutlinedButton(
+                    onClick = { showResetAllDialog = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("⚠️ Reset All App Data", color = SkipRed)
+                }
+
+                if (showResetAllDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showResetAllDialog = false },
+                        title = { Text("Reset All App Data?", color = TextWhite) },
+                        text = { Text("This will permanently clear all prompt history, player profiles, active sessions, and local dare proof photos. Google Play purchases remain safe.", color = TextMuted) },
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    com.spinbottle.truthdare.games.data.AppDataResetManager.resetAllData(context)
+                                    showResetAllDialog = false
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = SkipRed)
+                            ) {
+                                Text("Reset Everything")
+                            }
+                        },
+                        dismissButton = {
+                            OutlinedButton(onClick = { showResetAllDialog = false }) {
                                 Text("Cancel", color = TextWhite)
                             }
                         },
