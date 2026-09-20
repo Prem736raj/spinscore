@@ -237,7 +237,10 @@ fun KidsSafeGameScreen(
                     
                     // Big colorful buttons
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(24.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         // Truth button - big and blue
                         Button(
@@ -249,7 +252,8 @@ fun KidsSafeGameScreen(
                                 showPrompt = true
                             },
                             modifier = Modifier
-                                .size(140.dp)
+                                .weight(1f)
+                                .heightIn(min = 120.dp)
                                 .scale(bounce),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = KidsBlue
@@ -276,7 +280,8 @@ fun KidsSafeGameScreen(
                                 showPrompt = true
                             },
                             modifier = Modifier
-                                .size(140.dp)
+                                .weight(1f)
+                                .heightIn(min = 120.dp)
                                 .scale(bounce),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = KidsOrange

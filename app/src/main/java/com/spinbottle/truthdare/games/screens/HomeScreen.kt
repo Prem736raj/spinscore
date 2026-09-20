@@ -3,6 +3,8 @@ package com.spinbottle.truthdare.games.screens
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.Edit
@@ -80,17 +82,19 @@ fun HomeScreen(
             }
         }
         
+        val scrollState = rememberScrollState()
+        
         // Main content
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp)
                 .statusBarsPadding()
-                .navigationBarsPadding(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+                .navigationBarsPadding()
+                .verticalScroll(scrollState)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             
             // Animated Logo Section
             AnimatedVisibility(
@@ -104,7 +108,7 @@ fun HomeScreen(
                 GlowingLogo()
             }
             
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(32.dp))
             
             // Main Action Buttons
             AnimatedVisibility(

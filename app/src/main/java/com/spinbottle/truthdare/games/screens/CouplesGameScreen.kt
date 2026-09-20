@@ -355,7 +355,10 @@ fun CouplesGameScreen(
                     
                     // Truth/Dare buttons - romantic style
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(20.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Button(
                             onClick = {
@@ -365,7 +368,9 @@ fun CouplesGameScreen(
                                 promptType = PromptType.TRUTH
                                 showPrompt = true
                             },
-                            modifier = Modifier.size(130.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .heightIn(min = 120.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = RomanticPink.copy(alpha = 0.8f)
                             ),
@@ -385,7 +390,9 @@ fun CouplesGameScreen(
                                 promptType = PromptType.DARE
                                 showPrompt = true
                             },
-                            modifier = Modifier.size(130.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .heightIn(min = 120.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = RomanticRose
                             ),

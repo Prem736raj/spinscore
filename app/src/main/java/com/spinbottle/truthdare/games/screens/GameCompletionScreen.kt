@@ -291,7 +291,7 @@ fun GameCompletionScreen(
                     onClick = onGoHome,
                     modifier = Modifier
                         .weight(1f)
-                        .height(52.dp),
+                        .heightIn(min = 52.dp),
                     shape = RoundedCornerShape(14.dp)
                 ) {
                     Icon(
@@ -309,7 +309,7 @@ fun GameCompletionScreen(
                     onClick = onPlayAgain,
                     modifier = Modifier
                         .weight(1f)
-                        .height(52.dp),
+                        .heightIn(min = 52.dp),
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = AccentGreen
