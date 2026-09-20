@@ -15,8 +15,8 @@ import kotlin.random.Random
 import com.spinbottle.truthdare.games.ui.theme.*
 
 data class Particle(
-    var x: Float,
-    var y: Float,
+    val x: Float,
+    val y: Float,
     val radius: Float,
     val color: Color,
     val speedX: Float,
@@ -92,14 +92,17 @@ fun ParticleBackground(
         
         // Update and draw particles
         particles.forEachIndexed { index, particle ->
-            val newX = (particle.x + particle.speedX + animationProgress * 0.01f) % 1f
-            val newY = (particle.y + particle.speedY) % 1f
+            // Derive position from animation time rather than mutating model state
+            // inside the draw pass. The 600 factor approximates 10 seconds at
+            // 60 Hz while remaining refresh-rate independent.
+            val timeUnits = animationProgress * 600f
+            val rawX = particle.x + particle.speedX * timeUnits
+            val rawY = particle.y + particle.speedY * timeUnits
+            val normalizedX = ((rawX % 1f) + 1f) % 1f
+            val normalizedY = ((rawY % 1f) + 1f) % 1f
             
-            particle.x = if (newX < 0) newX + 1f else newX
-            particle.y = if (newY < 0) newY + 1f else newY
-            
-            val actualX = particle.x * canvasWidth
-            val actualY = particle.y * canvasHeight
+            val actualX = normalizedX * canvasWidth
+            val actualY = normalizedY * canvasHeight
             
             // Twinkle effect
             val twinkle = (sin(animationProgress * 6.28f + index) + 1f) / 2f
