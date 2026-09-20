@@ -32,6 +32,7 @@ import com.spinbottle.truthdare.games.data.Player
 import com.spinbottle.truthdare.games.data.PlayerProfileManager
 import com.spinbottle.truthdare.games.ui.components.ConfettiAnimation
 import com.spinbottle.truthdare.games.ui.theme.*
+import kotlinx.coroutines.delay
 
 @Composable
 fun GameCompletionScreen(
@@ -70,6 +71,13 @@ fun GameCompletionScreen(
         }
     }
     
+    LaunchedEffect(showConfetti) {
+        if (showConfetti) {
+            delay(4_000)
+            showConfetti = false
+        }
+    }
+
     // Sort players by score (truths + dares completed)
     val rankedPlayers = remember(players) {
         players.sortedByDescending { it.truthsCompleted + it.daresCompleted }
