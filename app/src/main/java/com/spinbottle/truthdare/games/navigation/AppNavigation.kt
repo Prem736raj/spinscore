@@ -86,7 +86,14 @@ fun SpinBottleNavHost(
         composable(Screen.GameSetup.route) {
             GameSetupScreen(
                 onBack = { navController.popBackStack() },
-                onNext = { navController.navigate(Screen.ModeSelection.route) }
+                onNext = {
+                    if (GameSessionHolder.isKidsModeFlow) {
+                        GameSessionHolder.gameMode = GameMode.KIDS_SAFE
+                        navController.navigate(Screen.KidsSafeGame.route)
+                    } else {
+                        navController.navigate(Screen.ModeSelection.route)
+                    }
+                }
             )
         }
         
