@@ -81,36 +81,36 @@ object GamePrompts {
             "Let someone draw on your hand"
         ),
         Difficulty.MEDIUM to listOf(
-            "Let the group look through your camera roll for 30 seconds",
-            "Send a text to your crush (we pick the message)",
+            "Choose a photo you are comfortable showing and tell the story behind it",
+            "Make up a silly message to an imaginary crush and read it aloud",
             "Do an embarrassing TikTok dance",
             "Speak only in whispers for the next 3 rounds",
-            "Let someone post something on your social media",
-            "Call a random contact and sing happy birthday",
+            "Pretend to record a dramatic social-media intro without posting it",
+            "Sing happy birthday dramatically to the group",
             "Exchange an item of clothing with someone",
             "Let the group give you a new hairstyle"
         ),
         Difficulty.HARD to listOf(
-            "Let someone go through your messages for 1 minute",
-            "Post an embarrassing selfie on social media",
+            "Share a harmless message you choose, or make one up",
+            "Take a silly selfie for yourself; keep or delete it as you prefer",
             "Do your best impression of someone here",
-            "Reveal your screen time for today",
-            "Show the last 5 people you texted",
-            "Let someone write a status update for you",
+            "Guess your screen time; checking it is optional and private",
+            "Name five people or characters you would invite to a dream party",
+            "Let the group invent a fake status you do not have to post",
             "Act out an embarrassing moment from your life",
-            "Call someone and tell them you love them"
+            "Tell someone in the room one thing you appreciate about them"
         ),
         Difficulty.EXTREME to listOf(
-            "Read aloud the last text you sent",
-            "Show your most embarrassing photo",
-            "Let someone send a message from your phone",
-            "Do an embarrassing dare of the group's choice",
-            "Reveal your browser history"
+            "Read a harmless sentence from any screen you choose",
+            "Describe a funny photo without showing it",
+            "Let someone dictate a fictional message; do not send it",
+            "Do a silly group-approved dare that avoids pain, privacy, spending, substances, and third parties",
+            "Name a harmless topic you have been curious about lately"
         ),
         Difficulty.MIXED to listOf(
             "Do something silly for 30 seconds",
-            "Share something from your gallery",
-            "Perform a dare chosen by the group"
+            "Describe or show one photo only if you are comfortable",
+            "Do a harmless group-chosen dare that respects privacy and physical comfort"
         )
     )
     
