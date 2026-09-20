@@ -141,6 +141,13 @@ fun GameScreen(
         mutableStateOf(
             GameState(
                 players = players,
+                currentSpinnerIndex = if (players.isNotEmpty()) {
+                    GameSessionHolder.totalRounds % players.size
+                } else {
+                    0
+                },
+                round = GameSessionHolder.totalRounds + 1,
+                gameMode = GameSessionHolder.gameMode,
                 difficulty = GameSessionHolder.difficulty
             )
         )

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <data-extraction-rules>
     <cloud-backup>
-        <!-- Back up ordinary app preferences only. -->
         <include domain="sharedpref" path="." />
+        <exclude domain="sharedpref" path="session_state_prefs.xml" />
     </cloud-backup>
     <device-transfer>
-        <!-- Device-to-device transfer follows the same privacy boundary. -->
         <include domain="sharedpref" path="." />
+        <exclude domain="sharedpref" path="session_state_prefs.xml" />
     </device-transfer>
 </data-extraction-rules>

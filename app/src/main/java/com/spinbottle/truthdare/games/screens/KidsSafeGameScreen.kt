@@ -51,10 +51,14 @@ fun KidsSafeGameScreen(
     
     val players = remember { GameSessionHolder.players }
     
-    var currentPlayerIndex by remember { mutableIntStateOf(0) }
+    var currentPlayerIndex by remember {
+        mutableIntStateOf(
+            if (players.isNotEmpty()) GameSessionHolder.totalRounds % players.size else 0
+        )
+    }
     var currentPrompt by remember { mutableStateOf("") }
     var promptType by remember { mutableStateOf<PromptType?>(null) }
-    var round by remember { mutableIntStateOf(1) }
+    var round by remember { mutableIntStateOf(GameSessionHolder.totalRounds + 1) }
     var showPrompt by remember { mutableStateOf(false) }
     var showPinScreen by remember { mutableStateOf(false) }
     var showExitConfirm by remember { mutableStateOf(false) }

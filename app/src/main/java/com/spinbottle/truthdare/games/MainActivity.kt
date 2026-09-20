@@ -12,6 +12,7 @@ import com.spinbottle.truthdare.games.billing.BillingManager
 import com.spinbottle.truthdare.games.data.CustomPromptsManager
 import com.spinbottle.truthdare.games.data.DareProofManager
 import com.spinbottle.truthdare.games.data.FavoritesManager
+import com.spinbottle.truthdare.games.data.GameSessionHolder
 import com.spinbottle.truthdare.games.data.PlayerProfileManager
 import com.spinbottle.truthdare.games.data.PromptHistoryManager
 import com.spinbottle.truthdare.games.data.PromptPackManager
@@ -24,6 +25,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        GameSessionHolder.init(this)
         CustomPromptsManager.init(this)
         DareProofManager.init(this)
         PlayerProfileManager.init(this)
