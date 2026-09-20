@@ -25,7 +25,7 @@ class PinManager(private val context: Context) {
         const val LOCKOUT_DURATION_MS = 5 * 60 * 1000L // 5 minutes
 
         fun isValidPin(pin: String): Boolean =
-            pin.length == 4 && pin.all(Char::isDigit)
+            pin.length == 4 && pin.all { it in '0'..'9' }
     }
     
     /**
