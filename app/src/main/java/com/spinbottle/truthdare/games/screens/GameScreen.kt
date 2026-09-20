@@ -22,6 +22,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -370,26 +374,34 @@ fun GameScreen(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(20.dp))
                                 .background(GlassWhite.copy(alpha = 0.1f))
-                                .clickable {
-                                    hapticManager.lightTap()
-                                    // Create photo file and launch camera
-                                    try {
-                                        val photoFile = DareProofManager.createProofFile(context)
-                                        val uri = FileProvider.getUriForFile(
-                                            context,
-                                            "${context.packageName}.fileprovider",
-                                            photoFile
-                                        )
-                                        pendingPhotoUri = uri
-                                        pendingPhotoFileName = photoFile.name
-                                        pendingProofDare = currentPrompt.removePrefix("✨ ").removePrefix("❤️ ")
-                                        pendingProofPlayer = selectedPlayer
-                                        // Request camera permission
-                                        permissionLauncher.launch(android.Manifest.permission.CAMERA)
-                                    } catch (e: Exception) {
-                                        // Camera not available
-                                    }
+                                .heightIn(min = 48.dp)
+                                .semantics {
+                                    role = Role.Button
+                                    contentDescription = "Take dare proof photo"
                                 }
+                                .clickable(
+                                    role = Role.Button,
+                                    onClick = {
+                                        hapticManager.lightTap()
+                                        // Create photo file and launch camera
+                                        try {
+                                            val photoFile = DareProofManager.createProofFile(context)
+                                            val uri = FileProvider.getUriForFile(
+                                                context,
+                                                "${context.packageName}.fileprovider",
+                                                photoFile
+                                            )
+                                            pendingPhotoUri = uri
+                                            pendingPhotoFileName = photoFile.name
+                                            pendingProofDare = currentPrompt.removePrefix("✨ ").removePrefix("❤️ ")
+                                            pendingProofPlayer = selectedPlayer
+                                            // Request camera permission
+                                            permissionLauncher.launch(android.Manifest.permission.CAMERA)
+                                        } catch (e: Exception) {
+                                            // Camera not available
+                                        }
+                                    }
+                                )
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                         ) {
                             Text("📸", fontSize = 20.sp)
@@ -519,7 +531,7 @@ fun GameScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Exit",
+                        contentDescription = "Exit game",
                         tint = TextWhite
                     )
                 }

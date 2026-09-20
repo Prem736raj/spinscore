@@ -196,7 +196,7 @@ fun QuickFireGameScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Exit",
+                        contentDescription = "Exit game",
                         tint = TextWhite
                     )
                 }

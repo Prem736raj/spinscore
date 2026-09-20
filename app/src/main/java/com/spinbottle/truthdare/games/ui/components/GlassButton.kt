@@ -13,6 +13,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -35,6 +39,7 @@ fun GlassButton(
         modifier = modifier
             .then(if (fullWidth) Modifier.fillMaxWidth() else Modifier)
             .height(height)
+            .heightIn(min = 48.dp)
             .clip(shape)
             .background(
                 brush = Brush.verticalGradient(
@@ -54,7 +59,14 @@ fun GlassButton(
                 ),
                 shape = shape
             )
-            .clickable { onClick() }
+            .semantics {
+                role = Role.Button
+                contentDescription = text
+            }
+            .clickable(
+                role = Role.Button,
+                onClick = onClick
+            )
             .padding(horizontal = 20.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -91,6 +103,8 @@ fun GlassIconButton(
     
     Column(
         modifier = modifier
+            .heightIn(min = 56.dp)
+            .widthIn(min = 64.dp)
             .clip(shape)
             .background(
                 brush = Brush.verticalGradient(
@@ -105,7 +119,11 @@ fun GlassIconButton(
                 color = GlassBorder.copy(alpha = 0.3f),
                 shape = shape
             )
-            .clickable { onClick() }
+            .semantics {
+                role = Role.Button
+                contentDescription = text
+            }
+            .clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 20.dp, vertical = 14.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

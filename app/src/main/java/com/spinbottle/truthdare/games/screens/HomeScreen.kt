@@ -72,7 +72,7 @@ fun HomeScreen(
                 ) {
                     androidx.compose.material3.Icon(
                         imageVector = Icons.Default.Star,
-                        contentDescription = "Premium",
+                        contentDescription = "Open Premium",
                         tint = AccentOrange,
                         modifier = Modifier.size(36.dp)
                     )
