@@ -18,7 +18,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
 
     steps:
       - name: Check out source
@@ -42,8 +42,17 @@ jobs:
       - name: Unit tests
         run: ./gradlew testDebugUnitTest
 
-      - name: Lint
+      - name: Debug lint
         run: ./gradlew lintDebug
 
       - name: Assemble debug
         run: ./gradlew assembleDebug
+
+      - name: Release lint
+        run: ./gradlew lintRelease
+
+      - name: Assemble release
+        run: ./gradlew assembleRelease
+
+      - name: Bundle release
+        run: ./gradlew bundleRelease
