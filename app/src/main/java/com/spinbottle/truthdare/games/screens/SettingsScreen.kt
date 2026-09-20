@@ -292,6 +292,7 @@ fun SettingsScreen(
                 
                 // Prompt Statistics
                 val seenCount = remember { PromptHistoryManager.getSeenCount() }
+                val builtInPromptCount = remember { PromptsDatabase.getPromptCount() }
                 val favoritesCount = remember { FavoritesManager.getFavoriteCount() }
                 
                 Box(
@@ -314,7 +315,7 @@ fun SettingsScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text("Prompts Seen", fontSize = 14.sp, color = TextMuted)
-                            Text("$seenCount / 1200+", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = AccentTeal)
+                            Text("$seenCount / $builtInPromptCount", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = AccentTeal)
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(
