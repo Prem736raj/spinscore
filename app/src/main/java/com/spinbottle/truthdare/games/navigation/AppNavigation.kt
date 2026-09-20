@@ -61,12 +61,13 @@ fun SpinBottleNavHost(
         composable(Screen.Home.route) {
             val isPremium by billingManager.isPremium.collectAsState()
             HomeScreen(
-                onStartGame = { 
-                    // Normal game flow - reset Kids Mode flag
-                    com.spinbottle.truthdare.games.data.GameSessionHolder.isKidsModeFlow = false
-                    navController.navigate(Screen.GameSetup.route) 
+                onStartGame = {
+                    GameSessionHolder.clear()
+                    GameSessionHolder.isKidsModeFlow = false
+                    navController.navigate(Screen.GameSetup.route)
                 },
                 onKidsMode = {
+                    GameSessionHolder.clear()
                     if (isPinSet) {
                         GameSessionHolder.isKidsModeFlow = true
                         GameSessionHolder.gameMode = GameMode.KIDS_SAFE
@@ -172,7 +173,8 @@ fun SpinBottleNavHost(
         
         composable(Screen.KidsSafeGame.route) {
             KidsSafeGameScreen(
-                onExitWithPin = { 
+                onExitWithPin = {
+                    GameSessionHolder.clear()
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.KidsSafeGame.route) { inclusive = true }
                     }
@@ -190,11 +192,13 @@ fun SpinBottleNavHost(
                 players = com.spinbottle.truthdare.games.data.GameSessionHolder.players,
                 totalRounds = com.spinbottle.truthdare.games.data.GameSessionHolder.totalRounds,
                 onPlayAgain = {
+                    GameSessionHolder.clear()
                     navController.navigate(Screen.GameSetup.route) {
                         popUpTo(Screen.Home.route)
                     }
                 },
                 onGoHome = {
+                    GameSessionHolder.clear()
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Home.route) { inclusive = true }
                     }
@@ -262,7 +266,8 @@ fun SpinBottleNavHost(
                     navController.navigate(Screen.GameSetup.route) {
                         popUpTo(Screen.PinSetup.route) { inclusive = true }
                     }
-                }
+                },
+                markAgeVerifiedOnSetup = false
             )
         }
 
