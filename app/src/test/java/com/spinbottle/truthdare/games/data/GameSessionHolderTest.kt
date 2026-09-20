@@ -67,6 +67,16 @@ class GameSessionHolderTest {
     }
 
     @Test
+    fun completionCanOnlyBeRecordedOncePerSession() {
+        assertTrue(GameSessionHolder.markCompletionRecorded())
+        assertFalse(GameSessionHolder.markCompletionRecorded())
+
+        GameSessionHolder.startGame()
+
+        assertTrue(GameSessionHolder.markCompletionRecorded())
+    }
+
+    @Test
     fun clearRemovesActiveGameState() {
         GameSessionHolder.gameMode = GameMode.QUICK_FIRE
         GameSessionHolder.difficulty = Difficulty.HARD
@@ -88,6 +98,7 @@ class GameSessionHolderTest {
         assertEquals(0L, GameSessionHolder.gameStartTime)
         assertFalse(GameSessionHolder.isKidsModeFlow)
         assertFalse(GameSessionHolder.isTournament)
+        assertFalse(GameSessionHolder.completionRecorded)
         assertEquals(50, GameSessionHolder.targetScore)
         assertNull(GameSessionHolder.targetRounds)
         assertFalse(GameSessionHolder.eliminationMode)
