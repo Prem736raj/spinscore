@@ -454,7 +454,7 @@ fun getKidsSafePrompt(type: PromptType): String {
             "Do 5 jumping jacks!",
             "Make a silly face and hold it for 10 seconds!",
             "Tell a joke!",
-            "Spin around 3 times!",
+            "Pretend to move in slow motion for 10 seconds!",
             "Act like your favorite animal!",
             "Give everyone a high five!",
             "Do your best superhero pose!",
