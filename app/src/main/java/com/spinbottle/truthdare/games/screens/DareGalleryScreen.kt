@@ -39,6 +39,7 @@ fun DareGalleryScreen(
     val context = LocalContext.current
     var proofs by remember { mutableStateOf(DareProofManager.getProofs()) }
     var showDeleteDialog by remember { mutableStateOf<DareProof?>(null) }
+    var showDeleteAllDialog by remember { mutableStateOf(false) }
     var showFullImage by remember { mutableStateOf<String?>(null) }
     
     // Full image viewer dialog
@@ -98,6 +99,33 @@ fun DareGalleryScreen(
             containerColor = DarkCard
         )
     }
+
+    // Delete all confirmation dialog
+    if (showDeleteAllDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteAllDialog = false },
+            title = { Text("Delete All Proofs?", fontWeight = FontWeight.Bold, color = TextWhite) },
+            text = { Text("This will permanently delete all ${proofs.size} dare proofs. This cannot be undone.", color = TextMuted) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        DareProofManager.deleteAllProofs()
+                        proofs = DareProofManager.getProofs()
+                        showDeleteAllDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = SkipRed)
+                ) {
+                    Text("Delete All")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteAllDialog = false }) {
+                    Text("Cancel", color = TextMuted)
+                }
+            },
+            containerColor = DarkCard
+        )
+    }
     
     Box(
         modifier = Modifier
@@ -146,6 +174,21 @@ fun DareGalleryScreen(
                         fontSize = 14.sp,
                         color = AccentTeal
                     )
+                }
+                if (proofs.isNotEmpty()) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    IconButton(
+                        onClick = { showDeleteAllDialog = true },
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(GlassWhite)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete All",
+                            tint = SkipRed
+                        )
+                    }
                 }
             }
             

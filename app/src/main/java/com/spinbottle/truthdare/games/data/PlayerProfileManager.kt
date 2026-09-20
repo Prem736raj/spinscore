@@ -65,21 +65,21 @@ object PlayerProfileManager {
      * Check if a player with this name has played before
      */
     fun isReturningPlayer(name: String): Boolean {
-        return profiles.containsKey(name.lowercase().trim())
+        return profiles.containsKey(PlayerKeyNormalizer.normalizePlayerKey(name))
     }
     
     /**
      * Get profile for a player, or null if new player
      */
     fun getProfile(name: String): PlayerProfile? {
-        return profiles[name.lowercase().trim()]
+        return profiles[PlayerKeyNormalizer.normalizePlayerKey(name)]
     }
     
     /**
      * Get or create profile for a player
      */
     fun getOrCreateProfile(name: String, defaultAvatar: String): PlayerProfile {
-        val key = name.lowercase().trim()
+        val key = PlayerKeyNormalizer.normalizePlayerKey(name)
         return profiles.getOrPut(key) {
             PlayerProfile(name = name.trim(), avatar = defaultAvatar)
         }.also {
@@ -93,7 +93,7 @@ object PlayerProfileManager {
      * Update player's avatar
      */
     fun updateAvatar(name: String, avatar: String) {
-        val key = name.lowercase().trim()
+        val key = PlayerKeyNormalizer.normalizePlayerKey(name)
         profiles[key]?.let {
             profiles[key] = it.copy(avatar = avatar)
             saveProfiles()
@@ -104,7 +104,7 @@ object PlayerProfileManager {
      * Record a completed game for a player
      */
     fun recordGamePlayed(name: String, truthsAnswered: Int, daresCompleted: Int, skips: Int) {
-        val key = name.lowercase().trim()
+        val key = PlayerKeyNormalizer.normalizePlayerKey(name)
         profiles[key]?.let { profile ->
             profiles[key] = profile.copy(
                 gamesPlayed = profile.gamesPlayed + 1,

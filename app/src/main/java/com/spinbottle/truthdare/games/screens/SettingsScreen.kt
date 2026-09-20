@@ -23,6 +23,8 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -506,6 +508,9 @@ fun SettingsSliderRow(
             Slider(
                 value = value,
                 onValueChange = onValueChange,
+                modifier = Modifier.semantics {
+                    stateDescription = "$title: $description, ${(value * 100).toInt()}%"
+                },
                 colors = SliderDefaults.colors(
                     thumbColor = accentColor,
                     activeTrackColor = accentColor,
@@ -621,6 +626,9 @@ fun SettingsToggleRow(
             Switch(
                 checked = isChecked,
                 onCheckedChange = onCheckedChange,
+                modifier = Modifier.semantics {
+                    stateDescription = if (isChecked) "$title on" else "$title off"
+                },
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = accentColor,
                     checkedTrackColor = accentColor.copy(alpha = 0.3f),

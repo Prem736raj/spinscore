@@ -2,10 +2,10 @@ package com.spinbottle.truthdare.games.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
-/**
- * Persistent local gameplay preferences.
- */
 object SettingsHolder {
     private const val PREFS_NAME = "game_settings"
     private const val KEY_SOUND = "sound_enabled"
@@ -16,31 +16,36 @@ object SettingsHolder {
     private var prefs: SharedPreferences? = null
     private var loading = false
 
+    private val _soundEnabledFlow = MutableStateFlow(true)
+    val soundEnabledFlow: StateFlow<Boolean> = _soundEnabledFlow.asStateFlow()
+
+    private val _hapticEnabledFlow = MutableStateFlow(true)
+    val hapticEnabledFlow: StateFlow<Boolean> = _hapticEnabledFlow.asStateFlow()
+
+    private val _spinSpeedFlow = MutableStateFlow(0.5f)
+    val spinSpeedFlow: StateFlow<Float> = _spinSpeedFlow.asStateFlow()
+
     var soundEnabled: Boolean = true
         set(value) {
             field = value
+            _soundEnabledFlow.value = value
             persist(KEY_SOUND, value)
         }
 
     var hapticEnabled: Boolean = true
         set(value) {
             field = value
+            _hapticEnabledFlow.value = value
             persist(KEY_HAPTIC, value)
         }
 
-    /**
-     * 0 = slow, 0.5 = normal, 1 = fast.
-     */
     var spinSpeed: Float = 0.5f
         set(value) {
             field = value.coerceIn(0f, 1f)
+            _spinSpeedFlow.value = field
             persist(KEY_SPIN_SPEED, field)
         }
 
-    /**
-     * Only non-restricted defaults are persisted. Extreme remains an explicit,
-     * PIN-gated choice in the difficulty screen.
-     */
     var defaultDifficulty: String = Difficulty.MEDIUM.displayName
         set(value) {
             val normalized = when (value) {
@@ -60,8 +65,14 @@ object SettingsHolder {
         loading = true
         val storage = prefs
         soundEnabled = storage?.getBoolean(KEY_SOUND, true) ?: true
+        _soundEnabledFlow.value = soundEnabled
+        
         hapticEnabled = storage?.getBoolean(KEY_HAPTIC, true) ?: true
+        _hapticEnabledFlow.value = hapticEnabled
+        
         spinSpeed = storage?.getFloat(KEY_SPIN_SPEED, 0.5f) ?: 0.5f
+        _spinSpeedFlow.value = spinSpeed
+        
         defaultDifficulty = storage?.getString(
             KEY_DEFAULT_DIFFICULTY,
             Difficulty.MEDIUM.displayName
@@ -70,7 +81,6 @@ object SettingsHolder {
     }
 
     fun spinDurationMillis(): Int {
-        // Keep the animation deliberate even at the fastest setting.
         val slowMs = 5_000
         val fastMs = 2_500
         return (slowMs - (slowMs - fastMs) * spinSpeed).toInt()
