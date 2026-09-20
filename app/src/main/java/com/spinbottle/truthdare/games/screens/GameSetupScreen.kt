@@ -77,6 +77,11 @@ fun GameSetupScreen(
     
     fun addPlayer() {
         val name = playerName.trim()
+        val duplicateName = players.any { it.name.equals(name, ignoreCase = true) }
+        if (duplicateName) {
+            welcomeBackMessage = "That player name is already in this game."
+            return
+        }
         if (name.isNotEmpty() && canAddMore) {
             // Check if returning player
             val existingProfile = PlayerProfileManager.getProfile(name)
