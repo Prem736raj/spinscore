@@ -123,7 +123,7 @@ fun SettingsScreen(
                 SettingsOptionRow(
                     emoji = "🎯",
                     title = "Default Difficulty",
-                    options = listOf("Easy", "Medium", "Hard", "Spicy"),
+                    options = listOf("Easy", "Medium", "Hard"),
                     selectedOption = defaultDifficulty,
                     onOptionSelected = {
                         defaultDifficulty = it

@@ -26,6 +26,7 @@ import com.spinbottle.truthdare.games.data.Difficulty
 import com.spinbottle.truthdare.games.data.FavoritesManager
 import com.spinbottle.truthdare.games.data.GameSessionHolder
 import com.spinbottle.truthdare.games.data.PinManager
+import com.spinbottle.truthdare.games.data.SettingsHolder
 import com.spinbottle.truthdare.games.data.PromptPack
 import com.spinbottle.truthdare.games.data.PromptPackManager
 import com.spinbottle.truthdare.games.ui.components.DifficultyCard
@@ -43,7 +44,14 @@ fun DifficultySelectionScreen(
     val pinManager = remember { PinManager(context) }
     val scope = rememberCoroutineScope()
     
-    var selectedDifficulty by remember { mutableStateOf<Difficulty?>(null) }
+    var selectedDifficulty by remember {
+        mutableStateOf(
+            Difficulty.values().firstOrNull { difficulty ->
+                !difficulty.requiresPin &&
+                    difficulty.displayName == SettingsHolder.defaultDifficulty
+            } ?: Difficulty.MEDIUM
+        )
+    }
     var showPinScreen by remember { mutableStateOf(false) }
     var pendingDifficulty by remember { mutableStateOf<Difficulty?>(null) }
     

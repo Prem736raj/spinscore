@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.spinbottle.truthdare.games.audio.SoundManager
 import com.spinbottle.truthdare.games.data.BottleDesign
+import com.spinbottle.truthdare.games.data.SettingsHolder
 import com.spinbottle.truthdare.games.data.ThemeManager
 import com.spinbottle.truthdare.games.ui.theme.*
 import kotlinx.coroutines.launch
@@ -74,7 +75,7 @@ fun SpinningBottle(
             animatedRotation.animateTo(
                 targetValue = targetRotation,
                 animationSpec = tween(
-                    durationMillis = 4000,
+                    durationMillis = SettingsHolder.spinDurationMillis(),
                     easing = CubicBezierEasing(0.2f, 0.8f, 0.2f, 1.0f)
                 )
             )
