@@ -226,7 +226,6 @@ fun DifficultySelectionScreen(
                 
                 var isTournament by remember { mutableStateOf(GameSessionHolder.isTournament) }
                 var targetScore by remember { mutableIntStateOf(GameSessionHolder.targetScore) }
-                var eliminationMode by remember { mutableStateOf(GameSessionHolder.eliminationMode) }
                 
                 // Tournament toggle
                 Card(
@@ -325,43 +324,7 @@ fun DifficultySelectionScreen(
                             Text("+", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = TextWhite)
                         }
                     }
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    // Elimination mode toggle
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(GlassWhite.copy(alpha = 0.05f))
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "⚔️ Elimination Mode",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = TextWhite
-                            )
-                            Text(
-                                text = "Lowest scorer each round is out!",
-                                fontSize = 12.sp,
-                                color = TextMuted
-                            )
-                        }
-                        Switch(
-                            checked = eliminationMode,
-                            onCheckedChange = { 
-                                eliminationMode = it
-                                GameSessionHolder.eliminationMode = it
-                            },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = DareOrange,
-                                checkedTrackColor = DareOrange.copy(alpha = 0.5f)
-                            )
-                        )
-                    }
+
                 }
                 
                 Spacer(modifier = Modifier.height(8.dp))
