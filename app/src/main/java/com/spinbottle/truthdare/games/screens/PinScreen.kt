@@ -188,7 +188,7 @@ fun PinScreen(
             // Subtitle
             Text(
                 text = when (currentMode) {
-                    PinScreenMode.SETUP -> "Set a 4-digit PIN to access adult content"
+                    PinScreenMode.SETUP -> "Set a 4-digit PIN for restricted content and parent controls"
                     PinScreenMode.CONFIRM -> "Enter your PIN again to confirm"
                     PinScreenMode.VERIFY -> "Enter your PIN to continue"
                 },
