@@ -7,7 +7,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.lifecycleScope
 import com.spinbottle.truthdare.games.billing.BillingManager
 import com.spinbottle.truthdare.games.data.CustomPromptsManager
 import com.spinbottle.truthdare.games.data.DareProofManager
@@ -36,7 +35,7 @@ class MainActivity : ComponentActivity() {
         ThemeManager.init(this)
         PromptPackManager.init(this)
 
-        billingManager = BillingManager(this, lifecycleScope)
+        billingManager = BillingManager(this)
 
         enableEdgeToEdge()
         setContent {

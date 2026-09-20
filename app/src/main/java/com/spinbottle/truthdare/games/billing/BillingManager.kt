@@ -14,7 +14,6 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,8 +31,7 @@ data class BillingUiState(
 )
 
 class BillingManager(
-    context: Context,
-    private val coroutineScope: CoroutineScope
+    context: Context
 ) : PurchasesUpdatedListener {
 
     companion object {
