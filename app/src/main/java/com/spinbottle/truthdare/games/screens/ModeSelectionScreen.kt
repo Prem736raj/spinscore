@@ -157,11 +157,13 @@ fun ModeSelectionScreen(
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // In Kids Mode flow, hide modes that require PIN (Couples, Party)
-                val isKidsModeFlow = com.spinbottle.truthdare.games.data.GameSessionHolder.isKidsModeFlow
-                
+                // Defense in depth: a Kids Safe flow may only select the dedicated
+                // Kids Safe mode. Do not rely on PIN flags or UI hiding alone.
+                val isKidsModeFlow =
+                    com.spinbottle.truthdare.games.data.GameSessionHolder.isKidsModeFlow
+
                 val availableModes = if (isKidsModeFlow) {
-                    GameMode.values().filter { !it.requiresPin }
+                    listOf(GameMode.KIDS_SAFE)
                 } else {
                     GameMode.values().toList()
                 }
