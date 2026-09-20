@@ -23,6 +23,9 @@ class PinManager(private val context: Context) {
         
         const val MAX_ATTEMPTS = 3
         const val LOCKOUT_DURATION_MS = 5 * 60 * 1000L // 5 minutes
+
+        fun isValidPin(pin: String): Boolean =
+            pin.length == 4 && pin.all(Char::isDigit)
     }
     
     /**
@@ -66,6 +69,7 @@ class PinManager(private val context: Context) {
      * Set the PIN
      */
     suspend fun setPin(pin: String) {
+        require(isValidPin(pin)) { "PIN must contain exactly 4 digits." }
         context.pinDataStore.edit { prefs ->
             prefs[PIN_KEY] = pin
             prefs[FAILED_ATTEMPTS_KEY] = 0
