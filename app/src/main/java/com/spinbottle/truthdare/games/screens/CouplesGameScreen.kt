@@ -45,10 +45,15 @@ fun CouplesGameScreen(
     val hapticManager = rememberHapticManager()
     
     val players = remember { GameSessionHolder.players }
-    val intimacyLevel = remember { mutableIntStateOf(3) } // 1-5
+    val intimacyLevel = remember {
+        mutableIntStateOf(GameSessionHolder.couplesIntimacyLevel)
+    }
     
     var currentPlayerIndex by remember {
-        mutableIntStateOf(if (players.size == 2) GameSessionHolder.totalRounds % 2 else 0)
+        mutableIntStateOf(
+            GameSessionHolder.currentPlayerIndex
+                .coerceIn(0, (players.size - 1).coerceAtLeast(0))
+        )
     }
     var currentPrompt by remember { mutableStateOf("") }
     var promptType by remember { mutableStateOf<PromptType?>(null) }
@@ -258,7 +263,11 @@ fun CouplesGameScreen(
                     // Slider
                     Slider(
                         value = intimacyLevel.intValue.toFloat(),
-                        onValueChange = { intimacyLevel.intValue = it.toInt() },
+                        onValueChange = {
+                            val level = it.toInt().coerceIn(1, 5)
+                            intimacyLevel.intValue = level
+                            GameSessionHolder.couplesIntimacyLevel = level
+                        },
                         valueRange = 1f..5f,
                         steps = 3,
                         colors = SliderDefaults.colors(
@@ -446,6 +455,7 @@ fun CouplesGameScreen(
                                     GameSessionHolder.incrementRound()
                                     
                                     currentPlayerIndex = (currentPlayerIndex + 1) % players.size
+                                    GameSessionHolder.currentPlayerIndex = currentPlayerIndex
                                     round++
                                     showPrompt = false
                                     currentPrompt = ""

@@ -106,6 +106,24 @@ object GameSessionHolder {
 
     val roundsPerLevel: Int = 5
 
+    var currentPlayerIndex: Int = 0
+        set(value) {
+            field = value.coerceAtLeast(0)
+            persist()
+        }
+
+    var quickFireSecondsRemaining: Int = 30
+        set(value) {
+            field = value.coerceIn(0, 30)
+            persist()
+        }
+
+    var couplesIntimacyLevel: Int = 3
+        set(value) {
+            field = value.coerceIn(1, 5)
+            persist()
+        }
+
     fun init(context: Context) {
         prefs = context.applicationContext
             .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -264,6 +282,9 @@ object GameSessionHolder {
         eliminatedPlayers = mutableListOf()
         currentChallengeLevel = 1
         roundsInCurrentLevel = 0
+        currentPlayerIndex = 0
+        quickFireSecondsRemaining = 30
+        couplesIntimacyLevel = 3
         restoring = false
         prefs?.edit()?.remove(KEY_SNAPSHOT)?.apply()
     }
@@ -297,7 +318,10 @@ object GameSessionHolder {
             eliminationMode = eliminationMode,
             eliminatedPlayers = eliminatedPlayers.toList(),
             currentChallengeLevel = currentChallengeLevel,
-            roundsInCurrentLevel = roundsInCurrentLevel
+            roundsInCurrentLevel = roundsInCurrentLevel,
+            currentPlayerIndex = currentPlayerIndex,
+            quickFireSecondsRemaining = quickFireSecondsRemaining,
+            couplesIntimacyLevel = couplesIntimacyLevel
         )
 
         storage.edit().putString(KEY_SNAPSHOT, gson.toJson(snapshot)).apply()
@@ -330,6 +354,9 @@ object GameSessionHolder {
         eliminatedPlayers = snapshot.eliminatedPlayers.toMutableList()
         currentChallengeLevel = snapshot.currentChallengeLevel
         roundsInCurrentLevel = snapshot.roundsInCurrentLevel
+        currentPlayerIndex = snapshot.currentPlayerIndex
+        quickFireSecondsRemaining = snapshot.quickFireSecondsRemaining
+        couplesIntimacyLevel = snapshot.couplesIntimacyLevel
         restoring = false
     }
 
@@ -347,7 +374,10 @@ object GameSessionHolder {
         val eliminationMode: Boolean = false,
         val eliminatedPlayers: List<String> = emptyList(),
         val currentChallengeLevel: Int = 1,
-        val roundsInCurrentLevel: Int = 0
+        val roundsInCurrentLevel: Int = 0,
+        val currentPlayerIndex: Int = 0,
+        val quickFireSecondsRemaining: Int = 30,
+        val couplesIntimacyLevel: Int = 3
     )
 
     private data class StoredPlayer(

@@ -44,7 +44,8 @@ fun QuickFireGameScreen(
     
     var currentPlayerIndex by remember {
         mutableIntStateOf(
-            if (players.isNotEmpty()) GameSessionHolder.totalRounds % players.size else 0
+            GameSessionHolder.currentPlayerIndex
+                .coerceIn(0, (players.size - 1).coerceAtLeast(0))
         )
     }
     var currentPrompt by remember { mutableStateOf("") }
@@ -53,7 +54,9 @@ fun QuickFireGameScreen(
     var showExitDialog by remember { mutableStateOf(false) }
     
     // Timer state
-    var timeRemaining by remember { mutableIntStateOf(30) }
+    var timeRemaining by remember {
+        mutableIntStateOf(GameSessionHolder.quickFireSecondsRemaining)
+    }
     var isTimerRunning by remember { mutableStateOf(false) }
     var showChoosePrompt by remember { mutableStateOf(true) }
 
@@ -93,6 +96,7 @@ fun QuickFireGameScreen(
                 delay(1000)
                 if (!isResumed || !isTimerRunning) break
                 timeRemaining--
+                GameSessionHolder.quickFireSecondsRemaining = timeRemaining
                 
                 // Urgent haptic at 10, 5, 3, 2, 1 seconds
                 if (timeRemaining <= 5) {
@@ -111,8 +115,10 @@ fun QuickFireGameScreen(
                 
                 // Move to next player
                 currentPlayerIndex = (currentPlayerIndex + 1) % players.size
+                GameSessionHolder.currentPlayerIndex = currentPlayerIndex
                 round++
                 timeRemaining = 30
+                GameSessionHolder.quickFireSecondsRemaining = 30
                 isTimerRunning = false
                 showChoosePrompt = true
                 currentPrompt = ""
@@ -404,8 +410,10 @@ fun QuickFireGameScreen(
                                         GameSessionHolder.incrementRound()
                                         
                                         currentPlayerIndex = (currentPlayerIndex + 1) % players.size
+                                        GameSessionHolder.currentPlayerIndex = currentPlayerIndex
                                         round++
                                         timeRemaining = 30
+                                        GameSessionHolder.quickFireSecondsRemaining = 30
                                         showChoosePrompt = true
                                         currentPrompt = ""
                                         promptType = null
@@ -431,8 +439,10 @@ fun QuickFireGameScreen(
                                         GameSessionHolder.incrementRound()
                                         
                                         currentPlayerIndex = (currentPlayerIndex + 1) % players.size
+                                        GameSessionHolder.currentPlayerIndex = currentPlayerIndex
                                         round++
                                         timeRemaining = 30
+                                        GameSessionHolder.quickFireSecondsRemaining = 30
                                         showChoosePrompt = true
                                         currentPrompt = ""
                                         promptType = null

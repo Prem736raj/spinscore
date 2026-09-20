@@ -89,6 +89,10 @@ class GameSessionHolderTest {
         GameSessionHolder.eliminationMode = true
         GameSessionHolder.eliminatePlayer("p1")
 
+        GameSessionHolder.currentPlayerIndex = 4
+        GameSessionHolder.quickFireSecondsRemaining = 12
+        GameSessionHolder.couplesIntimacyLevel = 5
+
         GameSessionHolder.clear()
 
         assertTrue(GameSessionHolder.players.isEmpty())
@@ -103,5 +107,26 @@ class GameSessionHolderTest {
         assertNull(GameSessionHolder.targetRounds)
         assertFalse(GameSessionHolder.eliminationMode)
         assertTrue(GameSessionHolder.eliminatedPlayers.isEmpty())
+        assertEquals(0, GameSessionHolder.currentPlayerIndex)
+        assertEquals(30, GameSessionHolder.quickFireSecondsRemaining)
+        assertEquals(3, GameSessionHolder.couplesIntimacyLevel)
+    }
+
+    @Test
+    fun turnStatePropertiesCoerceToBounds() {
+        GameSessionHolder.currentPlayerIndex = -5
+        assertEquals(0, GameSessionHolder.currentPlayerIndex)
+
+        GameSessionHolder.quickFireSecondsRemaining = 45
+        assertEquals(30, GameSessionHolder.quickFireSecondsRemaining)
+
+        GameSessionHolder.quickFireSecondsRemaining = -10
+        assertEquals(0, GameSessionHolder.quickFireSecondsRemaining)
+
+        GameSessionHolder.couplesIntimacyLevel = 0
+        assertEquals(1, GameSessionHolder.couplesIntimacyLevel)
+
+        GameSessionHolder.couplesIntimacyLevel = 9
+        assertEquals(5, GameSessionHolder.couplesIntimacyLevel)
     }
 }
