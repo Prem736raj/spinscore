@@ -30,6 +30,7 @@ import androidx.core.content.FileProvider
 import com.spinbottle.truthdare.games.audio.rememberSoundManager
 import com.spinbottle.truthdare.games.audio.rememberHapticManager
 import com.spinbottle.truthdare.games.data.*
+import com.spinbottle.truthdare.games.game.SpinSelection
 import com.spinbottle.truthdare.games.ui.components.PlayerCircle
 import com.spinbottle.truthdare.games.ui.components.SpinningBottle
 import com.spinbottle.truthdare.games.ui.components.InGameMenuSheet
@@ -148,17 +149,7 @@ fun GameScreen(
     var currentPrompt by remember { mutableStateOf("") }
     var showTruthDareChoice by remember { mutableStateOf(false) }
     
-    // Calculate which player the bottle points to based on rotation
-    fun getSelectedPlayerIndex(rotation: Float): Int {
-        val playerCount = gameState.players.size
-        val anglePerPlayer = 360f / playerCount
-        // Normalize rotation and calculate index
-        val normalizedRotation = ((rotation % 360f) + 360f) % 360f
-        // The bottle points up (0 degrees), but we rotated players to start from top
-        val selectedIndex = ((normalizedRotation / anglePerPlayer).toInt()) % playerCount
-        return selectedIndex
-    }
-    
+
     // Exit confirmation dialog
     if (showExitDialog) {
         AlertDialog(
@@ -614,7 +605,10 @@ fun GameScreen(
                 // Spinning bottle in center
                 SpinningBottle(
                     onSpinComplete = { rotation ->
-                        val selectedIndex = getSelectedPlayerIndex(rotation)
+                        val selectedIndex = SpinSelection.playerIndexForRotation(
+                            rotation = rotation,
+                            playerCount = gameState.players.size
+                        )
                         gameState = gameState.copy(
                             selectedPlayerIndex = selectedIndex
                         )
