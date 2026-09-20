@@ -44,17 +44,49 @@ fun CouplesGameScreen(
     val soundManager = rememberSoundManager()
     val hapticManager = rememberHapticManager()
     
-    val players = remember { GameSessionHolder.players.take(2) } // Max 2 players
+    val players = remember { GameSessionHolder.players }
     val intimacyLevel = remember { mutableIntStateOf(3) } // 1-5
     
-    var currentPlayerIndex by remember { mutableIntStateOf(0) }
+    var currentPlayerIndex by remember {
+        mutableIntStateOf(if (players.size == 2) GameSessionHolder.totalRounds % 2 else 0)
+    }
     var currentPrompt by remember { mutableStateOf("") }
     var promptType by remember { mutableStateOf<PromptType?>(null) }
-    var round by remember { mutableIntStateOf(1) }
+    var round by remember { mutableIntStateOf(GameSessionHolder.totalRounds + 1) }
     var showExitDialog by remember { mutableStateOf(false) }
     var showPrompt by remember { mutableStateOf(false) }
     var showIntimacySelector by remember { mutableStateOf(true) }
     
+    
+    if (players.size != 2) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(RomanticDark)
+                .statusBarsPadding()
+                .navigationBarsPadding(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Couples Mode requires exactly 2 players.",
+                    color = TextWhite,
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = onBack) {
+                    Text("Back to setup")
+                }
+            }
+        }
+        return
+    }
+
     // Floating hearts animation
     val hearts = remember { 
         List(15) { 
