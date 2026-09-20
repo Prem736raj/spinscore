@@ -87,6 +87,12 @@ fun ModeSelectionScreen(
     }
     
     fun handleModeSelect(mode: GameMode) {
+        if (mode == GameMode.COUPLES &&
+            com.spinbottle.truthdare.games.data.GameSessionHolder.players.size != 2
+        ) {
+            return
+        }
+
         when {
             mode == GameMode.KIDS_SAFE -> {
                 pendingMode = mode
@@ -203,10 +209,20 @@ fun ModeSelectionScreen(
                 }
                 
                 availableModes.forEach { mode ->
+                    val requiresExactlyTwo =
+                        mode == GameMode.COUPLES &&
+                            com.spinbottle.truthdare.games.data.GameSessionHolder.players.size != 2
+
                     ModeCard(
                         mode = mode,
                         isSelected = selectedMode == mode,
-                        onClick = { handleModeSelect(mode) }
+                        onClick = { handleModeSelect(mode) },
+                        enabled = !requiresExactlyTwo,
+                        disabledReason = if (requiresExactlyTwo) {
+                            "Requires exactly 2 players"
+                        } else {
+                            null
+                        }
                     )
                 }
                 
