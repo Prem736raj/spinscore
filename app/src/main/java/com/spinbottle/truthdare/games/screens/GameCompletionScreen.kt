@@ -52,14 +52,21 @@ fun GameCompletionScreen(
     LaunchedEffect(Unit) {
         soundManager.playCelebration()
         
-        // Save stats for each player to their profile
-        players.forEach { player ->
-            PlayerProfileManager.recordGamePlayed(
-                name = player.name,
-                truthsAnswered = player.truthsCompleted,
-                daresCompleted = player.daresCompleted,
-                skips = player.skips
-            )
+        // Completion side effects must run once per finished session, even if
+        // this screen is recreated after rotation/process restoration.
+        if (GameSessionHolder.markCompletionRecorded()) {
+            players.forEach { player ->
+                PlayerProfileManager.recordGamePlayed(
+                    name = player.name,
+                    truthsAnswered = player.truthsCompleted,
+                    daresCompleted = player.daresCompleted,
+                    skips = player.skips
+                )
+            }
+
+            ThemeManager.incrementGamesPlayed()
+            ThemeManager.addTruthsAnswered(players.sumOf { it.truthsCompleted })
+            ThemeManager.addDaresCompleted(players.sumOf { it.daresCompleted })
         }
     }
     
