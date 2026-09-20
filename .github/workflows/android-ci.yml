@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - 'astra/**'
   pull_request:
     branches:
       - master
@@ -56,3 +57,20 @@ jobs:
 
       - name: Bundle release
         run: ./gradlew bundleRelease
+
+      - name: Upload release bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: spin-bottle-release-aab
+          path: app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload lint reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-reports
+          path: app/build/reports/lint-results-*.html
+          if-no-files-found: ignore
+          retention-days: 7
