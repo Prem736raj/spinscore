@@ -115,14 +115,35 @@ fun SpinBottleNavHost(
             ModeSelectionScreen(
                 onBack = { navController.popBackStack() },
                 onModeSelected = { 
-                    // Special modes skip pack/difficulty selection
+                    // Special modes skip generic pack/difficulty selection
                     when (com.spinbottle.truthdare.games.data.GameSessionHolder.gameMode) {
                         com.spinbottle.truthdare.games.data.GameMode.COUPLES -> 
-                            navController.navigate(Screen.CouplesGame.route)
+                            navController.navigate(Screen.CouplesComfortSetup.route)
                         com.spinbottle.truthdare.games.data.GameMode.KIDS_SAFE -> 
                             navController.navigate(Screen.KidsSafeGame.route)
                         else -> 
                             navController.navigate(Screen.PackSelection.route)
+                    }
+                }
+            )
+        }
+        
+        composable(Screen.CouplesComfortSetup.route) {
+            com.spinbottle.truthdare.games.screens.couples.CouplesComfortSetupScreen(
+                onBack = { navController.popBackStack() },
+                onSetupComplete = { prefs ->
+                    navController.navigate(Screen.CouplesPackSelection.route)
+                }
+            )
+        }
+
+        composable(Screen.CouplesPackSelection.route) {
+            com.spinbottle.truthdare.games.screens.couples.CouplesPackSelectionScreen(
+                preferences = com.spinbottle.truthdare.games.couples.CouplesPreferences(),
+                onBack = { navController.popBackStack() },
+                onStartGame = { packIds ->
+                    navController.navigate(Screen.CouplesGame.route) {
+                        popUpTo(Screen.ModeSelection.route) { inclusive = false }
                     }
                 }
             )
