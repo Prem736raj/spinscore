@@ -1,7 +1,6 @@
 package com.spinbottle.truthdare.games.screens
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -26,12 +25,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
 import com.spinbottle.truthdare.games.data.DareProof
 import com.spinbottle.truthdare.games.data.DareProofManager
 import com.spinbottle.truthdare.games.ui.theme.*
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -85,10 +82,6 @@ fun DareGalleryScreen(
                 Button(
                     onClick = {
                         DareProofManager.deleteProof(proofToDelete.id)
-                        // Delete file
-                        try {
-                            File(Uri.parse(proofToDelete.photoUri).path ?: "").delete()
-                        } catch (_: Exception) { }
                         proofs = DareProofManager.getProofs()
                         showDeleteDialog = null
                     },
@@ -195,15 +188,15 @@ fun DareGalleryScreen(
                     items(proofs.reversed()) { proof ->
                         DareProofCard(
                             proof = proof,
-                            onImageClick = { showFullImage = proof.photoUri },
+                            onImageClick = {
+                                runCatching {
+                                    DareProofManager.getProofUri(context, proof).toString()
+                                }.onSuccess { showFullImage = it }
+                            },
                             onShare = {
-                                try {
-                                    val file = File(Uri.parse(proof.photoUri).path ?: "")
-                                    val uri = FileProvider.getUriForFile(
-                                        context,
-                                        "${context.packageName}.fileprovider",
-                                        file
-                                    )
+                                runCatching {
+                                    DareProofManager.getProofUri(context, proof)
+                                }.onSuccess { uri ->
                                     val shareIntent = Intent().apply {
                                         action = Intent.ACTION_SEND
                                         type = "image/jpeg"
@@ -212,8 +205,6 @@ fun DareGalleryScreen(
                                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                     }
                                     context.startActivity(Intent.createChooser(shareIntent, "Share Proof"))
-                                } catch (e: Exception) {
-                                    // Handle share error
                                 }
                             },
                             onDelete = { showDeleteDialog = proof }
@@ -234,6 +225,10 @@ fun DareProofCard(
     onDelete: () -> Unit
 ) {
     val dateFormat = remember { SimpleDateFormat("h:mm a", Locale.getDefault()) }
+    val context = LocalContext.current
+    val imageUri = remember(proof) {
+        runCatching { DareProofManager.getProofUri(context, proof) }.getOrNull()
+    }
     
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -243,7 +238,7 @@ fun DareProofCard(
         Column {
             // Photo - tap to view fullscreen
             AsyncImage(
-                model = proof.photoUri,
+                model = imageUri,
                 contentDescription = "Dare proof - tap to enlarge",
                 modifier = Modifier
                     .fillMaxWidth()

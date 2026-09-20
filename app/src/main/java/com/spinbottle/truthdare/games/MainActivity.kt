@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import com.spinbottle.truthdare.games.billing.BillingManager
 import com.spinbottle.truthdare.games.data.CustomPromptsManager
+import com.spinbottle.truthdare.games.data.DareProofManager
 import com.spinbottle.truthdare.games.data.FavoritesManager
 import com.spinbottle.truthdare.games.data.PlayerProfileManager
 import com.spinbottle.truthdare.games.data.PromptHistoryManager
@@ -24,6 +25,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         CustomPromptsManager.init(this)
+        DareProofManager.init(this)
         PlayerProfileManager.init(this)
         FavoritesManager.init(this)
         PromptHistoryManager.init(this)

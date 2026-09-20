@@ -69,38 +69,49 @@ fun GameScreen(
     var pendingProofDare by remember { mutableStateOf("") }
     var pendingProofPlayer by remember { mutableStateOf<Player?>(null) }
     var pendingPhotoUri by remember { mutableStateOf<Uri?>(null) }
-    var shouldLaunchCamera by remember { mutableStateOf(false) }
+    var pendingPhotoFileName by remember { mutableStateOf<String?>(null) }
     
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
-        if (success && pendingPhotoUri != null && pendingProofPlayer != null) {
+        val fileName = pendingPhotoFileName
+        if (success && fileName != null && pendingProofPlayer != null) {
             DareProofManager.addProof(
                 DareProof(
                     dareText = pendingProofDare,
                     playerName = pendingProofPlayer!!.name,
                     playerEmoji = pendingProofPlayer!!.avatar,
-                    photoUri = pendingPhotoUri.toString()
+                    fileName = fileName
                 )
             )
+        } else {
+            DareProofManager.deleteUntrackedFile(fileName)
         }
         pendingProofDare = ""
         pendingProofPlayer = null
-        shouldLaunchCamera = false
+        pendingPhotoUri = null
+        pendingPhotoFileName = null
     }
     
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
-        if (granted && pendingPhotoUri != null) {
-            cameraLauncher.launch(pendingPhotoUri!!)
-        }
-    }
-    
-    // Launch camera when permission granted
-    LaunchedEffect(shouldLaunchCamera) {
-        if (shouldLaunchCamera && pendingPhotoUri != null) {
-            cameraLauncher.launch(pendingPhotoUri!!)
+        val uri = pendingPhotoUri
+        if (granted && uri != null) {
+            runCatching { cameraLauncher.launch(uri) }
+                .onFailure {
+                    DareProofManager.deleteUntrackedFile(pendingPhotoFileName)
+                    pendingPhotoUri = null
+                    pendingPhotoFileName = null
+                    pendingProofDare = ""
+                    pendingProofPlayer = null
+                }
+        } else {
+            DareProofManager.deleteUntrackedFile(pendingPhotoFileName)
+            pendingPhotoUri = null
+            pendingPhotoFileName = null
+            pendingProofDare = ""
+            pendingProofPlayer = null
         }
     }
     
@@ -372,6 +383,7 @@ fun GameScreen(
                                             photoFile
                                         )
                                         pendingPhotoUri = uri
+                                        pendingPhotoFileName = photoFile.name
                                         pendingProofDare = currentPrompt.removePrefix("✨ ").removePrefix("❤️ ")
                                         pendingProofPlayer = selectedPlayer
                                         // Request camera permission
