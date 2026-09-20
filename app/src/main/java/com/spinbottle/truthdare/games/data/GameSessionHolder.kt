@@ -62,6 +62,12 @@ object GameSessionHolder {
             persist()
         }
 
+    var completionRecorded: Boolean = false
+        private set(value) {
+            field = value
+            persist()
+        }
+
     var targetScore: Int = 50
         set(value) {
             field = value.coerceAtLeast(1)
@@ -150,7 +156,18 @@ object GameSessionHolder {
         eliminatedPlayers.clear()
         currentChallengeLevel = 1
         roundsInCurrentLevel = 0
+        completionRecorded = false
         persist()
+    }
+
+    /**
+     * Claims the one-time completion side effect for the active session.
+     * Returns false after the same completed session has already been recorded.
+     */
+    fun markCompletionRecorded(): Boolean {
+        if (completionRecorded) return false
+        completionRecorded = true
+        return true
     }
 
     fun getGameDurationMinutes(): Int {
@@ -240,6 +257,7 @@ object GameSessionHolder {
         gameStartTime = 0L
         isKidsModeFlow = false
         isTournament = false
+        completionRecorded = false
         targetScore = 50
         targetRounds = null
         eliminationMode = false
@@ -273,6 +291,7 @@ object GameSessionHolder {
             gameStartTime = gameStartTime,
             isKidsModeFlow = isKidsModeFlow,
             isTournament = isTournament,
+            completionRecorded = completionRecorded,
             targetScore = targetScore,
             targetRounds = targetRounds,
             eliminationMode = eliminationMode,
@@ -304,6 +323,7 @@ object GameSessionHolder {
         gameStartTime = snapshot.gameStartTime
         isKidsModeFlow = snapshot.isKidsModeFlow
         isTournament = snapshot.isTournament
+        completionRecorded = snapshot.completionRecorded
         targetScore = snapshot.targetScore
         targetRounds = snapshot.targetRounds
         eliminationMode = snapshot.eliminationMode
@@ -321,6 +341,7 @@ object GameSessionHolder {
         val gameStartTime: Long = 0L,
         val isKidsModeFlow: Boolean = false,
         val isTournament: Boolean = false,
+        val completionRecorded: Boolean = false,
         val targetScore: Int = 50,
         val targetRounds: Int? = null,
         val eliminationMode: Boolean = false,
