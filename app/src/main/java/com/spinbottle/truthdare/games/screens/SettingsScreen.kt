@@ -31,6 +31,7 @@ import com.spinbottle.truthdare.games.data.BottleDesign
 import com.spinbottle.truthdare.games.data.DareProofManager
 import com.spinbottle.truthdare.games.data.FavoritesManager
 import com.spinbottle.truthdare.games.data.PromptHistoryManager
+import com.spinbottle.truthdare.games.data.PromptsDatabase
 import com.spinbottle.truthdare.games.data.SettingsHolder
 import com.spinbottle.truthdare.games.data.ThemeManager
 import com.spinbottle.truthdare.games.ui.theme.*
