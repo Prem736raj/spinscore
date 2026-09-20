@@ -96,5 +96,5 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     
     // Google Play Billing
-    implementation("com.android.billingclient:billing-ktx:6.1.0")
+    implementation("com.android.billingclient:billing-ktx:9.1.0")
 }
