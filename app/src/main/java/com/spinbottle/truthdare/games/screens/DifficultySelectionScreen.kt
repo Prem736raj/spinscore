@@ -98,7 +98,7 @@ fun DifficultySelectionScreen(
             },
             onSuccess = {
                 showPinScreen = false
-                selectedDifficulty = pendingDifficulty
+                pendingDifficulty?.let { selectedDifficulty = it }
                 pendingDifficulty = null
             }
         )
@@ -122,9 +122,8 @@ fun DifficultySelectionScreen(
                 if (isPinSet) {
                     showPinScreen = true
                 } else {
-                    // No PIN set, can't access Extreme without adult verification
-                    // They should set up PIN in mode selection first
-                    selectedDifficulty = null
+                    // Keep the previous safe selection when no adult PIN exists.
+                    pendingDifficulty = null
                 }
             }
         } else {
