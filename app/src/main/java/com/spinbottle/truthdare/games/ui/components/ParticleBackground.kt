@@ -56,9 +56,12 @@ fun ParticleBackground(
         ParticleBlue
     )
     
-    LaunchedEffect(Unit) {
+    val reduceMotion by com.spinbottle.truthdare.games.data.SettingsHolder.reduceMotionFlow.collectAsState()
+    val actualCount = if (reduceMotion) (particleCount / 5).coerceAtLeast(6) else particleCount
+
+    LaunchedEffect(actualCount) {
         particles.clear()
-        repeat(particleCount) {
+        repeat(actualCount) {
             particles.add(
                 Particle(
                     x = Random.nextFloat(),

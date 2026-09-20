@@ -12,6 +12,7 @@ object SettingsHolder {
     private const val KEY_HAPTIC = "haptic_enabled"
     private const val KEY_SPIN_SPEED = "spin_speed"
     private const val KEY_DEFAULT_DIFFICULTY = "default_difficulty"
+    private const val KEY_REDUCE_MOTION = "reduce_motion"
 
     private var prefs: SharedPreferences? = null
     private var loading = false
@@ -24,6 +25,16 @@ object SettingsHolder {
 
     private val _spinSpeedFlow = MutableStateFlow(0.5f)
     val spinSpeedFlow: StateFlow<Float> = _spinSpeedFlow.asStateFlow()
+
+    private val _reduceMotionFlow = MutableStateFlow(false)
+    val reduceMotionFlow: StateFlow<Boolean> = _reduceMotionFlow.asStateFlow()
+
+    var reduceMotion: Boolean = false
+        set(value) {
+            field = value
+            _reduceMotionFlow.value = value
+            persist(KEY_REDUCE_MOTION, value)
+        }
 
     var soundEnabled: Boolean = true
         set(value) {
@@ -77,6 +88,9 @@ object SettingsHolder {
             KEY_DEFAULT_DIFFICULTY,
             Difficulty.MEDIUM.displayName
         ) ?: Difficulty.MEDIUM.displayName
+
+        reduceMotion = storage?.getBoolean(KEY_REDUCE_MOTION, false) ?: false
+        _reduceMotionFlow.value = reduceMotion
         loading = false
     }
 
