@@ -1,5 +1,6 @@
 package com.spinbottle.truthdare.games.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -57,6 +58,10 @@ fun KidsSafeGameScreen(
     var showPrompt by remember { mutableStateOf(false) }
     var showPinScreen by remember { mutableStateOf(false) }
     var showExitConfirm by remember { mutableStateOf(false) }
+
+    BackHandler {
+        showPinScreen = true
+    }
     
     // Fun bouncing animation
     val infiniteTransition = rememberInfiniteTransition(label = "bounce")
