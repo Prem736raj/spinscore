@@ -34,6 +34,7 @@ import com.spinbottle.truthdare.games.data.Avatars
 import com.spinbottle.truthdare.games.data.GameSessionHolder
 import com.spinbottle.truthdare.games.data.Player
 import com.spinbottle.truthdare.games.data.PlayerColors
+import com.spinbottle.truthdare.games.data.PlayerKeyNormalizer
 import com.spinbottle.truthdare.games.data.PlayerProfileManager
 import com.spinbottle.truthdare.games.data.AvatarCategories
 import com.spinbottle.truthdare.games.ui.components.EmojiPickerDialog
@@ -77,7 +78,8 @@ fun GameSetupScreen(
     
     fun addPlayer() {
         val name = playerName.trim()
-        val duplicateName = players.any { it.name.equals(name, ignoreCase = true) }
+        val normalizedName = PlayerKeyNormalizer.normalizePlayerKey(name)
+        val duplicateName = players.any { PlayerKeyNormalizer.normalizePlayerKey(it.name) == normalizedName }
         if (duplicateName) {
             welcomeBackMessage = "That player name is already in this game."
             return
