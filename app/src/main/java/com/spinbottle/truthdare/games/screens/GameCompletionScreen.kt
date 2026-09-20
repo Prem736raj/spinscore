@@ -30,6 +30,7 @@ import com.spinbottle.truthdare.games.audio.rememberSoundManager
 import com.spinbottle.truthdare.games.data.GameSessionHolder
 import com.spinbottle.truthdare.games.data.Player
 import com.spinbottle.truthdare.games.data.PlayerProfileManager
+import com.spinbottle.truthdare.games.data.ThemeManager
 import com.spinbottle.truthdare.games.ui.components.ConfettiAnimation
 import com.spinbottle.truthdare.games.ui.theme.*
 import kotlinx.coroutines.delay
