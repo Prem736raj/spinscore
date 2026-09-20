@@ -133,6 +133,10 @@ object GamePrompts {
             PromptItemType.TRUTH -> PromptsDatabase.getTruths(difficulty = difficulty)
             PromptItemType.DARE -> PromptsDatabase.getDares(difficulty = difficulty)
         }.filter { it.category in categories }
+            // Party prompts can intentionally exist in more than one category.
+            // Collapse identical text before selection so enabling overlapping packs
+            // cannot make the same prompt more likely or repeat as a separate item.
+            .distinctBy { it.text }
 
         val eligible = avoidSeen(all) { it.text }
             .sortedBy { it.playCount }
