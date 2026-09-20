@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import com.spinbottle.truthdare.games.audio.rememberHapticManager
 import com.spinbottle.truthdare.games.audio.rememberSoundManager
 import com.spinbottle.truthdare.games.data.*
