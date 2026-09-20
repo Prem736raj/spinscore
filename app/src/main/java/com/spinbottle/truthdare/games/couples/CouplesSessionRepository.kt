@@ -36,3 +36,4 @@ object CouplesSessionRepository {
         prefs?.edit()?.remove(KEY_SESSION)?.apply()
     }
 }
+

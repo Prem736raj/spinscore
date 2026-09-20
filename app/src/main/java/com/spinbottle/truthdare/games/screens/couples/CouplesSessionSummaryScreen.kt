@@ -109,3 +109,4 @@ private fun StatRow(
         Text(text = value, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = valueColor)
     }
 }
+

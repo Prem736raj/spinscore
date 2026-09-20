@@ -49,3 +49,4 @@ data class CouplesPrompt(
     val requiresExplicitConsent: Boolean = false,
     val cooldownWeight: Int = 1
 )
+

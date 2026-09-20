@@ -86,3 +86,4 @@ class CouplesContentPolicyTest {
         assertTrue(CouplesContentPolicy.isAllowed(highTierPrompt, highTierPrefs))
     }
 }
+

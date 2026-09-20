@@ -40,3 +40,4 @@ class SessionMigrationTest {
         assertFalse("Negative round must be invalid", SessionValidator.isValid(playersSize = 2, currentPlayerIndex = 0, round = -1))
     }
 }
+

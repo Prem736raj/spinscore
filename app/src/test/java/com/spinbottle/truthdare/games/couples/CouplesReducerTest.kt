@@ -39,3 +39,4 @@ class CouplesReducerTest {
         assertTrue(nextState.sessionBlockedTags.contains(CouplesPromptTag.MASSAGE))
     }
 }
+

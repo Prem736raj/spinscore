@@ -10,3 +10,4 @@ data class SessionEnvelope(
 )
 
 const val CURRENT_SESSION_SCHEMA = 3
+

@@ -53,3 +53,4 @@ jobs:
           path: app/build/reports/androidTests/connected/
           if-no-files-found: ignore
           retention-days: 7
+

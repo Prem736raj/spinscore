@@ -47,3 +47,4 @@ class CouplesPreferencesIntersectionTest {
         assertTrue(effective.blockedTags.contains(CouplesPromptTag.FUTURE))
     }
 }
+

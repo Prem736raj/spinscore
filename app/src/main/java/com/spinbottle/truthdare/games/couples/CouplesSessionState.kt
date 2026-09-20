@@ -18,3 +18,4 @@ data class CouplesSessionState(
     val skippedPrompts: Int = 0,
     val startedAtEpochMs: Long = 0L
 )
+

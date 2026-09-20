@@ -36,3 +36,4 @@ fun CouplesPreferences.intersect(
             allowAfterDarkConversation && other.allowAfterDarkConversation,
         blockedTags = blockedTags + other.blockedTags
     )
+

@@ -9,3 +9,4 @@ enum class AudienceClass {
     GENERAL,
     ADULT_COUPLES
 }
+

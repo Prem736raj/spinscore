@@ -29,3 +29,4 @@ object AppDataResetManager {
         return proofsDeleted
     }
 }
+

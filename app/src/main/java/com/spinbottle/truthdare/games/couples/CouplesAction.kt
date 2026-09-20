@@ -9,3 +9,4 @@ sealed interface CouplesAction {
     data class UpdatePreferences(val preferences: CouplesPreferences) : CouplesAction
     data object EndSession : CouplesAction
 }
+
