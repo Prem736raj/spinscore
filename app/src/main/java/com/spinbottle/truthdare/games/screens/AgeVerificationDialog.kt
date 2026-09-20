@@ -60,7 +60,7 @@ fun AgeVerificationDialog(
                 Spacer(modifier = Modifier.height(20.dp))
                 
                 Text(
-                    text = "Age Verification Required",
+                    text = "Adult Content Confirmation",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextWhite
@@ -69,7 +69,7 @@ fun AgeVerificationDialog(
                 Spacer(modifier = Modifier.height(12.dp))
                 
                 Text(
-                    text = "This content is intended for adults only (18+). A PIN will be required to access adult content.",
+                    text = "This content is intended for adults only (18+). This checkbox is a self-confirmation, not identity or age verification. A PIN will be required for later access.",
                     fontSize = 14.sp,
                     color = TextMuted,
                     textAlign = TextAlign.Center
