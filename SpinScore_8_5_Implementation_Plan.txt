@@ -1,0 +1,1837 @@
+SPINSCORE / SPIN BOTTLE
+PRODUCTION IMPLEMENTATION PLAN + CODE
+TARGET: ~8.5/10 PRODUCTION READINESS
+============================================================
+
+Repository:
+https://github.com/Prem736raj/spinscore
+
+Protected master baseline:
+560b80a6e0453a57f62cbcfea9bf88a845e88212
+
+Hardening branch:
+astra/spinscore-production-hardening
+
+Branch head used for this plan:
+96588cd05ff98abbd7807c8daa1fb9e365d81bc4
+
+Current automated validation:
+GitHub Actions Android CI run #78 = SUCCESS
+
+Application ID (DO NOT CHANGE):
+com.spinbottle.truthdare.games
+
+============================================================
+0. NON-NEGOTIABLE RULES
+============================================================
+1. Never merge directly to master while implementing this plan.
+2. Continue on astra/spinscore-production-hardening or a child branch.
+3. Never change applicationId.
+4. Keep commits atomic.
+5. Do not add fake online multiplayer/backend/analytics features.
+6. Do not invent device/Play Console test results.
+7. Do not blindly upgrade Compose/AndroidX/Kotlin.
+8. Every change touching Billing, PIN, Kids, camera, backup, session state,
+   or prompt safety needs a regression test.
+9. Keep the app local-first unless a real product requirement justifies a backend.
+10. After each phase run:
+    ./gradlew clean
+    ./gradlew testDebugUnitTest
+    ./gradlew lintDebug
+    ./gradlew assembleDebug
+    ./gradlew lintRelease
+    ./gradlew assembleRelease
+    ./gradlew bundleRelease
+
+============================================================
+1. CURRENT GOOD STATE - KEEP THESE FIXES
+============================================================
+- compileSdk 36 / targetSdk 36
+- Billing Library 9.1.0
+- debug applicationId suffix
+- release minify + shrink resources
+- optional camera/autofocus manifest declarations
+- GameSessionHolder persistence foundation
+- duplicate player-name protection
+- Kids Safe PIN exit protection
+- mature-content copy no longer claims real age verification
+- Couples requires exactly 2 players
+- stale online multiplayer/deep-link removed
+- prompt safety cleanup and regression tests
+- runtime prompt deduplication
+- duplicate prompt literal cleanup
+- safer targeted R8 rules
+- dare-proof app-private storage + FileProvider restrictions
+- README.md and PRIVACY.md
+- CI clean/test/lint/debug/release/bundle gates
+- one-time completion accounting
+- theme unlock consistency
+- finite confetti animation
+- particle rendering without per-frame object mutation
+- hidden non-functional tournament elimination UI
+- repository hygiene improvements
+
+Do not rewrite these just to generate activity. Verify and preserve them.
+
+============================================================
+2. WHAT 8.5/10 MEANS
+============================================================
+To claim approximately 8.5/10 engineering readiness, the app should have:
+
+BUILD
+- clean debug/release builds
+- release lint pass
+- R8 release pass
+- AAB generation
+- reproducible CI
+
+CORRECTNESS
+- no duplicate scoring/completion
+- no invalid player/round selection
+- no dead mode controls
+- discoverable interrupted-session recovery
+
+SAFETY / PRIVACY
+- app-private camera proof files
+- session excluded from backup
+- Kids escape protected by parent PIN
+- mature prompts guarded by tests
+- privacy text matches actual storage behavior
+
+UX
+- >=48dp interactive targets
+- meaningful TalkBack labels
+- usable large-text layouts
+- small-screen reachability
+- disabled feature reasons visible
+
+MONETIZATION
+- robust entitlement restore
+- no hardcoded price
+- no entitlement clear on partial query
+- pending purchase handling
+
+TESTING
+- domain, session, PIN, billing, safety, backup, resume tests
+- small Compose instrumentation smoke suite
+
+RELEASE
+- target API, Billing version, signing, versionCode, Data Safety,
+  content rating and target-audience checks completed honestly
+
+============================================================
+3. IMPLEMENTATION PRIORITY
+============================================================
+P1 MUST COMPLETE
+1. Cold-launch Resume Game UX
+2. Resume-routing unit tests
+3. Unique prompt-progress denominator
+4. Backup/privacy guard tests
+5. Dare-proof orphan/legacy cleanup
+6. Remove unused Billing CoroutineScope dependency
+7. Accessibility touch-target foundation
+8. Large-font/small-screen critical fixes
+9. Update AUDIT_FINDINGS.md + PR
+
+P2 TO REACH ~8.5
+1. Stable per-mode turn state persistence
+2. Compose UI smoke tests
+3. Accessibility semantics sweep
+4. Reactive settings cleanup where useful
+5. Performance verification
+6. release/R8/backup guard tests
+7. dependency modernization plan
+8. final store/release checklist
+
+P3 AFTER 8.5
+- baseline profiles / macrobenchmark
+- screenshot testing
+- localization
+- analytics/crash reporting only after privacy/product decision
+- multi-module refactor only if codebase materially grows
+
+============================================================
+4. P1 - COLD-LAUNCH RESUME GAME
+============================================================
+PROBLEM
+GameSessionHolder restores a saved session, but a cold launch still lands at Home.
+The restored session is not discoverable to the user.
+
+DESIGN
+- Never force-resume automatically.
+- Show "Resume Game" only when hasRestorableSession() is true.
+- Start Game intentionally clears the old session.
+- Resume routes according to GameMode.
+- Corrupt/empty state fails safely.
+
+FILES
+app/src/main/java/com/spinbottle/truthdare/games/screens/HomeScreen.kt
+app/src/main/java/com/spinbottle/truthdare/games/navigation/AppNavigation.kt
+app/src/main/java/com/spinbottle/truthdare/games/navigation/SessionResumeRouter.kt [NEW]
+app/src/test/java/com/spinbottle/truthdare/games/navigation/SessionResumeRouterTest.kt [NEW]
+
+NEW FILE: SessionResumeRouter.kt
+------------------------------------------------------------
+package com.spinbottle.truthdare.games.navigation
+
+import com.spinbottle.truthdare.games.data.GameMode
+
+object SessionResumeRouter {
+    fun routeFor(mode: GameMode): String = when (mode) {
+        GameMode.QUICK_FIRE -> Screen.QuickFireGame.route
+        GameMode.COUPLES -> Screen.CouplesGame.route
+        GameMode.KIDS_SAFE -> Screen.KidsSafeGame.route
+        GameMode.CLASSIC,
+        GameMode.PARTY,
+        GameMode.CHALLENGE -> Screen.Game.route
+    }
+}
+
+MODIFY HomeScreen.kt
+------------------------------------------------------------
+Add:
+import androidx.compose.material.icons.filled.Refresh
+
+Change signature to include:
+
+fun HomeScreen(
+    onStartGame: () -> Unit,
+    onResumeGame: () -> Unit,
+    canResumeGame: Boolean,
+    onKidsMode: () -> Unit,
+    onHowToPlay: () -> Unit,
+    onSettings: () -> Unit,
+    onMyPrompts: () -> Unit = {},
+    isPremium: Boolean = false,
+    onPremiumClick: () -> Unit = {}
+)
+
+Inside the main action Column, after Start Game:
+
+if (canResumeGame) {
+    GlassButton(
+        text = "Resume Game",
+        icon = Icons.Default.Refresh,
+        iconTint = AccentTeal,
+        onClick = onResumeGame
+    )
+}
+
+MODIFY AppNavigation.kt Home destination
+------------------------------------------------------------
+HomeScreen(
+    onStartGame = {
+        GameSessionHolder.clear()
+        GameSessionHolder.isKidsModeFlow = false
+        navController.navigate(Screen.GameSetup.route)
+    },
+    onResumeGame = {
+        if (GameSessionHolder.hasRestorableSession()) {
+            navController.navigate(
+                SessionResumeRouter.routeFor(GameSessionHolder.gameMode)
+            ) {
+                launchSingleTop = true
+            }
+        } else {
+            GameSessionHolder.clear()
+            navController.navigate(Screen.GameSetup.route)
+        }
+    },
+    canResumeGame = GameSessionHolder.hasRestorableSession(),
+    onKidsMode = {
+        GameSessionHolder.clear()
+        if (isPinSet) {
+            GameSessionHolder.isKidsModeFlow = true
+            GameSessionHolder.gameMode = GameMode.KIDS_SAFE
+            navController.navigate(Screen.GameSetup.route)
+        } else {
+            navController.navigate(Screen.PinSetup.route)
+        }
+    },
+    onHowToPlay = { navController.navigate(Screen.HowToPlay.route) },
+    onSettings = { navController.navigate(Screen.Settings.route) },
+    onMyPrompts = { navController.navigate(Screen.MyPrompts.route) },
+    isPremium = isPremium,
+    onPremiumClick = { navController.navigate(Screen.Premium.route) }
+)
+
+NEW TEST: SessionResumeRouterTest.kt
+------------------------------------------------------------
+package com.spinbottle.truthdare.games.navigation
+
+import com.spinbottle.truthdare.games.data.GameMode
+import org.junit.Assert.assertEquals
+import org.junit.Test
+
+class SessionResumeRouterTest {
+    @Test
+    fun quickFireResumesToQuickFire() {
+        assertEquals(Screen.QuickFireGame.route,
+            SessionResumeRouter.routeFor(GameMode.QUICK_FIRE))
+    }
+
+    @Test
+    fun couplesResumesToCouples() {
+        assertEquals(Screen.CouplesGame.route,
+            SessionResumeRouter.routeFor(GameMode.COUPLES))
+    }
+
+    @Test
+    fun kidsSafeResumesToKidsSafe() {
+        assertEquals(Screen.KidsSafeGame.route,
+            SessionResumeRouter.routeFor(GameMode.KIDS_SAFE))
+    }
+
+    @Test
+    fun classicLikeModesResumeToBottleGame() {
+        listOf(GameMode.CLASSIC, GameMode.PARTY, GameMode.CHALLENGE)
+            .forEach { mode ->
+                assertEquals(Screen.Game.route, SessionResumeRouter.routeFor(mode))
+            }
+    }
+}
+
+ACCEPTANCE
+- kill process during an active game
+- reopen app
+- Home shows Resume Game
+- Resume keeps scores and rounds
+- Start Game clears old session
+- correct destination for every GameMode
+
+Commit:
+feat(session): expose safe cold-launch game resume
+
+============================================================
+5. P2 - STABLE PER-MODE TURN STATE
+============================================================
+The current recovery intentionally resumes at a turn boundary. Improve continuity
+by persisting only stable, non-sensitive fields.
+
+MODIFY GameSessionHolder.kt
+------------------------------------------------------------
+Add:
+
+var currentPlayerIndex: Int = 0
+    set(value) {
+        field = value.coerceAtLeast(0)
+        persist()
+    }
+
+var quickFireSecondsRemaining: Int = 30
+    set(value) {
+        field = value.coerceIn(0, 30)
+        persist()
+    }
+
+var couplesIntimacyLevel: Int = 3
+    set(value) {
+        field = value.coerceIn(1, 5)
+        persist()
+    }
+
+Add to SessionSnapshot:
+val currentPlayerIndex: Int = 0,
+val quickFireSecondsRemaining: Int = 30,
+val couplesIntimacyLevel: Int = 3,
+
+Add to persist():
+currentPlayerIndex = currentPlayerIndex,
+quickFireSecondsRemaining = quickFireSecondsRemaining,
+couplesIntimacyLevel = couplesIntimacyLevel,
+
+Add to restore():
+currentPlayerIndex = snapshot.currentPlayerIndex
+quickFireSecondsRemaining = snapshot.quickFireSecondsRemaining
+couplesIntimacyLevel = snapshot.couplesIntimacyLevel
+
+Add to clear():
+currentPlayerIndex = 0
+quickFireSecondsRemaining = 30
+couplesIntimacyLevel = 3
+
+COUPLES GAME
+------------------------------------------------------------
+Replace intimacy init:
+
+val intimacyLevel = remember {
+    mutableIntStateOf(GameSessionHolder.couplesIntimacyLevel)
+}
+
+Slider:
+
+onValueChange = {
+    val level = it.toInt().coerceIn(1, 5)
+    intimacyLevel.intValue = level
+    GameSessionHolder.couplesIntimacyLevel = level
+}
+
+Player index:
+
+var currentPlayerIndex by remember {
+    mutableIntStateOf(
+        GameSessionHolder.currentPlayerIndex
+            .coerceIn(0, (players.size - 1).coerceAtLeast(0))
+    )
+}
+
+When moving player:
+currentPlayerIndex = (currentPlayerIndex + 1) % players.size
+GameSessionHolder.currentPlayerIndex = currentPlayerIndex
+
+QUICK FIRE
+------------------------------------------------------------
+Initialize:
+
+var currentPlayerIndex by remember {
+    mutableIntStateOf(
+        GameSessionHolder.currentPlayerIndex
+            .coerceIn(0, (players.size - 1).coerceAtLeast(0))
+    )
+}
+
+var timeRemaining by remember {
+    mutableIntStateOf(GameSessionHolder.quickFireSecondsRemaining)
+}
+
+Each second:
+timeRemaining--
+GameSessionHolder.quickFireSecondsRemaining = timeRemaining
+
+New turn:
+timeRemaining = 30
+GameSessionHolder.quickFireSecondsRemaining = 30
+
+Move player:
+currentPlayerIndex = (currentPlayerIndex + 1) % players.size
+GameSessionHolder.currentPlayerIndex = currentPlayerIndex
+
+Do not serialize camera Uri, dialog state, animations or Composable objects.
+
+Commit:
+feat(session): persist stable per-mode turn state
+
+============================================================
+6. P1 - UNIQUE PROMPT PROGRESS COUNT
+============================================================
+Problem: PromptHistoryManager tracks text, while getPromptCount() counts entries.
+Use a normalized unique text denominator.
+
+MODIFY PromptsDatabase.kt
+------------------------------------------------------------
+fun getUniquePromptCount(): Int {
+    return allPrompts
+        .asSequence()
+        .map { normalizePromptText(it.text) }
+        .filter { it.isNotEmpty() }
+        .distinct()
+        .count()
+}
+
+internal fun normalizePromptText(text: String): String {
+    return text
+        .trim()
+        .lowercase()
+        .replace(Regex("\\s+"), " ")
+}
+
+MODIFY SettingsScreen.kt
+------------------------------------------------------------
+Replace:
+val builtInPromptCount = PromptsDatabase.getPromptCount()
+
+with:
+val builtInPromptCount = PromptsDatabase.getUniquePromptCount()
+
+NEW TEST: PromptDatabaseCountTest.kt
+------------------------------------------------------------
+package com.spinbottle.truthdare.games.data
+
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class PromptDatabaseCountTest {
+    @Test
+    fun uniqueCountIsPositiveAndNotGreaterThanRawCount() {
+        val raw = PromptsDatabase.getPromptCount()
+        val unique = PromptsDatabase.getUniquePromptCount()
+        assertTrue(unique > 0)
+        assertTrue(unique <= raw)
+    }
+
+    @Test
+    fun normalizationCollapsesWhitespaceAndCase() {
+        assertEquals(
+            PromptsDatabase.normalizePromptText("  Hello   WORLD "),
+            PromptsDatabase.normalizePromptText("hello world")
+        )
+    }
+}
+
+Acceptance:
+- seen count never exceeds denominator
+- clearing history returns 0
+- UI does not claim more than 100%
+
+Commit:
+fix(prompts): align history progress with unique prompt count
+
+============================================================
+7. P1 - BACKUP / PRIVACY GUARD
+============================================================
+Current backup config includes only sharedpref and explicitly excludes
+session_state_prefs.xml. Dare proof metadata/photos live in filesDir, so they
+are outside this configured backup set. Keep that behavior.
+
+NEW TEST: BackupPolicyTest.kt
+------------------------------------------------------------
+package com.spinbottle.truthdare.games.data
+
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import java.io.File
+
+class BackupPolicyTest {
+    private fun resource(path: String): File {
+        val direct = File(path)
+        if (direct.exists()) return direct
+        return File("app/$path")
+    }
+
+    @Test
+    fun legacyRulesDoNotIncludeFilesDomain() {
+        val xml = resource("src/main/res/xml/backup_rules.xml").readText()
+        assertTrue(xml.contains("domain=\"sharedpref\""))
+        assertTrue(xml.contains("session_state_prefs.xml"))
+        assertFalse(xml.contains("domain=\"file\""))
+    }
+
+    @Test
+    fun android12RulesDoNotIncludeFilesDomain() {
+        val xml = resource("src/main/res/xml/data_extraction_rules.xml").readText()
+        assertTrue(xml.contains("domain=\"sharedpref\""))
+        assertTrue(xml.contains("session_state_prefs.xml"))
+        assertFalse(xml.contains("domain=\"file\""))
+    }
+}
+
+PRIVACY.md must remain consistent:
+- active session not backed up
+- proofs app-private
+- proof files/metadata outside configured backup domains
+- Billing ownership controlled by Google Play, not local backup
+
+Commit:
+test(privacy): guard backup exclusions and local proof storage
+
+============================================================
+8. P1 - DARE PROOF ORPHAN / LEGACY HARDENING
+============================================================
+Current DareProofManager is already strong. Keep canonical path checks,
+FileProvider, metadata persistence, and app-private storage.
+
+Improve legacy JPEG import so unknown JPEGs are not converted forever.
+
+MODIFY DareProofManager.kt
+------------------------------------------------------------
+Add:
+private const val PREFS_NAME = "dare_proof_migration_prefs"
+private const val KEY_LEGACY_IMPORT_COMPLETE = "legacy_import_complete"
+
+Add:
+
+private fun importLegacyProofFilesOnce(context: Context) {
+    val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    if (prefs.getBoolean(KEY_LEGACY_IMPORT_COMPLETE, false)) return
+
+    val knownFiles = proofs.mapTo(mutableSetOf()) { it.fileName }
+
+    getProofDirectory(context)
+        .listFiles()
+        ?.filter { it.isFile && it.extension.equals("jpg", ignoreCase = true) }
+        ?.filterNot { it.name in knownFiles }
+        ?.forEach { file ->
+            proofs.add(
+                DareProof(
+                    dareText = "Previous dare",
+                    playerName = "Player",
+                    playerEmoji = "🎮",
+                    fileName = file.name,
+                    timestamp = file.lastModified()
+                )
+            )
+        }
+
+    prefs.edit().putBoolean(KEY_LEGACY_IMPORT_COMPLETE, true).apply()
+}
+
+Replace unconditional legacy import in loadProofsFromStorage() with:
+importLegacyProofFilesOnce(context)
+
+Optional stale orphan cleanup after migration:
+
+private fun cleanupOrphanFiles(context: Context) {
+    val tracked = proofs.mapTo(mutableSetOf()) { it.fileName }
+    val cutoff = System.currentTimeMillis() - 24L * 60L * 60L * 1000L
+
+    getProofDirectory(context)
+        .listFiles()
+        ?.filter { it.isFile }
+        ?.filter { it.name !in tracked && it.lastModified() < cutoff }
+        ?.forEach { it.delete() }
+}
+
+Commit:
+fix(proofs): make legacy import one-time and clean stale orphans
+
+============================================================
+9. P1 - REMOVE UNUSED BILLING COROUTINE SCOPE
+============================================================
+Current BillingManager receives CoroutineScope but does not use it.
+
+MODIFY BillingManager.kt
+------------------------------------------------------------
+Remove:
+import kotlinx.coroutines.CoroutineScope
+
+Change:
+class BillingManager(
+    context: Context,
+    private val coroutineScope: CoroutineScope
+) : PurchasesUpdatedListener
+
+to:
+class BillingManager(
+    context: Context
+) : PurchasesUpdatedListener
+
+MODIFY MainActivity.kt
+------------------------------------------------------------
+Change:
+billingManager = BillingManager(this, lifecycleScope)
+
+to:
+billingManager = BillingManager(this)
+
+Remove lifecycleScope import if otherwise unused.
+
+Commit:
+refactor(billing): remove unused coroutine scope dependency
+
+============================================================
+10. P1 - ACCESSIBILITY TOUCH TARGET FOUNDATION
+============================================================
+Goal:
+- >=48dp touch targets
+- meaningful icon-only labels
+- parent semantics for custom clickable components
+- no duplicate TalkBack announcements
+
+MODIFY GlassButton.kt
+------------------------------------------------------------
+Add imports:
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+
+For GlassButton Box modifier, add before clickable:
+
+.heightIn(min = 48.dp)
+.semantics {
+    role = Role.Button
+    contentDescription = text
+}
+.clickable(
+    role = Role.Button,
+    onClick = onClick
+)
+
+Do not use both old .clickable { } and new clickable at the same time.
+
+For GlassIconButton parent:
+
+.heightIn(min = 56.dp)
+.widthIn(min = 64.dp)
+.semantics {
+    role = Role.Button
+    contentDescription = text
+}
+.clickable(role = Role.Button, onClick = onClick)
+
+Keep child Icon(contentDescription = null) because parent already owns label.
+
+Use these action labels throughout app:
+- premium icon: "Open Premium"
+- close icon: "Exit game"
+- back icon: "Back"
+- camera: "Take dare proof photo"
+- favorite: "Add to favorites" / "Remove from favorites"
+
+Commit:
+fix(accessibility): standardize touch targets and control labels
+
+============================================================
+11. P1 - LARGE FONT + SMALL SCREEN HARDENING
+============================================================
+Test critical screens at font scales 1.0 / 1.3 / 1.5 / 2.0.
+
+Critical screens:
+HomeScreen
+ModeSelectionScreen
+DifficultySelectionScreen
+CouplesGameScreen
+KidsSafeGameScreen
+PremiumScreen
+GameCompletionScreen
+
+Rules:
+- avoid fixed height when text can wrap
+- no functional text below 12sp
+- no inaccessible action below viewport
+- no weight spacers inside unbounded verticalScroll content
+- use navigationBarsPadding/statusBarsPadding consistently
+
+If Home clips at 2.0 font scale, use a scrollable content column:
+
+val scrollState = rememberScrollState()
+
+Column(
+    modifier = Modifier
+        .fillMaxSize()
+        .statusBarsPadding()
+        .navigationBarsPadding()
+        .verticalScroll(scrollState)
+        .padding(24.dp),
+    horizontalAlignment = Alignment.CenterHorizontally
+) {
+    ...
+}
+
+For Couples Truth/Dare buttons, prefer:
+Modifier
+    .weight(1f)
+    .heightIn(min = 120.dp)
+
+instead of rigid width if text clips.
+
+Manual device widths:
+360x640dp
+393x873dp
+>=600dp tablet
+
+Commit:
+fix(ui): harden critical screens for large text and small displays
+
+============================================================
+12. P2 - COMPOSE UI SMOKE TESTS
+============================================================
+Add dependencies compatible with the existing Compose stack in app/build.gradle.kts:
+
+androidTestImplementation(platform("androidx.compose:compose-bom:2024.01.00"))
+androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+debugImplementation("androidx.compose.ui:ui-test-manifest")
+androidTestImplementation("androidx.test.ext:junit:1.1.5")
+androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+
+Do not upgrade these independently in this phase.
+
+NEW TEST: HomeScreenTest.kt
+------------------------------------------------------------
+package com.spinbottle.truthdare.games.screens
+
+import androidx.compose.ui.test.assertDoesNotExist
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithText
+import org.junit.Rule
+import org.junit.Test
+
+class HomeScreenTest {
+    @get:Rule
+    val composeRule = createComposeRule()
+
+    @Test
+    fun resumeVisibleWhenSessionExists() {
+        composeRule.setContent {
+            HomeScreen(
+                onStartGame = {},
+                onResumeGame = {},
+                canResumeGame = true,
+                onKidsMode = {},
+                onHowToPlay = {},
+                onSettings = {},
+                onMyPrompts = {},
+                isPremium = true
+            )
+        }
+        composeRule.onNodeWithText("Resume Game").assertIsDisplayed()
+    }
+
+    @Test
+    fun resumeHiddenWithoutSession() {
+        composeRule.setContent {
+            HomeScreen(
+                onStartGame = {},
+                onResumeGame = {},
+                canResumeGame = false,
+                onKidsMode = {},
+                onHowToPlay = {},
+                onSettings = {},
+                onMyPrompts = {},
+                isPremium = true
+            )
+        }
+        composeRule.onNodeWithText("Resume Game").assertDoesNotExist()
+    }
+}
+
+Add smoke tests for:
+- Settings opens/back visible
+- Couples invalid player fallback
+- Premium restore action visible
+- Kids exit boundary if composable seams permit
+
+Instrumentation tests require emulator/device. Do not call them CI-passed unless
+connectedDebugAndroidTest actually ran.
+
+Commit:
+test(ui): add critical Compose smoke coverage
+
+============================================================
+13. P2 - ACCESSIBILITY SEMANTICS SWEEP
+============================================================
+Search for:
+IconButton(
+.clickable
+combinedClickable
+Switch(
+Slider(
+Image(
+Icon(
+
+For each:
+- action icon -> meaningful contentDescription
+- decorative icon -> null
+- parent clickable + icon -> parent semantics, icon null
+- locked item -> disabled + spoken reason
+- slider -> visible label/value
+- custom clickable card -> Role.Button
+
+Example locked theme card semantics:
+
+.semantics {
+    role = Role.Button
+    contentDescription = if (isUnlocked) {
+        "${bottle.name} bottle"
+    } else {
+        "${bottle.name} bottle, locked"
+    }
+}
+.clickable(enabled = isUnlocked, role = Role.Button) { ... }
+
+Disabled Couples card:
+"Couples Mode, unavailable. Requires exactly 2 players."
+
+Do not use color as the only state indicator.
+
+============================================================
+14. P2 - SETTINGS REACTIVITY WITHOUT OVER-ARCHITECTURE
+============================================================
+Do not rewrite the whole app to Clean Architecture.
+Use StateFlow only where a setting is observed reactively by multiple screens.
+
+Example SettingsHolder pattern:
+
+private val _soundEnabledFlow = MutableStateFlow(soundEnabled)
+val soundEnabledFlow: StateFlow<Boolean> = _soundEnabledFlow.asStateFlow()
+
+var soundEnabled: Boolean
+    get() = prefs?.getBoolean(KEY_SOUND, true) ?: true
+    set(value) {
+        prefs?.edit()?.putBoolean(KEY_SOUND, value)?.apply()
+        _soundEnabledFlow.value = value
+    }
+
+Compose:
+val soundEnabled by SettingsHolder.soundEnabledFlow.collectAsState()
+
+Good candidates:
+- sound
+- haptics
+- other settings shown on multiple active destinations
+
+Do not convert static prompt lists to Flow.
+
+============================================================
+15. P2 - PERFORMANCE VERIFICATION
+============================================================
+Already improved:
+- finite confetti
+- no per-frame confetti list rebuild
+- no mutable Particle x/y updates during draw
+
+Now profile:
+1. Home idle 5 minutes
+2. Game 50 turns
+3. Quick Fire 10 minutes
+4. completion screen repeated
+5. Dare Gallery 100 images
+6. background/foreground repeatedly
+
+Look for:
+- growing retained Activity count
+- runaway coroutine jobs
+- growing bitmap heap
+- high idle CPU
+
+If DareGallery decodes full-resolution JPEGs for small cells, request display-sized Coil images.
+Example:
+
+AsyncImage(
+    model = ImageRequest.Builder(LocalContext.current)
+        .data(uri)
+        .size(320)
+        .crossfade(true)
+        .build(),
+    contentDescription = "Dare proof for ${proof.playerName}",
+    contentScale = ContentScale.Crop
+)
+
+On tablets use actual rendered size rather than blindly fixing 320px.
+
+============================================================
+16. P2 - RELEASE / R8 GUARDING
+============================================================
+Keep targeted Gson/session rules.
+Never restore:
+-keep class androidx.compose.** { *; }
+
+Prefer extracting a serializer if you want direct JSON round-trip testing:
+SessionSnapshot.kt
+SessionSnapshotCodec.kt
+
+Then test:
+- player list
+- enum names
+- nullable targetRounds
+- challenge state
+- completionRecorded
+- per-mode fields
+
+Do not expose mutable session internals just to make tests easy.
+
+============================================================
+17. P2 - DEPENDENCY MODERNIZATION STRATEGY
+============================================================
+Current key stack:
+compileSdk 36
+targetSdk 36
+AGP 8.13.2
+Gradle 8.13
+Java/Kotlin JVM 17
+Kotlin 1.9.22
+Compose BOM 2024.01.00
+Core KTX 1.12
+Lifecycle 2.7
+Activity Compose 1.8.2
+Navigation Compose 2.7.6
+DataStore 1.0
+Coroutines 1.7.3
+Gson 2.10.1
+Coil 2.5.0
+Billing 9.1.0
+
+Use a separate branch:
+astra/spinscore-dependency-modernization
+
+Upgrade groups in order:
+1. Kotlin + Compose compiler strategy
+2. Compose BOM
+3. Activity/Lifecycle/Navigation
+4. Core
+5. DataStore
+6. Coroutines
+7. Coil
+8. Gson only if needed
+9. AGP/Gradle only if compatibility requires
+
+After every group run full build gates. No mass-upgrade commit.
+
+============================================================
+18. BILLING PRODUCTION CHECKLIST
+============================================================
+Keep current behavior:
+- lifetime INAPP for new purchase UI
+- legacy monthly SUBS ownership recognized
+- partial query does not clear premium
+- PURCHASED items acknowledged
+- PENDING handled
+- automatic reconnection enabled
+- refresh on Activity resume
+- product price from Play, not hardcoded
+
+Manual Play checks:
+[ ] package matches com.spinbottle.truthdare.games
+[ ] lifetime product ID matches PremiumEntitlementResolver
+[ ] legacy monthly ID matches resolver
+[ ] lifetime product ACTIVE
+[ ] correct pricing
+[ ] license tester configured
+[ ] pending transaction tested
+[ ] already-owned tested
+[ ] restore after reinstall tested
+[ ] purchase cancel tested
+[ ] Billing unavailable UI tested
+[ ] release signing correct
+
+Never unlock premium only because launchBillingFlow returned OK.
+Never log purchase tokens.
+
+============================================================
+19. KIDS + MATURE CONTENT RELEASE DECISION
+============================================================
+The app contains both Kids Safe and mature/romantic/party content.
+This is a Play Console policy declaration decision, not only a code decision.
+
+Before release:
+- review store listing language
+- complete Target audience accurately
+- complete IARC content rating accurately
+- if any child age group is selected, verify all applicable Families requirements
+- never market mature content as child content
+- PIN is a parent/restricted-content control, not real identity/age verification
+
+============================================================
+20. CAMERA / PROOF MANUAL MATRIX
+============================================================
+Test on API 26 if possible, Android 12, Android 14, Android 16/API 36.
+
+[ ] camera available
+[ ] no camera app
+[ ] permission granted
+[ ] permission denied
+[ ] permission permanently denied
+[ ] capture success
+[ ] capture cancel
+[ ] background while camera open
+[ ] process killed after temp file creation
+[ ] gallery opens proof
+[ ] delete removes metadata + file
+[ ] FileProvider only exposes dedicated path
+[ ] proof files absent from configured backup domains
+[ ] gallery with 100 images does not OOM
+
+============================================================
+21. GAMEPLAY REGRESSION MATRIX
+============================================================
+CLASSIC
+[ ] 2 players
+[ ] 16 players
+[ ] truth complete -> +1 truth +1 score
+[ ] dare complete -> +1 dare +1 score
+[ ] skip -> +1 skip and no score
+[ ] visual bottle result matches selected player
+[ ] prompt history records used text
+[ ] favorites work
+[ ] target score ending works
+
+QUICK FIRE
+[ ] lifecycle pause/resume does not double-run timer
+[ ] no duplicate auto-skip
+[ ] process death returns to safe turn state
+[ ] current player valid after restore
+[ ] timer never below 0
+[ ] completion fires once
+
+COUPLES
+[ ] 1 player blocked
+[ ] exactly 2 players allowed
+[ ] 3+ players blocked
+[ ] intimacy level restored
+[ ] level 5 restricted path behaves correctly
+[ ] consent-sensitive prompts remain safe
+[ ] no surprise physical-contact instruction regression
+
+KIDS SAFE
+[ ] parent PIN required to exit
+[ ] exit flow cannot create a new PIN when missing
+[ ] only kids-safe prompt source used
+[ ] no unsafe physical challenge
+[ ] no privacy/account/device-access dare
+[ ] no accidental mature prompt
+
+CHALLENGE
+[ ] level progression correct
+[ ] rounds per level correct
+[ ] restored challenge state correct
+
+PARTY
+[ ] PIN/restricted boundary correct
+[ ] unsafe removed prompts do not reappear
+[ ] no dead tournament-elimination control
+
+============================================================
+22. PROMPT SAFETY REGRESSION
+============================================================
+Keep a deny-list regression test for phrases that caused prior risk.
+Suggested normalized fragments:
+
+last 10 texts
+order something online
+whatever the group decides
+pick a dare for you from the internet
+wall sit
+spotify top artists
+secret about someone
+stalked online
+go through your camera
+surprise kiss
+guide your hands wherever
+strip tease
+blindfold
+marker on your face
+
+Do not ban generic harmless words. The test should target unsafe wording,
+not all romance or all physical activity.
+
+Also ensure Kids prompts are marked safe.
+If PromptsDatabase does not expose an immutable read API, add one:
+
+fun getPrompts(
+    type: PromptItemType? = null,
+    category: PromptCategory? = null
+): List<PromptItem> {
+    return allPrompts.filter { prompt ->
+        (type == null || prompt.type == type) &&
+        (category == null || prompt.category == category)
+    }
+}
+
+TEST:
+
+@Test
+fun everyKidsPromptIsMarkedKidsSafe() {
+    val kids = PromptsDatabase.getPrompts(category = PromptCategory.KIDS)
+    assertTrue(kids.isNotEmpty())
+    assertTrue(kids.all { it.isSafeForKids })
+}
+
+Never expose mutable allPrompts directly.
+
+============================================================
+23. PLAYER PROFILE CONSISTENCY
+============================================================
+Use exactly one normalization function for persistent profile identity.
+
+internal fun normalizePlayerKey(name: String): String =
+    name.trim().lowercase()
+
+Use this in PlayerProfileManager reads/writes.
+
+Reject in setup:
+- blank
+- whitespace-only
+- duplicate after trim/case normalization
+
+TEST:
+"Alex", " alex ", "ALEX" should map to the same profile identity.
+
+Do not silently merge two active players after they were already added;
+prevent duplicates during setup instead.
+
+============================================================
+24. SOUND / HAPTIC RESOURCE CLEANUP
+============================================================
+If SoundManager owns an unused SoundPool, either remove it or actually use and
+release it. Do not keep a dormant native resource.
+
+If SoundManager needs disposal:
+
+@Composable
+fun rememberSoundManager(): SoundManager {
+    val context = LocalContext.current
+    val manager = remember(context.applicationContext) {
+        SoundManager(context.applicationContext)
+    }
+
+    DisposableEffect(manager) {
+        onDispose { manager.release() }
+    }
+
+    return manager
+}
+
+Only add this if SoundManager really owns a disposable resource.
+Do not add fake lifecycle complexity.
+
+============================================================
+25. ERROR HANDLING / USER MESSAGES
+============================================================
+Use short actionable user text.
+
+Camera:
+"Camera is unavailable on this device."
+
+Proof save:
+"Photo could not be saved."
+
+Billing:
+"Google Play Billing is unavailable right now."
+
+Restore:
+"Purchases could not be fully verified. Try again."
+
+Corrupt session:
+"Your previous game could not be restored."
+
+PIN:
+"Incorrect PIN. Try again."
+
+Never expose in UI:
+- stack traces
+- filesystem paths
+- purchase tokens
+- raw Billing debugMessage
+- exception class names
+
+============================================================
+26. SECURITY CHECKLIST
+============================================================
+[ ] exported components reviewed
+[ ] MainActivity exported only because launcher
+[ ] FileProvider exported=false
+[ ] FileProvider grantUriPermissions=true
+[ ] only dedicated proof path exposed
+[ ] no file:// URI
+[ ] no INTERNET permission unless a real feature needs it
+[ ] no hardcoded API secret
+[ ] no debug signing assumption in release
+[ ] no purchase token logging
+[ ] no PIN logging
+[ ] active session excluded from backup
+[ ] temporary proof files cleaned
+[ ] release minification passes
+
+Important:
+A local 4-digit PIN is a convenience/restriction control, not strong security.
+Do not market it as secure identity verification.
+
+============================================================
+27. UI POLISH REQUIRED FOR ~8.5
+============================================================
+Do not redesign the entire app. Fix consistency.
+
+1. consistent 16/20/24dp spacing rhythm
+2. consistent primary button height
+3. consistent top bar height
+4. same Back/Exit icon treatment
+5. same disabled opacity and explanation
+6. no meaningful 10sp text
+7. system bars never cover content
+8. actions reachable at 2.0 font scale
+9. adequate contrast
+10. empty states for gallery/custom prompts/favorites where relevant
+11. Billing loading/error state
+12. purchase CTA disabled until product details loaded
+13. selected theme/bottle indicated by more than color
+
+Example empty proof state:
+
+Column(
+    modifier = Modifier
+        .fillMaxWidth()
+        .padding(32.dp),
+    horizontalAlignment = Alignment.CenterHorizontally
+) {
+    Text("No dare proofs yet", style = MaterialTheme.typography.titleMedium)
+    Spacer(Modifier.height(8.dp))
+    Text(
+        "Complete a dare and choose to take a proof photo.",
+        style = MaterialTheme.typography.bodyMedium,
+        color = TextMuted
+    )
+}
+
+============================================================
+28. LOCAL DATA DELETION UX
+============================================================
+If not already available, provide separate actions rather than one confusing
+"clear everything" button:
+- Clear prompt history
+- Delete all dare proofs
+- Reset progress/themes (optional)
+- Reset all local data (advanced; strong confirmation)
+
+Add to DareProofManager if needed:
+
+fun deleteAllProofs(): Boolean {
+    val context = requireContext()
+    val directory = getProofDirectory(context)
+
+    val filesDeleted = directory
+        .listFiles()
+        .orEmpty()
+        .all { !it.exists() || it.delete() }
+
+    if (filesDeleted) {
+        proofs.clear()
+        persistMetadata(context)
+    }
+
+    return filesDeleted
+}
+
+Confirmation:
+Title: Delete all dare proofs?
+Body: This permanently removes all locally stored dare proof photos from this app.
+Buttons: Cancel / Delete
+
+============================================================
+29. CI HARDENING
+============================================================
+Keep current workflow gates:
+clean
+testDebugUnitTest
+lintDebug
+assembleDebug
+lintRelease
+assembleRelease
+bundleRelease
+
+Add release bundle artifact:
+
+- name: Upload release bundle
+  uses: actions/upload-artifact@v4
+  with:
+    name: spin-bottle-release-aab
+    path: app/build/outputs/bundle/release/*.aab
+    if-no-files-found: error
+    retention-days: 7
+
+Optional lint artifact:
+
+- name: Upload lint reports
+  if: always()
+  uses: actions/upload-artifact@v4
+  with:
+    name: lint-reports
+    path: app/build/reports/lint-results-*.html
+    if-no-files-found: ignore
+    retention-days: 7
+
+Never upload signing secrets or private keystores.
+
+============================================================
+30. OPTIONAL INSTRUMENTATION CI
+============================================================
+After normal CI stays stable, add a second emulator workflow for:
+./gradlew connectedDebugAndroidTest
+
+Keep emulator CI separate because it is slower and can be flaky.
+
+Minimum instrumentation coverage:
+- Home resume button
+- navigation smoke
+- Settings opens
+- Couples invalid-player guard
+- Kids exit protection if feasible
+- Premium restore UI exists
+
+============================================================
+31. README UPDATE
+============================================================
+README should contain:
+- app purpose
+- local-first architecture
+- applicationId
+- minSdk/targetSdk
+- build commands
+- CI status
+- privacy summary
+- camera/proof behavior
+- Billing test guidance
+- repo/app/package naming difference is intentional
+- no online multiplayer claim
+- no backend/analytics claim unless later added
+- no "production ready" claim before manual release checks
+
+Add Production validation commands:
+
+./gradlew clean
+./gradlew testDebugUnitTest
+./gradlew lintDebug
+./gradlew assembleDebug
+./gradlew lintRelease
+./gradlew assembleRelease
+./gradlew bundleRelease
+
+State clearly that camera, TalkBack, large text, Billing purchases, performance
+and process-death UX need device/emulator verification.
+
+============================================================
+32. AUDIT_FINDINGS.md UPDATE
+============================================================
+Maintain a living backlog with this format:
+
+ID:
+Severity:
+Area:
+Status:
+Evidence:
+Risk:
+Fix:
+Commit:
+Verification:
+
+Example:
+
+ID: SESSION-RESUME-01
+Severity: P1
+Area: State persistence
+Status: Fixed
+Evidence:
+GameSessionHolder restored state but Home had no resume action.
+Risk:
+Persisted active session was effectively undiscoverable after a cold launch.
+Fix:
+Added explicit Resume Game CTA and deterministic resume routing.
+Commit:
+<fill exact SHA>
+Verification:
+- SessionResumeRouterTest
+- manual process-kill test
+- CI run <number>
+
+Use two separate sections:
+DEVICE VERIFICATION REQUIRED
+PLAY CONSOLE VERIFICATION REQUIRED
+
+Never mark them PASS only from static source inspection.
+
+============================================================
+33. PR UPDATE
+============================================================
+Use title:
+[PROD] SpinScore production hardening — state, safety, billing, privacy, CI
+
+Suggested body:
+
+## Baseline
+master: 560b80a6e0453a57f62cbcfea9bf88a845e88212
+
+## Scope
+- build/release hardening
+- API 36
+- Billing 9
+- session persistence/resume
+- Kids/mature boundaries
+- prompt safety
+- proof photo privacy
+- accessibility
+- tests/CI
+- repository hygiene
+
+## Automated verification
+- clean
+- unit tests
+- debug lint
+- debug assemble
+- release lint
+- release assemble
+- release bundle
+
+## Manual verification still required
+- camera devices
+- TalkBack/accessibility
+- large font/small screen
+- Billing license tester
+- Play Console declarations
+- signing
+- content rating
+- Data Safety
+- target audience
+
+## Do not merge until
+- all automated checks green
+- P1 backlog closed
+- AAB inspected
+- manual release checklist complete
+
+============================================================
+34. CURRENT PLAY REQUIREMENTS TO VERIFY
+============================================================
+As of 2026-09-20:
+
+TARGET API
+Google Play requires ordinary Android mobile new apps/updates to target Android
+16 / API 36 from August 31, 2026.
+Current project targetSdk is 36.
+Official source:
+https://developer.android.com/google/play/requirements/target-sdk
+
+BILLING
+Play Billing Library 9 has a new-app/update deadline through August 31, 2028
+in the current support table.
+Current project uses Billing 9.1.0.
+Official source:
+https://developer.android.com/google/play/billing/deprecation-faq.html
+
+TARGET AUDIENCE / FAMILIES
+If a target audience includes children, applicable Families requirements apply.
+Do not infer the Play declaration only from the existence of Kids Mode.
+Official sources:
+https://support.google.com/googleplay/android-developer/answer/9867159
+https://support.google.com/googleplay/android-developer/answer/9893335
+
+============================================================
+35. DATA SAFETY PREPARATION
+============================================================
+Use the final release binary and dependency tree, not assumptions.
+
+Currently verified architecture indicates:
+- no custom backend
+- no Firebase in the inspected architecture
+- no general analytics SDK in the inspected architecture
+- Google Play Billing integration
+- camera proof photos stored locally/app-private
+- prompt/settings/profile/session state local
+
+Before submitting Data Safety:
+1. inspect final dependency tree
+2. inspect merged release manifest
+3. inspect Play SDK Index warnings
+4. confirm whether any dependency transmits data
+5. answer based on final release binary
+
+Commands:
+./gradlew :app:dependencies
+./gradlew :app:processReleaseMainManifest
+./gradlew :app:bundleRelease
+
+Inspect merged manifests and release AAB output.
+
+============================================================
+36. MANUAL RELEASE DEVICE MATRIX
+============================================================
+A. small phone ~360dp width
+B. typical phone ~390-430dp width
+C. Android 16/API 36 emulator/device
+D. >=600dp tablet/foldable emulator
+
+For each:
+[ ] cold launch
+[ ] new game
+[ ] resume interrupted game
+[ ] background/foreground
+[ ] orientation behavior if supported
+[ ] font scale 1.5
+[ ] font scale 2.0
+[ ] TalkBack basic navigation
+[ ] camera capture
+[ ] proof gallery
+[ ] proof delete
+[ ] Quick Fire
+[ ] Couples
+[ ] Kids
+[ ] Premium
+[ ] offline mode
+
+============================================================
+37. AUTOMATED RELEASE GATE
+============================================================
+Required:
+./gradlew clean
+./gradlew testDebugUnitTest
+./gradlew lintDebug
+./gradlew assembleDebug
+./gradlew lintRelease
+./gradlew assembleRelease
+./gradlew bundleRelease
+
+Device/emulator:
+./gradlew connectedDebugAndroidTest
+
+Dependency inspection:
+./gradlew :app:dependencies
+
+FAIL RELEASE if:
+- compile error
+- unit test failure
+- blocking lint
+- R8 release error
+- missing AAB
+- wrong applicationId
+- invalid/reused versionCode
+- Billing product mismatch
+- broken camera URI
+- Kids exit bypass
+- premium entitlement regression
+
+============================================================
+38. VERSIONING
+============================================================
+Current:
+versionCode 1
+versionName 1.0.0
+
+If versionCode 1 has never been uploaded to the real Play app, it may remain.
+If Play already has versionCode 1, increment it.
+
+Example only:
+
+defaultConfig {
+    versionCode = 2
+    versionName = "1.0.1"
+}
+
+Never reuse a Play-uploaded versionCode.
+
+============================================================
+39. DO NOT ADD BEFORE 8.5
+============================================================
+- chat
+- random social login
+- online multiplayer
+- cloud accounts
+- public photo sharing
+- ads
+- location
+- microphone
+- contacts
+- notification spam
+- AI challenge backend
+- broad Firebase stack
+- subscription tiers with no recurring value
+- fake age-verification claims
+
+Every new SDK/permission adds privacy and release complexity.
+
+============================================================
+40. SUGGESTED SCORE IMPROVEMENT
+============================================================
+Current approximate engineering readiness: ~7.6/10
+
+After P1:
+- cold resume
+- backup guard
+- prompt progress fix
+- proof cleanup
+- Billing cleanup
+- accessibility baseline
+- adaptive critical screens
+Expected: ~8.0-8.2
+
+After P2:
+- stable per-mode resume
+- Compose smoke tests
+- accessibility sweep
+- performance verification
+- release guard tests
+- fully synchronized audit/PR evidence
+Expected: ~8.4-8.6
+
+This is an engineering-readiness estimate, not a formal certification.
+
+============================================================
+41. DEFINITION OF DONE FOR ~8.5
+============================================================
+CODE
+[ ] no known P0
+[ ] no unresolved code-fixable P1
+[ ] applicationId unchanged
+[ ] cold Resume Game implemented
+[ ] stable per-mode state persisted
+[ ] unique prompt denominator fixed
+[ ] Billing constructor cleaned
+[ ] proof migration/orphan behavior deterministic
+[ ] critical accessibility complete
+[ ] critical adaptive layout complete
+
+TESTS
+[ ] session router tests
+[ ] GameSessionHolder tests
+[ ] prompt safety tests
+[ ] prompt count tests
+[ ] PIN tests
+[ ] billing resolver tests
+[ ] backup policy tests
+[ ] critical Compose UI tests
+[ ] connected tests before release
+
+BUILD
+[ ] clean pass
+[ ] testDebugUnitTest pass
+[ ] lintDebug pass
+[ ] assembleDebug pass
+[ ] lintRelease pass
+[ ] assembleRelease pass
+[ ] bundleRelease pass
+[ ] AAB retained/inspected
+
+MANUAL
+[ ] camera
+[ ] process-death resume
+[ ] TalkBack
+[ ] large font
+[ ] small phone
+[ ] Android 16
+[ ] Billing license tester
+[ ] proof delete
+[ ] Kids exit
+[ ] Couples exact-2 rule
+
+PLAY
+[ ] target audience
+[ ] content rating
+[ ] Data Safety
+[ ] privacy-policy URL
+[ ] product IDs
+[ ] screenshots
+[ ] signing
+[ ] versionCode
+
+DOCS
+[ ] README current
+[ ] PRIVACY current
+[ ] AUDIT_FINDINGS current
+[ ] PR current
+[ ] residual risks documented
+
+============================================================
+42. RECOMMENDED COMMIT SEQUENCE
+============================================================
+1. feat(session): expose safe cold-launch game resume
+2. test(session): cover resume routing and restored state
+3. feat(session): persist stable per-mode turn state
+4. fix(prompts): align history progress with unique prompt count
+5. test(privacy): guard backup exclusions and local proof storage
+6. fix(proofs): make legacy import one-time and clean stale orphans
+7. refactor(billing): remove unused coroutine scope dependency
+8. fix(accessibility): standardize touch targets and labels
+9. fix(ui): harden critical screens for large text and small displays
+10. test(ui): add critical Compose smoke coverage
+11. ci(android): upload release bundle and lint reports
+12. docs(audit): synchronize findings and release checklist
+13. docs(pr): refresh production hardening summary
+
+After each commit/small group, rerun relevant tests; after every phase, run full gates.
+
+============================================================
+43. AI / CODING AGENT EXECUTION INSTRUCTIONS
+============================================================
+If an AI coding agent uses this file:
+
+1. Read the current branch before every edit.
+2. Adapt snippets if the branch moved; never blindly overwrite current code.
+3. Preserve completed production-hardening work.
+4. Implement one numbered item at a time.
+5. Show changed files.
+6. Run tests immediately.
+7. Fix failures before the next item.
+8. Commit atomically.
+9. Update AUDIT_FINDINGS.md as work closes.
+10. Never merge master automatically.
+11. Never claim a device/Play test that was not executed.
+12. Never invent test output.
+13. If code already satisfies an item, record evidence rather than rewriting it.
+14. Do not add unrelated features.
+15. Prefer small pure functions for testable logic.
+16. Never change applicationId.
+17. Do not remove Billing legacy entitlement recognition without evidence.
+18. Do not weaken Kids PIN boundaries.
+19. Do not make proof files broadly shareable.
+20. Do not reintroduce unsafe prompt wording.
+
+============================================================
+44. FINAL RELEASE REPORT FORMAT
+============================================================
+Produce final report in this order:
+
+A. Baseline master SHA
+B. Hardening branch
+C. Final head SHA
+D. PR number/title
+E. CI run number
+F. clean result
+G. debug unit test result
+H. debug lint result
+I. debug assemble result
+J. release lint result
+K. release assemble result
+L. release bundle result
+M. unit test summary
+N. instrumentation test result
+O. applicationId
+P. versionCode/versionName
+Q. minSdk/compileSdk/targetSdk
+R. Billing version
+S. camera verification
+T. process-death verification
+U. Kids PIN verification
+V. prompt safety verification
+W. backup/privacy verification
+X. accessibility verification
+Y. performance verification
+Z. Play target audience status
+AA. content rating status
+AB. Data Safety status
+AC. privacy policy status
+AD. signing/version status
+AE. unresolved P2/P3
+AF. final scorecard
+
+Do not mark device/Play sections green from source inspection alone.
+
+============================================================
+45. TARGET SCORECARD
+============================================================
+Build/reproducibility ............ 9.0
+Core gameplay correctness ....... 8.5
+Bottle/spin correctness ......... 9.0
+State persistence/resume ........ 8.5
+Prompt system ................... 8.5
+Kids safety ..................... 9.0
+Mature-content controls ......... 8.5
+Camera/proof privacy ............ 8.5
+Billing ......................... 9.0
+Premium UX ...................... 8.5
+UI consistency .................. 8.0-8.5
+Accessibility ................... 8.0
+Performance ..................... 8.0-8.5
+Battery/resource use ............ 8.0
+Privacy ......................... 9.0
+Security ........................ 8.5
+Architecture .................... 8.0
+Maintainability ................. 8.5
+Testing ......................... 8.0-8.5
+CI .............................. 9.0
+Repository quality .............. 8.5
+Play readiness .................. 8.0-8.5 after manual checks
+Product differentiation ......... 7.0-7.5
+
+Overall target: ~8.5/10
+
+============================================================
+46. CURRENT VERIFIED BASELINE SUMMARY
+============================================================
+At the time this document was created:
+- master baseline SHA:
+  560b80a6e0453a57f62cbcfea9bf88a845e88212
+- hardening branch head:
+  96588cd05ff98abbd7807c8daa1fb9e365d81bc4
+- GitHub Actions Android CI run #78:
+  SUCCESS
+- draft PR #1 exists and targets master
+- applicationId remains:
+  com.spinbottle.truthdare.games
+
+This file is intended as the implementation blueprint for the next hardening
+pass. Re-read the current branch before applying each code block because the
+repository may change after this snapshot.
+
+============================================================
+END OF IMPLEMENTATION PLAN
+============================================================
