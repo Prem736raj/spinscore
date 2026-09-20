@@ -128,9 +128,10 @@ object GameSessionHolder {
         prefs = context.applicationContext
             .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-        val json = prefs?.getString(KEY_SNAPSHOT, null) ?: return
+        val rawJson = prefs?.getString(KEY_SNAPSHOT, null) ?: return
+        val migratedPayload = com.spinbottle.truthdare.games.game.SessionMigrationPipeline.migrateToLatest(rawJson)
         runCatching {
-            gson.fromJson(json, SessionSnapshot::class.java)
+            gson.fromJson(migratedPayload, SessionSnapshot::class.java)
         }.onSuccess { snapshot ->
             restore(snapshot)
         }.onFailure {
@@ -324,7 +325,11 @@ object GameSessionHolder {
             couplesIntimacyLevel = couplesIntimacyLevel
         )
 
-        storage.edit().putString(KEY_SNAPSHOT, gson.toJson(snapshot)).apply()
+        val envelope = com.spinbottle.truthdare.games.game.SessionEnvelope(
+            schemaVersion = com.spinbottle.truthdare.games.game.CURRENT_SESSION_SCHEMA,
+            payload = gson.toJson(snapshot)
+        )
+        storage.edit().putString(KEY_SNAPSHOT, gson.toJson(envelope)).apply()
     }
 
     private fun restore(snapshot: SessionSnapshot) {
