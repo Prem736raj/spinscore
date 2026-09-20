@@ -398,7 +398,12 @@ fun DifficultySelectionScreen(
                 
                 // Start Game button
                 Button(
-                    onClick = onStartGame,
+                    onClick = {
+                        selectedDifficulty?.let { difficulty ->
+                            GameSessionHolder.difficulty = difficulty
+                            onStartGame()
+                        }
+                    },
                     enabled = selectedDifficulty != null,
                     modifier = Modifier
                         .fillMaxWidth()
