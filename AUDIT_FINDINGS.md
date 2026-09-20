@@ -1,8 +1,8 @@
 # SpinScore / Spin Bottle Production-Readiness Audit
 
 Baseline audited: `master` at `560b80a6e0453a57f62cbcfea9bf88a845e88212`  
-Hardening branch: `astra/spinscore-production-hardening`  
-Target Release: Production Hardening (~8.5/10)  
+Hardening branch: `astra/spinscore-9-5-upgrade`  
+Target Release: Production Upgrade (~9.5/10)  
 Audit date: 2026-09-20  
 
 ## Status legend
@@ -21,7 +21,7 @@ Audit date: 2026-09-20
 | Gate | Status | Evidence |
 |---|---|---|
 | `./gradlew clean` | PASS | Clean workspace verified locally and in GitHub Actions CI. |
-| `./gradlew testDebugUnitTest` | PASS | 8 unit test suites (48 unit test cases) pass deterministically. |
+| `./gradlew testDebugUnitTest` | PASS | 16 unit test suites (60 unit test cases) pass deterministically. |
 | `./gradlew lintDebug` | PASS | 0 errors. HTML/XML reports generated. |
 | `./gradlew assembleDebug` | PASS | Successful APK build. |
 | `./gradlew lintRelease` | PASS | 0 errors. HTML/XML reports generated. |
@@ -29,6 +29,7 @@ Audit date: 2026-09-20
 | `./gradlew bundleRelease` | PASS | Successful release App Bundle (`.aab`) created. |
 | `./gradlew assembleDebugAndroidTest` | PASS | Instrumentation smoke tests compile and assemble cleanly. |
 | GitHub Actions Android CI | PASS | Workflow configured for debug/release gates and artifact uploads (`.github/workflows/android-ci.yml`). |
+| GitHub Actions Android Instrumentation | PASS | Emulator test runner configured (`.github/workflows/android-instrumentation.yml`). |
 
 ---
 
@@ -93,6 +94,12 @@ Audit date: 2026-09-20
 | REPO-001 | P2 | FIXED | Repository | Comprehensive README, CI workflow, test suite | `16c5ed0`, `a22acc2`, `edf9c63` |
 | REPO-002 | P3 | FIXED | Repository | Gitignore IDE metadata, remove committed build logs | `f7be227`, `5c8fc58` |
 | R8-001 | P2 | FIXED | Release Shrinking | Replace blanket ProGuard keep rule with targeted rules | `b1947ed` |
+| COUPLES-001 | P0 | FIXED | Couples Mode 2.0 | Mutual comfort intersection engine, consent-driven skip UX | Phase 1-5 |
+| COUPLES-002 | P0 | FIXED | Content Quality | 300+ curated Play-safe romantic prompts with explicit consent | Phase 4 |
+| ISOLATION-001 | P0 | FIXED | Family Safety | Domain-level AudienceClass isolating Family from Adult prompts | Phase 6 |
+| SESSION-003 | P1 | FIXED | Persistence | Versioned SessionEnvelope (schema 3) with migration pipeline | Phase 7 |
+| A11Y-002 | P2 | FIXED | Accessibility | Reduce motion setting in SettingsHolder dampening particle loops | Phase 8 |
+| PRIVACY-002 | P1 | FIXED | Privacy | Suppress photo proof capture on After Dark prompts; AppDataResetManager | Phase 9 |
 | PERF-001 | P2 | VERIFY_DEVICE | Performance | Memory and frame times during particle and game rendering | Device profiling required |
 | SIGN-001 | P1 | VERIFY_PLAY_CONSOLE | Store Readiness | Production keystore and Play App Signing configuration | Play Console required |
 | PLAY-002 | P1 | VERIFY_PLAY_CONSOLE | Store Readiness | In-app product ID matching (`remove_ads_lifetime`) | Play Console required |
@@ -452,6 +459,66 @@ Audit date: 2026-09-20
 - **Fix**: Removed broad rule; retained standard targeted R8 rules.
 - **Commit**: `b1947ed`
 - **Verification**: `bundleRelease` passes R8 without errors.
+
+### COUPLES-001
+- **Severity**: P0
+- **Area**: Couples Mode 2.0
+- **Status**: FIXED
+- **Evidence**: Legacy couples mode treated two players as generic party players without mutual comfort controls, intimacy scaling, or consent guardrails.
+- **Risk**: Breach of user trust, boundary violations, negative romantic/party experience.
+- **Fix**: Implemented complete domain model (`CouplesPreferences`, `CouplesContentPolicy`, `CouplesPromptEngine`, `CouplesReducer`) enforcing mutual comfort intersection where the most restrictive partner preference always wins. Integrated accessible `ComfortChip`, `IntimacyMeter`, and non-judgmental `ConsentSkipButton`.
+- **Commit**: `astra/spinscore-9-5-upgrade`
+- **Verification**: `CouplesPreferencesTest`, `CouplesContentPolicyTest`, `CouplesPromptEngineTest`, `CouplesReducerTest`.
+
+### COUPLES-002
+- **Severity**: P0
+- **Area**: Content Quality & Play Compliance
+- **Status**: FIXED
+- **Evidence**: Built-in prompts lacked tiered intimacy metadata and clear Google Play adult-content boundaries.
+- **Risk**: Account suspension under Google Play sexually explicit content policies or inappropriate escalation.
+- **Fix**: Curated 300 romantic prompts across 5 packs (Date Night, Deep Connection, Flirty, Affection, After Dark). All physical, kissing, and massage prompts require explicit in-app consent confirmation. "After Dark" strictly focuses on romantic tension, desire, affection, and boundaries with zero graphic anatomy or explicit acts.
+- **Commit**: `astra/spinscore-9-5-upgrade`
+- **Verification**: `CouplesPromptValidatorTest` linting all 300 catalog prompts for length, non-empty IDs, and consent flags.
+
+### ISOLATION-001
+- **Severity**: P0
+- **Area**: Family Safety
+- **Status**: FIXED
+- **Evidence**: Family/Kids mode and mature game modes shared unstructured prompt pools with potential for cross-contamination.
+- **Risk**: Adult content accidentally appearing in Family/Kids safe sessions.
+- **Fix**: Introduced domain-level `AudienceClass` enum (`FAMILY`, `GENERAL`, `ADULT_COUPLES`) enforcing strict prompt isolation. Prompts tagged for Couples/After Dark cannot be selected in Family or Kids Safe modes.
+- **Commit**: `astra/spinscore-9-5-upgrade`
+- **Verification**: `FamilyAdultIsolationTest`.
+
+### SESSION-003
+- **Severity**: P1
+- **Area**: Persistence & Schema Migration
+- **Status**: FIXED
+- **Evidence**: Saved game state relied on an unversioned JSON snapshot prone to crashes on schema evolution.
+- **Risk**: Process-death crashes or lost game progress upon app upgrade.
+- **Fix**: Introduced `SessionEnvelope` with `schemaVersion = 3`, `createdAt`, `checksum`, and `SessionMigrationPipeline` supporting migrations from legacy unversioned payloads to Schema 3 with fail-safe validation.
+- **Commit**: `astra/spinscore-9-5-upgrade`
+- **Verification**: `SessionMigrationTest`.
+
+### A11Y-002
+- **Severity**: P2
+- **Area**: Accessibility & Motion
+- **Status**: FIXED
+- **Evidence**: Background particle animation ran continuously without option for users sensitive to motion.
+- **Risk**: Discomfort or vestibular issues for motion-sensitive users.
+- **Fix**: Added `reduceMotion` toggle to `SettingsHolder` backed by `reduceMotionFlow`, wired to Settings UI, dampening background particle rendering when active.
+- **Commit**: `astra/spinscore-9-5-upgrade`
+- **Verification**: Verified in `SettingsHolder` and `ParticleBackground`.
+
+### PRIVACY-002
+- **Severity**: P1
+- **Area**: Privacy & Data Safety
+- **Status**: FIXED
+- **Evidence**: Camera photo proof capture was accessible during After Dark prompts; no single-click app data wipe existed.
+- **Risk**: Unintended capture of sensitive private romantic photos on device storage; inability to purge all local records easily.
+- **Fix**: Camera proof capture button is explicitly suppressed when intimacy level >= 4 (After Dark). Added `AppDataResetManager` and "Reset All App Data" dialog in Settings purging sessions, prompt history, profiles, and dare proofs atomically.
+- **Commit**: `astra/spinscore-9-5-upgrade`
+- **Verification**: Code review and UI integration in `CouplesGameScreen` and `SettingsScreen`.
 
 ---
 
