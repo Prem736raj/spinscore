@@ -32,7 +32,9 @@ class PromptContentSafetyTest {
         "shot of hot sauce",
         "chug a glass of water",
         "hold your breath as long as",
-        "handstand (or try"
+        "handstand (or try",
+        "guide your hands wherever",
+        "surprise kiss"
     )
 
     @Test
