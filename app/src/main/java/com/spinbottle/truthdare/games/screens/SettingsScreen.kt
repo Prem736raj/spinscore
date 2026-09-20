@@ -293,7 +293,7 @@ fun SettingsScreen(
                 
                 // Prompt Statistics
                 val seenCount = remember { PromptHistoryManager.getSeenCount() }
-                val builtInPromptCount = remember { PromptsDatabase.getPromptCount() }
+                val builtInPromptCount = remember { PromptsDatabase.getUniquePromptCount() }
                 val favoritesCount = remember { FavoritesManager.getFavoriteCount() }
                 
                 Box(

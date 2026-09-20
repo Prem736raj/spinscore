@@ -1426,4 +1426,30 @@ object PromptsDatabase {
             (category == null || prompt.category == category)
         }
     }
+
+    fun getUniquePromptCount(): Int {
+        return allPrompts
+            .asSequence()
+            .map { normalizePromptText(it.text) }
+            .filter { it.isNotEmpty() }
+            .distinct()
+            .count()
+    }
+
+    internal fun normalizePromptText(text: String): String {
+        return text
+            .trim()
+            .lowercase()
+            .replace(Regex("\\s+"), " ")
+    }
+
+    fun getPrompts(
+        type: PromptItemType? = null,
+        category: PromptCategory? = null
+    ): List<PromptItem> {
+        return allPrompts.filter { prompt ->
+            (type == null || prompt.type == type) &&
+            (category == null || prompt.category == category)
+        }
+    }
 }
