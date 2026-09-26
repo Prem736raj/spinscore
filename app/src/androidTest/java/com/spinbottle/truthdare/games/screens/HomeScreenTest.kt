@@ -23,7 +23,11 @@ class HomeScreenTest {
                 isPremium = true
             )
         }
-        composeRule.onNodeWithText("Resume Game").assertIsDisplayed()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Resume Game").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.mainClock.advanceTimeBy(700)
+        composeRule.onNodeWithText("Resume Game").performScrollTo().assertIsDisplayed()
     }
 
     @Test
@@ -39,6 +43,9 @@ class HomeScreenTest {
                 onMyPrompts = {},
                 isPremium = true
             )
+        }
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Start Game").fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithText("Resume Game").assertDoesNotExist()
     }
