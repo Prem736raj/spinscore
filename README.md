@@ -173,7 +173,7 @@ Host unit tests and static linters cannot verify physical hardware behavior. The
 
 ---
 
-## Pull Request Summary (PR #2)
+## Upgrade Branch Summary (`astra/spinscore-9-5-upgrade`)
 
 - **Title**: `[UPGRADE] SpinScore 9.5 Production Upgrade — Couples 2.0, Consent Engine, Schema 3 Migrations, Audience Isolation`
 - **Target Branch**: `master` (from `astra/spinscore-9-5-upgrade`)
