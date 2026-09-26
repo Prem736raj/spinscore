@@ -23,7 +23,7 @@ class HomeScreenTest {
                 isPremium = true
             )
         }
-        composeRule.onNodeWithText("Resume Game").assertIsDisplayed()
+        composeRule.onNodeWithText("Resume Game").performScrollTo().assertIsDisplayed()
     }
 
     @Test
