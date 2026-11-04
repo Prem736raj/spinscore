@@ -21,3 +21,5 @@ app/build/
 
 # Local build diagnostics
 build_log.txt
+
+/.vscode/
