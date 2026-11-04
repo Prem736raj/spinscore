@@ -11,7 +11,8 @@ import com.google.gson.reflect.TypeToken
 data class FavoritePrompt(
     val text: String,
     val type: PromptItemType,
-    val addedAt: Long = System.currentTimeMillis()
+    val addedAt: Long = System.currentTimeMillis(),
+    val audience: AudienceClass? = null
 )
 
 /**
@@ -31,6 +32,7 @@ object FavoritesManager {
     }
     
     private fun loadFavorites() {
+        favorites.clear()
         val json = prefs?.getString(KEY_FAVORITES, null)
         if (json != null) {
             try {
@@ -53,9 +55,9 @@ object FavoritesManager {
         return favorites.any { it.text == text }
     }
     
-    fun addFavorite(text: String, type: PromptItemType) {
+    fun addFavorite(text: String, type: PromptItemType, audience: AudienceClass? = null) {
         if (!isFavorite(text)) {
-            favorites.add(FavoritePrompt(text = text, type = type))
+            favorites.add(FavoritePrompt(text = text, type = type, audience = audience))
             saveFavorites()
         }
     }
@@ -65,12 +67,12 @@ object FavoritesManager {
         saveFavorites()
     }
     
-    fun toggleFavorite(text: String, type: PromptItemType): Boolean {
+    fun toggleFavorite(text: String, type: PromptItemType, audience: AudienceClass? = null): Boolean {
         return if (isFavorite(text)) {
             removeFavorite(text)
             false
         } else {
-            addFavorite(text, type)
+            addFavorite(text, type, audience)
             true
         }
     }
@@ -108,6 +110,7 @@ object PromptHistoryManager {
     }
     
     private fun loadHistory() {
+        seenPrompts.clear()
         val json = prefs?.getString(KEY_SEEN_PROMPTS, null)
         if (json != null) {
             try {

@@ -24,7 +24,7 @@ fun GlowingLogo(
     val infiniteTransition = rememberInfiniteTransition(label = "logoGlow")
     
     // Glow pulse animation
-    val glowAlpha by infiniteTransition.animateFloat(
+    val glowAlpha by if (com.spinbottle.truthdare.games.data.SettingsHolder.reduceMotion) androidx.compose.runtime.rememberUpdatedState(0.4f) else infiniteTransition.animateFloat(
         initialValue = 0.4f,
         targetValue = 0.9f,
         animationSpec = infiniteRepeatable(
@@ -35,7 +35,7 @@ fun GlowingLogo(
     )
     
     // Subtle scale animation for emoji
-    val emojiScale by infiniteTransition.animateFloat(
+    val emojiScale by if (com.spinbottle.truthdare.games.data.SettingsHolder.reduceMotion) androidx.compose.runtime.rememberUpdatedState(1f) else infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 1.08f,
         animationSpec = infiniteRepeatable(
@@ -46,7 +46,7 @@ fun GlowingLogo(
     )
     
     // Glow blur size
-    val glowSize by infiniteTransition.animateFloat(
+    val glowSize by if (com.spinbottle.truthdare.games.data.SettingsHolder.reduceMotion) androidx.compose.runtime.rememberUpdatedState(15f) else infiniteTransition.animateFloat(
         initialValue = 15f,
         targetValue = 25f,
         animationSpec = infiniteRepeatable(

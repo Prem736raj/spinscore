@@ -27,6 +27,7 @@ class MainActivity : ComponentActivity() {
 
         SettingsHolder.init(this)
         GameSessionHolder.init(this)
+        com.spinbottle.truthdare.games.couples.CouplesSessionRepository.init(this)
         CustomPromptsManager.init(this)
         DareProofManager.init(this)
         PlayerProfileManager.init(this)

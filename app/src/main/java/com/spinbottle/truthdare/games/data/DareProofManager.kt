@@ -187,7 +187,7 @@ object DareProofManager {
         val filesDeleted = directory
             .listFiles()
             .orEmpty()
-            .all { !it.exists() || it.delete() }
+            .map { !it.exists() || it.delete() }.all { it }
 
         if (filesDeleted) {
             proofs.clear()

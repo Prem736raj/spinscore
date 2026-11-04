@@ -119,6 +119,11 @@ class BillingManager(
         })
     }
 
+    fun retryStoreConnection() {
+        refreshPurchases()
+        if (billingClient.isReady) queryProductDetails()
+    }
+
     private fun queryProductDetails() {
         if (!billingClient.isReady) return
 

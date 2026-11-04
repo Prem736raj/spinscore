@@ -79,6 +79,10 @@ fun CouplesGameScreen(
         return
     }
 
+    if (!com.spinbottle.truthdare.games.data.ContentAccess.adultAuthorized) {
+        PinScreen(mode = PinScreenMode.VERIFY, onBack = onBack, onSuccess = {})
+        return
+    }
     val playerA = players[0]
     val playerB = players[1]
 
@@ -90,6 +94,7 @@ fun CouplesGameScreen(
 
     // Initialize domain session once
     LaunchedEffect(playerA.id, playerB.id) {
+        if (GameSessionHolder.gameStartTime == 0L) GameSessionHolder.startGame()
         val existing = CouplesSessionRepository.loadSession()
         val sessionToUse = if (existing != null && existing.playerAId == playerA.id && existing.playerBId == playerB.id) {
             existing
@@ -103,6 +108,7 @@ fun CouplesGameScreen(
             )
         }
         viewModel.initialize(sessionToUse)
+        GameSessionHolder.totalRounds = sessionToUse.completedPrompts + sessionToUse.skippedPrompts
     }
 
     val uiState by viewModel.uiState.collectAsState()
@@ -219,8 +225,11 @@ fun CouplesGameScreen(
                 ) {
                     // Complete prompt button
                     GlassButton(
-                        text = "Complete 💕 (+1)",
-                        onClick = { viewModel.completePrompt() },
+                        text = "Complete 💕",
+                        onClick = {
+                            GameSessionHolder.incrementRound()
+                            viewModel.completePrompt()
+                        },
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -232,27 +241,12 @@ fun CouplesGameScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         ConsentSkipButton(
-                            onSkip = { viewModel.skipPrompt() },
-                            onBlockTag = { tag -> viewModel.blockTagAndSkip(tag) },
+                            onSkip = { GameSessionHolder.incrementRound(); viewModel.skipPrompt() },
+                            onBlockTag = { tag -> GameSessionHolder.incrementRound(); viewModel.blockTagAndSkip(tag) },
                             promptTags = currentPrompt.tags
                         )
 
-                        // Privacy Guard: Hide photo proof camera completely for AFTER_DARK prompts
-                        if (currentPrompt.tier != IntimacyTier.AFTER_DARK) {
-                            IconButton(
-                                onClick = { /* Dare proof camera launcher hook if user desires */ },
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .clip(CircleShape)
-                                    .background(DarkCard)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.CameraAlt,
-                                    contentDescription = "Capture dare photo",
-                                    tint = AccentTeal
-                                )
-                            }
-                        }
+
                     }
                 }
             } else {

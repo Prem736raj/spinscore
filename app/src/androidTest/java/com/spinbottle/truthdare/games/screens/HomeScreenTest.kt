@@ -23,7 +23,8 @@ class HomeScreenTest {
                 isPremium = true
             )
         }
-        composeRule.onNodeWithText("Resume Game").assertIsDisplayed()
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.onNodeWithText("Resume Game").performScrollTo().assertIsDisplayed()
     }
 
     @Test

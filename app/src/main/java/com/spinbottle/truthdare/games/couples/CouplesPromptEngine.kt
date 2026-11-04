@@ -15,7 +15,8 @@ class CouplesPromptEngine(
     ): CouplesPrompt? {
 
         val allowed = catalog.filter {
-            CouplesContentPolicy.isAllowed(it, preferences)
+            CouplesContentPolicy.isAllowed(it, preferences) &&
+                (preferredPackTags.isEmpty() || it.tags.any { tag -> tag in preferredPackTags })
         }
 
         if (allowed.isEmpty()) return null

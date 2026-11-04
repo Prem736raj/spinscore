@@ -1,0 +1,1902 @@
+SPINSCORE 8.5 -> 9.5 PRODUCTION UPGRADE
+Deep Implementation Roadmap + Code Blueprint
+============================================================
+
+Repository:
+https://github.com/Prem736raj/spinscore
+
+BASELINE ASSUMED
+============================================================
+- Current app is already around 8.5/10 in code/repository quality.
+- Cold session resume exists.
+- Per-mode state persistence exists.
+- Prompt safety tests exist.
+- Backup/privacy tests exist.
+- Dare-proof migration/cleanup exists.
+- Billing Library 9.1.0 is integrated.
+- Accessibility/touch-target improvements exist.
+- Release CI produces AAB + lint artifacts.
+- API 36 / Java 17 baseline exists.
+
+TARGET
+============================================================
+Move the app from ~8.5/10 to ~9.5/10 WITHOUT feature bloat.
+
+Strategy:
+1. Turn Couples Mode into a genuinely premium product experience.
+2. Replace fragile screen-owned game logic with testable domain state.
+3. Add exact recovery/migration guarantees.
+4. Increase automated verification from "builds" to "behaves correctly".
+5. Measure performance instead of guessing.
+6. Finish accessibility and adaptive layout verification.
+7. Make privacy + adult/family boundaries impossible to cross accidentally.
+8. Make CI/release evidence strong enough for repeatable production releases.
+
+IMPORTANT GOOGLE PLAY PRODUCT BOUNDARY
+============================================================
+For the Google Play build, do NOT make an explicit sexual game.
+
+Use:
+- romantic
+- flirty
+- sensual
+- relationship intimacy
+- kissing/affection prompts
+- consent-centered physical affection
+- adult relationship conversations
+- "After Dark" atmosphere without explicit sexual actions/instructions
+
+Avoid in the Play build:
+- explicit descriptions of sex acts
+- pornography
+- nudity challenges
+- masturbation/fetish prompts
+- sexual instructions designed for gratification
+- requests to capture intimate photos/videos
+- coercive content
+- sexual content mixed with child-oriented targeting
+
+Google Play currently prohibits apps that contain/promote sexual content intended to be sexually gratifying. If the app is adult-only, Play Console provides adult target-audience options and Restrict Minor Access. Re-check policy before release because Play policies can change.
+
+============================================================
+1. TARGET SCORECARD
+============================================================
+Build reproducibility              9.6
+Core gameplay                      9.5
+Bottle spin correctness            9.5
+State persistence/recovery         9.6
+Couples Mode                       9.7
+Prompt system                      9.5
+Prompt quality                     9.4
+Family/Kids isolation              9.8
+Adult content boundaries           9.8
+Consent design                     9.8
+Camera/proof privacy               9.5
+Billing                            9.4
+Premium UX                         9.3
+UI/visual polish                   9.5
+Adaptive layout                    9.3
+Accessibility                      9.4
+Performance                        9.4
+Battery                            9.2
+Privacy                            9.6
+Security                           9.3
+Architecture                       9.4
+Maintainability                    9.5
+Unit testing                       9.6
+UI/instrumentation testing         9.4
+CI/release automation              9.6
+Repository quality                 9.5
+Play readiness                     9.4 after Console/manual validation
+Differentiation                    9.2
+Overall                            ~9.5
+
+============================================================
+2. IMPLEMENTATION ORDER
+============================================================
+Phase 1  - Couples Mode 2.0 domain model
+Phase 2  - Couples preferences/comfort setup
+Phase 3  - Couples prompt engine
+Phase 4  - Couples prompt content + packs
+Phase 5  - Couples ViewModel/state machine
+Phase 6  - General game state reducer/repository
+Phase 7  - Versioned persistence + migrations
+Phase 8  - Adaptive UI / visual system
+Phase 9  - Full accessibility
+Phase 10 - Privacy/data controls
+Phase 11 - Test depth
+Phase 12 - Instrumentation/emulator CI
+Phase 13 - Macrobenchmark/Baseline Profiles
+Phase 14 - Billing/store release verification
+Phase 15 - Documentation/audit/release evidence
+
+============================================================
+3. NEW PACKAGE STRUCTURE
+============================================================
+Recommended additions:
+
+app/src/main/java/com/spinbottle/truthdare/games/
++-- couples/
+|   +-- CouplesPrompt.kt
+|   +-- CouplesPreferences.kt
+|   +-- CouplesPromptEngine.kt
+|   +-- CouplesSessionState.kt
+|   +-- CouplesAction.kt
+|   +-- CouplesReducer.kt
+|   +-- CouplesRepository.kt
+|   +-- CouplesContentPolicy.kt
+|   +-- CouplesPromptCatalog.kt
+|   +-- CouplesPromptValidator.kt
++-- game/
+|   +-- GameSession.kt
+|   +-- GameAction.kt
+|   +-- GameReducer.kt
+|   +-- GameRepository.kt
+|   +-- GameSessionSerializer.kt
+|   +-- SessionMigration.kt
++-- screens/couples/
+|   +-- CouplesLandingScreen.kt
+|   +-- CouplesComfortSetupScreen.kt
+|   +-- CouplesPackSelectionScreen.kt
+|   +-- CouplesGameScreen.kt
+|   +-- CouplesPauseSheet.kt
+|   +-- CouplesSessionSummaryScreen.kt
+|   +-- CouplesGameViewModel.kt
++-- ui/components/
+|   +-- ComfortChip.kt
+|   +-- IntimacyMeter.kt
+|   +-- ConsentSkipButton.kt
+|   +-- PromptCard.kt
+|   +-- AdaptiveTwoPlayerHeader.kt
++-- data/
+    +-- AppDataResetManager.kt
+
+Do not move every existing file at once. Introduce incrementally.
+
+============================================================
+4. COUPLES MODE 2.0 CORE MODEL
+============================================================
+Create:
+app/src/main/java/com/spinbottle/truthdare/games/couples/CouplesPrompt.kt
+
+package com.spinbottle.truthdare.games.couples
+
+enum class CouplesPromptType {
+    QUESTION,
+    CHALLENGE,
+    AFFECTION,
+    CHOICE
+}
+
+enum class IntimacyTier(val level: Int) {
+    WARM_UP(1),
+    ROMANTIC(2),
+    FLIRTY(3),
+    AFFECTIONATE(4),
+    AFTER_DARK(5)
+}
+
+enum class TouchLevel {
+    NONE,
+    LIGHT,
+    AFFECTIONATE
+}
+
+enum class CouplesPromptTag {
+    CONVERSATION,
+    COMPLIMENT,
+    MEMORIES,
+    FUTURE,
+    TRUST,
+    FLIRTING,
+    PHYSICAL_AFFECTION,
+    KISSING,
+    MASSAGE,
+    DATE_NIGHT,
+    AFTER_DARK,
+    EMOTIONAL_INTIMACY,
+    HUMOR,
+    NO_TOUCH
+}
+
+data class CouplesPrompt(
+    val id: String,
+    val text: String,
+    val type: CouplesPromptType,
+    val tier: IntimacyTier,
+    val touchLevel: TouchLevel = TouchLevel.NONE,
+    val tags: Set<CouplesPromptTag> = emptySet(),
+    val requiresExplicitConsent: Boolean = false,
+    val cooldownWeight: Int = 1
+)
+
+Rules:
+- IDs stable, never random at runtime.
+- Text immutable built-in content.
+- tier controls intensity.
+- touchLevel gates physical prompts.
+- kissing/touch prompts require requiresExplicitConsent=true.
+- tags drive pack filtering and local personalization.
+
+============================================================
+5. MUTUAL COMFORT PROFILE
+============================================================
+Create:
+couples/CouplesPreferences.kt
+
+data class CouplesPreferences(
+    val maxTier: IntimacyTier = IntimacyTier.ROMANTIC,
+    val allowFlirtyConversation: Boolean = true,
+    val allowLightTouch: Boolean = false,
+    val allowAffection: Boolean = false,
+    val allowKissing: Boolean = false,
+    val allowMassage: Boolean = false,
+    val allowAfterDarkConversation: Boolean = false,
+    val blockedTags: Set<CouplesPromptTag> = emptySet()
+)
+
+Critical rule:
+Effective settings = intersection of both partners' settings.
+
+Example:
+A allows kissing = true
+B allows kissing = false
+Effective allowKissing = false
+
+Implementation:
+
+private fun lowerTier(
+    a: IntimacyTier,
+    b: IntimacyTier
+): IntimacyTier =
+    if (a.level <= b.level) a else b
+
+fun CouplesPreferences.intersect(
+    other: CouplesPreferences
+): CouplesPreferences =
+    CouplesPreferences(
+        maxTier = lowerTier(maxTier, other.maxTier),
+        allowFlirtyConversation =
+            allowFlirtyConversation && other.allowFlirtyConversation,
+        allowLightTouch =
+            allowLightTouch && other.allowLightTouch,
+        allowAffection =
+            allowAffection && other.allowAffection,
+        allowKissing =
+            allowKissing && other.allowKissing,
+        allowMassage =
+            allowMassage && other.allowMassage,
+        allowAfterDarkConversation =
+            allowAfterDarkConversation && other.allowAfterDarkConversation,
+        blockedTags = blockedTags + other.blockedTags
+    )
+
+============================================================
+6. COUPLES COMFORT SETUP UI
+============================================================
+Create:
+screens/couples/CouplesComfortSetupScreen.kt
+
+Flow:
+"Set the vibe together"
+
+Subtext:
+"Both players choose what feels comfortable. The game only uses options both of you allow."
+
+Player A setup
+-> pass phone screen
+-> Player B setup
+-> effective summary
+
+Options:
+[ ] Flirty conversation
+[ ] Light touch
+[ ] Hugs / cuddling
+[ ] Kissing prompts
+[ ] Massage prompts
+[ ] After Dark conversation
+[ ] Deep relationship questions
+
+Presets:
+- Conversation only
+- Romantic
+- Flirty
+- Date Night
+- Custom
+
+Do not expose which player disabled which category.
+
+============================================================
+7. CONSENT UX
+============================================================
+Every physical prompt:
+"Only continue if both players want to."
+
+Buttons:
+- Do it
+- Skip
+- Not comfortable
+
+Skip must never:
+- reduce score
+- shame user
+- affect premium
+- create a negative profile metric
+
+"Not comfortable" can optionally block the prompt's tag for the current session.
+
+sealed interface ComfortAction {
+    data object SkipOnce : ComfortAction
+    data class BlockTagForSession(
+        val tag: CouplesPromptTag
+    ) : ComfortAction
+}
+
+============================================================
+8. CONTENT POLICY ENGINE
+============================================================
+Create:
+couples/CouplesContentPolicy.kt
+
+object CouplesContentPolicy {
+
+    fun isAllowed(
+        prompt: CouplesPrompt,
+        prefs: CouplesPreferences
+    ): Boolean {
+
+        if (prompt.tier.level > prefs.maxTier.level) return false
+        if (prompt.tags.any { it in prefs.blockedTags }) return false
+
+        if (
+            CouplesPromptTag.FLIRTING in prompt.tags &&
+            !prefs.allowFlirtyConversation
+        ) return false
+
+        if (
+            prompt.touchLevel == TouchLevel.LIGHT &&
+            !prefs.allowLightTouch
+        ) return false
+
+        if (
+            prompt.touchLevel == TouchLevel.AFFECTIONATE &&
+            !prefs.allowAffection
+        ) return false
+
+        if (
+            CouplesPromptTag.KISSING in prompt.tags &&
+            !prefs.allowKissing
+        ) return false
+
+        if (
+            CouplesPromptTag.MASSAGE in prompt.tags &&
+            !prefs.allowMassage
+        ) return false
+
+        if (
+            CouplesPromptTag.AFTER_DARK in prompt.tags &&
+            !prefs.allowAfterDarkConversation
+        ) return false
+
+        return true
+    }
+}
+
+============================================================
+9. COUPLES PROMPT ENGINE
+============================================================
+Create:
+couples/CouplesPromptEngine.kt
+
+Goals:
+- no obvious repeats
+- tier obeyed
+- blocked categories obeyed
+- variety
+- deterministic tests
+- graceful fallback
+
+class CouplesPromptEngine(
+    private val random: kotlin.random.Random =
+        kotlin.random.Random.Default
+) {
+
+    fun nextPrompt(
+        catalog: List<CouplesPrompt>,
+        preferences: CouplesPreferences,
+        recentPromptIds: Set<String>,
+        recentTags: List<CouplesPromptTag>,
+        preferredPackTags: Set<CouplesPromptTag>
+    ): CouplesPrompt? {
+
+        val allowed = catalog.filter {
+            CouplesContentPolicy.isAllowed(it, preferences)
+        }
+
+        if (allowed.isEmpty()) return null
+
+        val unseen = allowed.filterNot {
+            it.id in recentPromptIds
+        }
+
+        val basePool = if (unseen.isNotEmpty()) unseen else allowed
+
+        val packPool = if (preferredPackTags.isEmpty()) {
+            basePool
+        } else {
+            basePool.filter { prompt ->
+                prompt.tags.any { it in preferredPackTags }
+            }.ifEmpty { basePool }
+        }
+
+        val lastTag = recentTags.lastOrNull()
+
+        val varied = if (lastTag == null) {
+            packPool
+        } else {
+            packPool.filterNot {
+                lastTag in it.tags && it.tags.size == 1
+            }.ifEmpty { packPool }
+        }
+
+        return varied.random(random)
+    }
+}
+
+9.5 improvement:
+Use weighted selection:
++30 unseen
++10 selected pack
++8 different prompt type
++6 different tag
+-30 recently seen
+-10 repeated tag
+-cooldownWeight
+
+============================================================
+10. COUPLES PACKS
+============================================================
+Pack 1: DATE NIGHT
+DATE_NIGHT, ROMANTIC, COMPLIMENT, MEMORIES
+
+Pack 2: DEEP CONNECTION
+TRUST, FUTURE, EMOTIONAL_INTIMACY, MEMORIES
+
+Pack 3: FLIRTY
+FLIRTING, COMPLIMENT, HUMOR
+
+Pack 4: AFFECTION
+PHYSICAL_AFFECTION, KISSING, MASSAGE
+
+Pack 5: AFTER DARK
+AFTER_DARK, FLIRTING, EMOTIONAL_INTIMACY, AFFECTION
+
+AFTER DARK GOAL:
+adult romantic tension + intimacy, not explicit sexual instruction.
+
+Sample style:
+- Tell your partner what makes you feel most attractive around them.
+- Share one kind of affection that makes you feel immediately closer.
+- What creates romantic tension for you in the best way?
+- Whisper a compliment you would only say on a private date.
+- Describe your perfect late-night date together.
+- Tell your partner one thing they do that makes your heart race.
+- Ask your partner what kind of affection they would enjoy right now.
+- Share a romantic fantasy you are comfortable discussing.
+- What makes a kiss feel memorable to you?
+- Tell your partner what helps you relax and feel close.
+- Choose: long hug, hand massage, kiss, or deep question. Either person may choose another.
+- Describe the most romantic private atmosphere you can imagine.
+- Tell your partner a moment when you felt especially desired.
+- What makes flirting feel exciting rather than awkward to you?
+- Say something playful you have wanted to tell your partner.
+- Ask your partner whether they prefer slow romance or playful flirting.
+- Share one boundary that makes intimacy feel safer.
+- Tell your partner something you would love more of emotionally.
+- Describe a date-night style you love on your partner.
+- Tell your partner what kind of compliment feels most meaningful.
+- If both want to, share a comfortable kiss.
+- If both want to, give a short hand or shoulder massage.
+- Tell your partner what makes your connection unique.
+- What kind of romantic surprise would make you smile?
+- Describe the mood of your perfect private evening together.
+- Tell your partner one thing you find irresistible about their personality.
+- Ask what helps them feel desired without pressure.
+- Share a memory of a moment when the chemistry felt strong.
+- Pick one: eye contact, compliment, cuddle, kiss, or question.
+- Tell your partner what makes affection feel natural to you.
+
+Do not include:
+- explicit anatomy instructions
+- graphic sex acts
+- nudity dares
+- intimate-photo dares
+- coercive undressing
+- intoxication/sleep scenarios
+- public sexual dares
+- recording/sharing intimate material
+
+============================================================
+11. PROMPT QUALITY STANDARD
+============================================================
+Target Couples catalog:
+- 300-450 prompts
+- >=50 per important pack
+- no exact duplicates
+- no near-duplicate spam
+- no social-media/internet requirement
+- no purchases
+- no private device/account access
+- no third-party harassment
+- no dangerous stunts
+
+Create:
+couples/CouplesPromptValidator.kt
+
+object CouplesPromptValidator {
+    fun validate(prompt: CouplesPrompt): List<String> {
+        val errors = mutableListOf<String>()
+
+        if (prompt.id.isBlank()) errors += "Prompt id is blank"
+        if (prompt.text.trim().length < 10) errors += "Prompt too short"
+
+        if (
+            prompt.touchLevel != TouchLevel.NONE &&
+            !prompt.requiresExplicitConsent
+        ) errors += "Physical prompt must require consent"
+
+        if (
+            CouplesPromptTag.KISSING in prompt.tags &&
+            !prompt.requiresExplicitConsent
+        ) errors += "Kissing prompt must require consent"
+
+        return errors
+    }
+}
+
+CI should fail when any built-in prompt has validation errors.
+
+============================================================
+12. HARD FAMILY/ADULT ISOLATION
+============================================================
+Create domain classification:
+
+enum class AudienceClass {
+    FAMILY,
+    GENERAL,
+    ADULT_COUPLES
+}
+
+Adult/family separation must be enforced in repository/domain logic, not only navigation.
+
+Required test:
+
+@Test
+fun familyPoolNeverContainsAdultCouplesPrompt() {
+    val family = repository.promptsFor(
+        AudienceClass.FAMILY
+    )
+
+    assertTrue(
+        family.none {
+            it.audience == AudienceClass.ADULT_COUPLES
+        }
+    )
+}
+
+Also test:
+- restored Family session cannot resolve adult prompt IDs
+- invalid/mismatched saved state is cleared/downgraded safely
+- custom adult prompts never appear in Family mode
+
+============================================================
+13. COUPLES SESSION STATE
+============================================================
+Create:
+couples/CouplesSessionState.kt
+
+data class CouplesSessionState(
+    val playerAId: String,
+    val playerBId: String,
+    val preferences: CouplesPreferences,
+    val selectedPackIds: Set<String>,
+    val currentPlayerIndex: Int = 0,
+    val round: Int = 0,
+    val currentPromptId: String? = null,
+    val recentPromptIds: List<String> = emptyList(),
+    val sessionBlockedTags: Set<CouplesPromptTag> = emptySet(),
+    val completedPrompts: Int = 0,
+    val skippedPrompts: Int = 0,
+    val startedAtEpochMs: Long = 0L
+)
+
+Persist domain state only.
+Do NOT persist:
+- animations
+- dialogs
+- snackbar
+- camera preview
+- transition fractions
+
+============================================================
+14. COUPLES REDUCER
+============================================================
+Create:
+couples/CouplesAction.kt
+
+sealed interface CouplesAction {
+    data object StartSession : CouplesAction
+    data object NextPrompt : CouplesAction
+    data object CompletePrompt : CouplesAction
+    data object SkipPrompt : CouplesAction
+    data class BlockTag(
+        val tag: CouplesPromptTag
+    ) : CouplesAction
+    data class UpdatePreferences(
+        val preferences: CouplesPreferences
+    ) : CouplesAction
+    data object EndSession : CouplesAction
+}
+
+Create CouplesReducer.kt:
+
+class CouplesReducer {
+    fun reduce(
+        state: CouplesSessionState,
+        action: CouplesAction
+    ): CouplesSessionState =
+        when (action) {
+
+            CouplesAction.CompletePrompt ->
+                state.copy(
+                    completedPrompts = state.completedPrompts + 1,
+                    round = state.round + 1,
+                    currentPlayerIndex =
+                        (state.currentPlayerIndex + 1) % 2
+                )
+
+            CouplesAction.SkipPrompt ->
+                state.copy(
+                    skippedPrompts = state.skippedPrompts + 1,
+                    round = state.round + 1,
+                    currentPlayerIndex =
+                        (state.currentPlayerIndex + 1) % 2
+                )
+
+            is CouplesAction.BlockTag ->
+                state.copy(
+                    sessionBlockedTags =
+                        state.sessionBlockedTags + action.tag
+                )
+
+            is CouplesAction.UpdatePreferences ->
+                state.copy(preferences = action.preferences)
+
+            else -> state
+        }
+}
+
+============================================================
+15. COUPLES VIEWMODEL
+============================================================
+Create:
+screens/couples/CouplesGameViewModel.kt
+
+ViewModel responsibilities:
+- StateFlow<CouplesGameUiState>
+- restore session
+- choose eligible prompt
+- reducer calls
+- persist stable state
+- one-shot UI events
+
+data class CouplesGameUiState(
+    val session: CouplesSessionState? = null,
+    val prompt: CouplesPrompt? = null,
+    val isLoading: Boolean = true,
+    val message: String? = null
+)
+
+Screen should render state.
+Screen should NOT decide prompt eligibility.
+
+============================================================
+16. COUPLES FLOW
+============================================================
+Home
+-> Couples
+-> adult/relationship content confirmation
+-> exactly two players
+-> Player A comfort setup
+-> pass phone
+-> Player B comfort setup
+-> effective preference summary
+-> pack selection
+-> gameplay
+-> session summary
+
+Summary wording:
+"Your session will include:
+✓ Romantic conversation
+✓ Flirting
+✓ Hugs/affection
+✕ Kissing
+✕ After Dark"
+
+Never reveal which player disabled an option.
+
+============================================================
+17. PREMIUM COUPLES EXPERIENCE
+============================================================
+Free:
+- Date Night
+- Romantic
+- core Deep Connection
+- all comfort/safety controls
+
+Premium:
+- more prompt packs
+- cosmetic themes
+- bottle designs
+- richer personalization
+- extra Play-safe After Dark conversation packs
+
+Never paywall:
+- skip
+- consent controls
+- safety
+- parental/family isolation
+- privacy deletion
+
+============================================================
+18. COUPLES VISUAL REDESIGN
+============================================================
+Replace simple pink-hearts reskin with:
+- adaptive two-avatar header
+- subtle animated gradient
+- low-density particles
+- premium prompt-card transitions
+- intimacy meter
+- pack badge
+- visible comfort control
+- stronger typography hierarchy
+- bottom primary action
+
+Add components:
+ComfortChip.kt
+IntimacyMeter.kt
+ConsentSkipButton.kt
+PromptCard.kt
+AdaptiveTwoPlayerHeader.kt
+
+Respect Reduce Motion.
+
+============================================================
+19. GENERAL GAME DOMAIN REFACTOR
+============================================================
+Keep GameSessionHolder temporarily for compatibility.
+
+Add:
+game/GameSession.kt
+game/GameAction.kt
+game/GameReducer.kt
+game/GameRepository.kt
+
+data class GameSession(
+    val id: String,
+    val players: List<Player>,
+    val mode: GameMode,
+    val difficulty: Difficulty,
+    val round: Int,
+    val currentPlayerIndex: Int,
+    val startedAtEpochMs: Long,
+    val completionRecorded: Boolean
+)
+
+sealed interface GameAction {
+    data object Start : GameAction
+    data object CompleteTruth : GameAction
+    data object CompleteDare : GameAction
+    data object Skip : GameAction
+    data object NextPlayer : GameAction
+    data object EndGame : GameAction
+}
+
+Migrate modes:
+1 Couples
+2 Quick Fire
+3 Classic
+4 Party/Challenge
+
+============================================================
+20. VERSIONED SESSION PERSISTENCE
+============================================================
+Add:
+
+data class SessionEnvelope(
+    val schemaVersion: Int,
+    val payload: String
+)
+
+const val CURRENT_SESSION_SCHEMA = 3
+
+interface SessionMigration {
+    val fromVersion: Int
+    val toVersion: Int
+    fun migrate(rawJson: String): String
+}
+
+Read flow:
+parse envelope
+-> migrate sequentially
+-> deserialize current
+-> validate
+-> restore
+
+Corrupt session:
+clear ONLY session.
+Do not erase proofs/settings.
+
+============================================================
+21. SESSION VALIDATOR
+============================================================
+object SessionValidator {
+    fun isValid(
+        session: GameSession
+    ): Boolean {
+        if (session.players.isEmpty()) return false
+        if (
+            session.currentPlayerIndex !in
+            session.players.indices
+        ) return false
+        if (session.round < 0) return false
+        return true
+    }
+}
+
+Couples requires exactly 2 players.
+
+============================================================
+22. SETTINGS REACTIVITY
+============================================================
+Use Flow only for settings that need live updates.
+
+Example:
+
+private val _soundEnabled =
+    MutableStateFlow(savedSoundValue)
+
+val soundEnabled: StateFlow<Boolean> =
+    _soundEnabled.asStateFlow()
+
+fun setSoundEnabled(value: Boolean) {
+    prefs.edit()
+        .putBoolean(KEY_SOUND, value)
+        .apply()
+
+    _soundEnabled.value = value
+}
+
+Candidates:
+- sound
+- haptics
+- reduce motion
+- high contrast
+- live spin speed
+
+============================================================
+23. REDUCE MOTION
+============================================================
+Add Settings > Accessibility > Reduce motion.
+
+When enabled:
+- no infinite decorative heart movement
+- shorter fades
+- no large bounce
+- no rotating decorative background
+- bottle mechanics remain functional
+- decorative particle count reduced
+
+Persist it.
+
+============================================================
+24. ACCESSIBILITY 9.5
+============================================================
+All actions:
+- >=48dp
+- role
+- label
+- enabled/disabled meaning
+- correct selected/checked semantics
+
+State descriptions:
+"Intimacy level, Flirty, 3 of 5"
+"After Dark off"
+"Kissing prompts off"
+"Resume Couples session"
+
+Bottle result announcement:
+"Selected player: [name]"
+
+Do not rely only on color/animation.
+
+============================================================
+25. FONT SCALING / SMALL SCREENS
+============================================================
+Test:
+- 360x640
+- common phone
+- landscape
+- tablet
+- 1.0
+- 1.3
+- 1.5
+- 2.0 font
+
+Rules:
+- buttons reachable
+- no nav-bar overlap
+- no fixed text card heights
+- scroll when needed
+- use heightIn(min=...)
+- avoid giant hardcoded spacers
+
+============================================================
+26. ADAPTIVE LAYOUT
+============================================================
+Compact:
+single column.
+
+Medium:
+centered wider card.
+
+Expanded:
+two-column Couples:
+left = players/session/intimacy
+right = prompt/actions
+
+Do not stretch mobile UI edge-to-edge on tablets.
+
+============================================================
+27. DATA DELETION UX
+============================================================
+Settings > Data & Storage:
+- Clear prompt history
+- Delete all dare proof photos
+- Reset game progress
+- Reset themes/customization
+- Reset all local app data
+
+Delete-all proof dialog:
+Title:
+"Delete all dare proof photos?"
+
+Body:
+"This permanently removes all locally stored dare proof photos from this app."
+
+Buttons:
+Cancel / Delete
+
+Call:
+DareProofManager.deleteAllProofs()
+
+Never delete proof photos when starting a normal New Game.
+
+============================================================
+28. APP DATA RESET MANAGER
+============================================================
+Create:
+data/AppDataResetManager.kt
+
+Orchestrate:
+- active session
+- prompt history
+- profiles if selected
+- proof files if selected
+- themes/progress if selected
+
+Never locally fake Billing entitlement reset.
+Billing truth comes from Google Play purchase state.
+
+============================================================
+29. AFTER DARK PROOF PRIVACY
+============================================================
+For AFTER_DARK prompt:
+hide/disable Dare Proof camera by default.
+
+Rule:
+Audience ADULT_COUPLES + tier AFTER_DARK
+=> no proof capture action.
+
+Test:
+afterDarkPromptDoesNotExposeProofCaptureAction()
+
+============================================================
+30. STABLE PLAYER IDENTITY
+============================================================
+Do not use display name as permanent identity.
+
+Prefer stable generated player ID.
+
+For legacy name migration:
+
+internal fun normalizePlayerKey(
+    name: String
+): String =
+    name.trim()
+        .lowercase()
+        .replace(Regex("\\s+"), " ")
+
+Use same function everywhere.
+
+============================================================
+31. SOUND/HAPTIC RESOURCE OWNERSHIP
+============================================================
+Audit:
+- SoundPool ownership
+- release()
+- duplicate instances
+- navigation leaks
+- haptic manager lifecycle
+
+Target:
+application-scoped reusable manager
+OR deterministic lifecycle ownership.
+
+============================================================
+32. QUICK FIRE 9.5
+============================================================
+Use elapsed-time-based timer semantics.
+
+Prefer:
+timerEndsAtElapsedMs
+instead of only decrementing an Int.
+
+Test:
+- pause/background
+- resume
+- process death
+- screen recreation
+- exact completion once
+
+============================================================
+33. BOTTLE SPIN 9.5
+============================================================
+For player counts 2..16 test:
+- 0°
+- 359.9°
+- sector midpoints
+- boundaries
+- 1000 randomized rotations
+
+Selection logic must remain outside Compose.
+
+============================================================
+34. PROMPT HISTORY 9.5
+============================================================
+Use stable prompt IDs.
+
+Rolling recent history:
+example last 50 prompts.
+
+If pool exhausted:
+relax recent-history filter gradually.
+Never relax:
+- safety
+- audience
+- consent
+- comfort settings
+
+============================================================
+35. CUSTOM PROMPTS
+============================================================
+Add:
+- duplicate warning
+- explicit audience/category
+- adult/family separation
+- safe validation
+
+Custom adult prompt must NEVER appear in Family Friendly mode.
+
+============================================================
+36. TEST STRATEGY
+============================================================
+A) pure unit
+B) serialization/migration
+C) content safety
+D) prompt engine
+E) reducers
+F) ViewModels
+G) Compose UI
+H) instrumentation
+I) performance
+
+Goal is coverage of critical invariants, not arbitrary test count.
+
+============================================================
+37. REQUIRED COUPLES TESTS
+============================================================
+1 afterDarkExcludedWhenDisabled
+2 touchExcludedWhenTouchDisabled
+3 kissingExcludedWhenDisabled
+4 physicalPromptRequiresConsent
+5 blockedTagExcluded
+6 maxTierRespected
+7 recentPromptAvoided
+8 fallbackOccursWhenRecentPoolExhausted
+9 familyPoolNeverReturnsAdultCouples
+10 intersectionUsesMoreRestrictiveSettings
+11 skipDoesNotChangeScore
+12 blockTagAffectsCurrentSession
+13 restartRestoresPreferences
+14 corruptCouplesSessionDoesNotCrash
+15 afterDarkDisablesProofCapture
+
+============================================================
+38. SESSION MIGRATION TESTS
+============================================================
+Create:
+SessionMigrationTest.kt
+
+Fixtures:
+schema1.json
+schema2.json
+schema3.json
+
+Test:
+v1 -> current
+v2 -> current
+current -> current
+corrupt -> safe failure
+future unsupported version -> safe failure
+
+============================================================
+39. COMPOSE UI TESTS
+============================================================
+Add:
+CouplesComfortSetupScreenTest
+CouplesGameScreenTest
+DataDeletionScreenTest
+FamilyIsolationNavigationTest
+
+Examples:
+- After Dark off by default
+- Skip always visible on physical prompt
+- effective preference summary correct
+- delete-all requires confirmation
+- adult content never visible in Family flow
+
+============================================================
+40. SCREENSHOT REGRESSION
+============================================================
+Capture:
+- Home
+- Couples comfort setup
+- pack selection
+- romantic gameplay
+- After Dark gameplay
+- Family Friendly
+- Premium
+- Settings
+
+Configurations:
+- compact
+- dark
+- light if supported
+- 1x font
+- 2x font
+
+============================================================
+41. INSTRUMENTATION CI
+============================================================
+Add:
+.github/workflows/android-instrumentation.yml
+
+Run an emulator and:
+./gradlew connectedDebugAndroidTest
+
+Use on:
+PR to master
+and/or nightly.
+
+Do not confuse:
+assembleDebugAndroidTest = compiles
+connectedDebugAndroidTest = executes
+
+============================================================
+42. MACROBENCHMARK
+============================================================
+Create:
+:macrobenchmark module
+
+Scenarios:
+1 cold startup
+2 Home -> Game
+3 Home -> Couples -> prompt
+4 Dare Gallery scroll
+5 Quick Fire start
+
+Measure:
+- startup
+- frame timing
+- jank
+
+============================================================
+43. BASELINE PROFILE
+============================================================
+Create:
+:baselineprofile module
+
+Critical journeys:
+- startup
+- Home
+- game setup
+- gameplay
+- Couples
+- Settings
+
+Acceptance:
+release artifact contains Baseline Profile.
+
+============================================================
+44. COMPOSE PERFORMANCE
+============================================================
+Review:
+- allocations in recomposition
+- unstable objects
+- remember keys
+- list creation in draw
+- particle loops
+- LazyColumn keys
+- image loading
+- derivedStateOf where useful
+
+Profile first.
+Do not micro-optimize simple UI.
+
+============================================================
+45. COUPLES ANIMATION PERFORMANCE
+============================================================
+If heart animation is expensive:
+use one small Canvas particle system rather than many independent composables.
+
+Requirements:
+- stop when backgrounded
+- Reduce Motion supported
+- no invisible work behind navigation
+
+============================================================
+46. BILLING 9.5
+============================================================
+Keep Billing 9.1.0.
+
+Verify:
+- correct IDs
+- localized ProductDetails price
+- pending purchases
+- acknowledgment
+- restore/query
+- refunded/revoked entitlement
+- already owned
+- offline
+- Play unavailable
+- no fake fallback price
+- no permanent local premium truth flag
+
+Sandbox matrix:
+purchase
+pending
+cancel
+already owned
+restore
+network failure
+Play unavailable
+refund/revoke
+
+============================================================
+47. PREMIUM SCREEN POLISH
+============================================================
+- actual localized price
+- clear lifetime wording
+- no "remove ads" unless ads exist
+- no fake sale timers
+- meaningful premium content/cosmetics
+- safety controls never premium
+
+============================================================
+48. PRIVACY 9.5
+============================================================
+PRIVACY.md must exactly match implementation.
+
+Document:
+- player names
+- preferences
+- prompt history
+- custom prompts
+- session state
+- dare-proof photos
+- Billing via Google Play
+- no backend if still true
+- no analytics if still true
+- no ads if still true
+
+Any new SDK requires privacy/Data Safety re-audit.
+
+============================================================
+49. SECURITY 9.5
+============================================================
+Verify:
+- FileProvider scope
+- exported components
+- secrets
+- signing keys
+- file permissions
+- private filesDir storage
+- backup exclusions
+- adult/family isolation
+- dependency audit
+
+============================================================
+50. RELEASE SIGNING
+============================================================
+- Play App Signing
+- secure upload key
+- keystore/password never committed
+- production signing configuration outside repo secrets
+
+============================================================
+51. PLAY CONSOLE CONTENT STRATEGY
+============================================================
+With stronger romantic After Dark content:
+position as adult party/couples product.
+
+Do not market as a children's app.
+
+Family Friendly can be a mode, but target-audience declaration must match the full app.
+
+Complete:
+- target audience
+- content rating
+- Data Safety
+- privacy policy URL
+- app access
+- store listing
+- screenshots
+- billing
+- signing
+
+============================================================
+52. STORE SCREENSHOTS
+============================================================
+Suggested:
+1 Home
+2 Bottle gameplay
+3 Quick Fire
+4 Couples Date Night
+5 Couples Deep Connection
+6 Family Friendly
+7 Themes
+
+For Play:
+avoid provocative explicit sexual marketing.
+
+Market After Dark as:
+"Deeper date-night conversations"
+
+============================================================
+53. FEATURE FLAGS
+============================================================
+Optional local flags:
+
+data class FeatureFlags(
+    val couplesV2: Boolean = true,
+    val afterDarkPack: Boolean = true,
+    val baselineProfileEnabled: Boolean = true
+)
+
+Do not add backend/remote config only for flags.
+
+============================================================
+54. ERROR STATES
+============================================================
+Couples empty state:
+"No prompts match your current comfort settings."
+
+Actions:
+- Adjust settings
+- End session
+
+Never silently relax comfort or safety filters.
+
+============================================================
+55. COUPLES SESSION SUMMARY
+============================================================
+Show:
+- prompts completed
+- neutral skipped count
+- rounds
+- duration
+- favorite pack if locally derived
+
+Never pressure users with negative wording.
+
+Optional:
+"Save these comfort settings for next time?"
+Default should be conservative.
+
+============================================================
+56. ROMANTIC PERSONALIZATION
+============================================================
+Allow:
+- partner nicknames
+- preferred pack
+- vibe:
+  Cozy
+  Playful
+  Romantic
+  Flirty
+  Deep
+  After Dark
+
+Do not create hidden sensitive preference profiles from behavior.
+
+============================================================
+57. CONTENT STORAGE
+============================================================
+Move huge built-in prompt lists out of giant Kotlin methods.
+
+Recommended:
+assets/prompts/couples_date_night_v1.json
+assets/prompts/couples_deep_connection_v1.json
+assets/prompts/couples_flirty_v1.json
+assets/prompts/couples_affection_v1.json
+assets/prompts/couples_after_dark_v1.json
+
+Fields:
+id
+type
+tier
+touchLevel
+tags
+requiresExplicitConsent
+text
+
+Version files.
+
+============================================================
+58. JSON EXAMPLES
+============================================================
+Non-touch:
+
+{
+  "id": "couples_after_dark_001",
+  "type": "QUESTION",
+  "tier": "AFTER_DARK",
+  "touchLevel": "NONE",
+  "tags": ["AFTER_DARK", "FLIRTING", "EMOTIONAL_INTIMACY"],
+  "requiresExplicitConsent": false,
+  "text": "Tell your partner what makes you feel most attractive around them."
+}
+
+Physical:
+
+{
+  "id": "couples_affection_042",
+  "type": "AFFECTION",
+  "tier": "AFFECTIONATE",
+  "touchLevel": "AFFECTIONATE",
+  "tags": ["PHYSICAL_AFFECTION", "KISSING"],
+  "requiresExplicitConsent": true,
+  "text": "If you both want to, share a kiss that feels comfortable to both of you."
+}
+
+============================================================
+59. CONTENT LINT
+============================================================
+Fail unit tests on:
+- blank ID
+- duplicate ID
+- duplicate normalized text
+- physical prompt without consent flag
+- adult prompt marked family
+- missing tag
+- invalid tier
+- known disallowed Play-build explicit content patterns
+
+Keyword lint is only a guard, not a substitute for manual content review.
+
+============================================================
+60. DISTRIBUTION RULE
+============================================================
+Preferred:
+one Play-safe catalog.
+
+Do not hide prohibited content behind remote flags in a Play build.
+Do not design for review evasion.
+
+============================================================
+61. DEPENDENCY MODERNIZATION
+============================================================
+Separate branch:
+astra/dependency-modernization
+
+Upgrade in groups:
+1 Kotlin + Compose compiler
+2 Compose BOM
+3 Core/Activity/Lifecycle
+4 Navigation
+5 DataStore
+6 Coroutines
+7 Coil
+8 testing libs
+
+After each:
+build
+unit
+lint
+UI smoke
+release build
+
+============================================================
+62. STATIC ANALYSIS
+============================================================
+Optional:
+detekt
+ktlint
+
+Curate rules.
+Avoid noisy "hundreds of style failures" setup.
+
+Focus:
+- complexity
+- unused code
+- unsafe casts
+- TODO in release-critical code
+- huge functions
+
+============================================================
+63. QUALITY GATES
+============================================================
+PR:
+./gradlew clean
+./gradlew testDebugUnitTest
+./gradlew lintDebug
+./gradlew assembleDebug
+./gradlew lintRelease
+./gradlew assembleRelease
+./gradlew bundleRelease
+./gradlew assembleDebugAndroidTest
+
+Connected:
+./gradlew connectedDebugAndroidTest
+
+Before release:
+macrobenchmark
+baseline profile generation
+
+============================================================
+64. CI ARTIFACTS
+============================================================
+Upload:
+- AAB
+- lint report
+- unit results
+- instrumentation results
+- benchmark results
+- profile report if useful
+
+============================================================
+65. OBSERVABILITY
+============================================================
+No analytics/backend is acceptable.
+
+If crash reporting is added later:
+- update Privacy
+- update Data Safety
+- audit SDK collection
+
+Do not add tracking merely to chase a score.
+
+============================================================
+66. MANUAL DEVICE MATRIX
+============================================================
+Representative:
+Android 7/8
+Android 10
+Android 13
+Android 14
+Android 15
+Android 16/API36
+
+Test:
+cold launch
+resume
+rotate
+background
+process kill
+low storage
+camera denied
+camera allowed
+TalkBack
+2x font
+battery saver
+
+============================================================
+67. COUPLES MANUAL MATRIX
+============================================================
+Conversation only:
+=> no touch
+
+Romantic:
+=> romantic only
+
+Flirty:
+=> no touch unless permitted
+
+Affection:
+=> touch only if both allow
+
+Kissing:
+A yes + B no
+=> none
+
+After Dark:
+A yes + B yes
+=> allowed Play-safe prompts
+
+After Dark:
+A yes + B no
+=> no After Dark
+
+Not comfortable:
+=> no penalty
+=> optional session tag block
+
+Resume:
+process kill mid-session
+=> safe restore
+
+============================================================
+68. PRIVACY MANUAL TEST
+============================================================
+Take 5 proofs.
+Delete 2.
+Restart.
+=> 3 remain.
+
+Delete all.
+=> gallery empty
+=> files removed
+=> metadata empty
+
+Cancel camera.
+=> temp file cleaned
+
+============================================================
+69. DEFINITION OF DONE FOR 9.5
+============================================================
+[ ] Couples V2 engine
+[ ] mutual comfort intersection
+[ ] After Dark Play-safe pack
+[ ] adult/family isolation tests
+[ ] content lint
+[ ] Couples ViewModel/reducer
+[ ] session migrations
+[ ] corrupt restore tests
+[ ] delete-all-proofs UI
+[ ] TalkBack pass
+[ ] 2x font pass
+[ ] small screen pass
+[ ] connectedDebugAndroidTest actually executes
+[ ] Macrobenchmark
+[ ] Baseline Profile
+[ ] release/R8
+[ ] Billing sandbox
+[ ] Play Console complete
+[ ] production signing
+[ ] Privacy matches code
+
+============================================================
+70. RECOMMENDED ATOMIC COMMITS
+============================================================
+01 feat(couples): introduce typed intimacy prompt model
+02 feat(couples): add mutual comfort preference intersection
+03 feat(couples): add consent-aware prompt eligibility policy
+04 feat(couples): add weighted prompt engine and history
+05 feat(couples): add date night and deep connection packs
+06 feat(couples): add flirty affection and after dark packs
+07 test(couples): enforce content boundaries and consent metadata
+08 feat(couples): add comfort setup and pack selection flow
+09 refactor(couples): move session behavior into reducer and viewmodel
+10 feat(session): add versioned session envelope and migrations
+11 test(session): cover migration and corrupt restore behavior
+12 feat(settings): add reduce motion and reactive live settings
+13 fix(accessibility): finish state semantics and announcements
+14 fix(ui): add adaptive couples layouts and 2x font support
+15 feat(data): add explicit local deletion controls
+16 fix(privacy): disable proof capture for after dark prompts
+17 test(ui): expand couples and deletion compose tests
+18 ci(android): execute connected instrumentation suite
+19 perf(android): add macrobenchmark module
+20 perf(android): ship baseline and startup profiles
+21 chore(deps): modernize android dependencies in controlled groups
+22 docs(audit): update 9.5 production evidence
+23 docs(release): add final Play release checklist
+
+============================================================
+71. WHAT NOT TO ADD
+============================================================
+Do not add just for score:
+- chat
+- accounts
+- random backend
+- location
+- contacts
+- microphone
+- social feed
+- cloud proof upload
+- ads
+- random AI generator
+- explicit sexual instruction content
+
+Core quality first.
+
+============================================================
+72. BEST DIFFERENTIATORS
+============================================================
+1 Mutual comfort-intersection Couples engine
+2 adaptive intimacy
+3 high-quality date-night content
+4 hard Family/adult isolation
+5 local-first privacy
+6 polished bottle gameplay
+7 reliable resume/recovery
+8 measured performance
+9 non-manipulative monetization
+10 strong accessibility
+
+============================================================
+73. AFTER DARK CONTENT STANDARD
+============================================================
+Goal:
+adult romantic tension + relationship intimacy
+
+Good:
+- attraction
+- desire
+- kissing preferences
+- atmosphere
+- boundaries
+- closeness
+- trust
+- affectionate choices
+- flirty questions
+
+Avoid for Play:
+- graphic anatomy
+- explicit sex acts
+- nudity
+- pornographic descriptions
+- recording intimate acts
+- coercive touching
+
+============================================================
+74. CONTENT REVIEW CHECKLIST
+============================================================
+For every prompt:
+1 adult-appropriate?
+2 Play-safe/non-explicit?
+3 consensual?
+4 decline without penalty?
+5 private-data safe?
+6 no third-party harassment?
+7 no intimate recording?
+8 physically safe?
+9 unique enough?
+10 correct tier?
+
+Any failure => rewrite/remove.
+
+============================================================
+75. RELEASE EVIDENCE
+============================================================
+Create a final evidence table:
+Area
+Implementation
+Automated evidence
+Manual evidence
+Remaining limitation
+Score
+
+Do not claim 9.5 because code "looks good."
+
+============================================================
+76. FINAL RELEASE COMMANDS
+============================================================
+Windows:
+gradlew.bat clean
+gradlew.bat testDebugUnitTest
+gradlew.bat lintDebug
+gradlew.bat assembleDebug
+gradlew.bat lintRelease
+gradlew.bat assembleRelease
+gradlew.bat bundleRelease
+gradlew.bat assembleDebugAndroidTest
+gradlew.bat connectedDebugAndroidTest
+
+Linux/macOS:
+./gradlew clean
+./gradlew testDebugUnitTest
+./gradlew lintDebug
+./gradlew assembleDebug
+./gradlew lintRelease
+./gradlew assembleRelease
+./gradlew bundleRelease
+./gradlew assembleDebugAndroidTest
+./gradlew connectedDebugAndroidTest
+
+Plus:
+macrobenchmark
+baseline profile generation
+
+============================================================
+77. CURRENT POLICY / PLATFORM REFERENCES
+============================================================
+Verify again at release time.
+
+Google Play inappropriate/sexual content:
+https://support.google.com/googleplay/android-developer/answer/9878810
+
+Google Play target audience/content:
+https://support.google.com/googleplay/android-developer/answer/9867159
+
+Google Play Billing release notes:
+https://developer.android.com/google/play/billing/release-notes
+
+Android Baseline Profiles:
+https://developer.android.com/topic/performance/baselineprofiles/overview
+
+============================================================
+78. FINAL PRIORITY
+============================================================
+Highest value:
+
+P0
+1 Couples comfort-intersection engine
+2 typed prompt metadata
+3 Couples prompt engine
+4 300+ curated Couples prompts
+5 hard adult/family isolation
+6 Couples ViewModel/reducer
+7 session version migrations
+8 connected instrumentation execution
+9 TalkBack + 2x font
+10 benchmark + Baseline Profile
+11 Billing sandbox
+12 Play Console / signing / Data Safety
+
+P1
+13 adaptive tablets
+14 reduce motion
+15 screenshot regression
+16 delete-all-proofs UX
+17 stable profile IDs
+18 dependency modernization
+19 static analysis
+20 richer session summary
+
+EXPECTED OUTCOME
+============================================================
+If this roadmap is implemented and verified:
+
+- Couples Mode becomes a real differentiator instead of a visual reskin.
+- Adult romantic content becomes more sophisticated while keeping consent boundaries.
+- Family content remains isolated.
+- Gameplay state becomes easier to reason about and test.
+- app update/process-death recovery becomes reliable.
+- UI becomes adaptive and accessible.
+- performance is measured.
+- release quality is repeatable.
+- the repo becomes easier to maintain.
+
+That is the difference between an ~8.5 app and a credible ~9.5 production app.

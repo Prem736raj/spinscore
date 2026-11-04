@@ -28,6 +28,7 @@ fun ConfettiAnimation(
     isPlaying: Boolean,
     modifier: Modifier = Modifier
 ) {
+    if (com.spinbottle.truthdare.games.data.SettingsHolder.reduceMotion) return
     val colors = listOf(
         AccentPurple, AccentPink, AccentOrange, AccentTeal,
         AccentGreen, AccentBlue, AccentYellow, ParticlePurple

@@ -22,15 +22,15 @@ object SessionMigrationPipeline {
             if (jsonObject.has("schemaVersion") && jsonObject.has("payload")) {
                 val version = jsonObject.get("schemaVersion").asInt
                 val payload = jsonObject.get("payload").asString
-                when (version) {
-                    CURRENT_SESSION_SCHEMA -> payload
-                    else -> payload // Already in modern payload format
-                }
+                require(version in 1..CURRENT_SESSION_SCHEMA) { "Unsupported session schema" }
+                val checksum = jsonObject.get("checksum")?.takeUnless { it.isJsonNull }?.asString
+                require(checksum == null || checksum == checksumOf(payload)) { "Session checksum mismatch" }
+                payload
             } else {
                 // Legacy unversioned payload (Schema 1 or 2) - upgrade to modern payload
                 trimmed
             }
-        }.getOrDefault(trimmed)
+        }.getOrDefault("")
     }
 }
 

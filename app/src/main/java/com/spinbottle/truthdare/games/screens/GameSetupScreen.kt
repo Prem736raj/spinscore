@@ -48,7 +48,7 @@ fun GameSetupScreen(
     onNext: () -> Unit
 ) {
     var playerName by remember { mutableStateOf("") }
-    var players by remember { mutableStateOf(listOf<Player>()) }
+    var players by remember { mutableStateOf(GameSessionHolder.players) }
     var selectedEmoji by remember { mutableStateOf<String?>(null) }
     var showEmojiPicker by remember { mutableStateOf(false) }
     var welcomeBackMessage by remember { mutableStateOf<String?>(null) }

@@ -3,9 +3,11 @@
     <cloud-backup>
         <include domain="sharedpref" path="." />
         <exclude domain="sharedpref" path="session_state_prefs.xml" />
+        <exclude domain="sharedpref" path="couples_session_prefs.xml" />
     </cloud-backup>
     <device-transfer>
         <include domain="sharedpref" path="." />
         <exclude domain="sharedpref" path="session_state_prefs.xml" />
+        <exclude domain="sharedpref" path="couples_session_prefs.xml" />
     </device-transfer>
 </data-extraction-rules>

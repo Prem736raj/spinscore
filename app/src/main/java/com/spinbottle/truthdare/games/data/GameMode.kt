@@ -51,6 +51,7 @@ enum class GameMode(
         displayName = "Challenge Mode",
         description = "Difficulty escalates every 5 rounds!",
         icon = "🏔️",
-        color = DifficultyHard
+        color = DifficultyHard,
+        requiresPin = true
     )
 }

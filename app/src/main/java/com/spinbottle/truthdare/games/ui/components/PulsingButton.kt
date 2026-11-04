@@ -31,7 +31,7 @@ fun PulsingButton(
     val infiniteTransition = rememberInfiniteTransition(label = "buttonPulse")
     
     // Subtle scale pulse
-    val scale by infiniteTransition.animateFloat(
+    val scale by if (com.spinbottle.truthdare.games.data.SettingsHolder.reduceMotion) androidx.compose.runtime.rememberUpdatedState(1f) else infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 1.02f,
         animationSpec = infiniteRepeatable(
@@ -42,7 +42,7 @@ fun PulsingButton(
     )
     
     // Glow intensity
-    val glowAlpha by infiniteTransition.animateFloat(
+    val glowAlpha by if (com.spinbottle.truthdare.games.data.SettingsHolder.reduceMotion) androidx.compose.runtime.rememberUpdatedState(0.3f) else infiniteTransition.animateFloat(
         initialValue = 0.3f,
         targetValue = 0.6f,
         animationSpec = infiniteRepeatable(

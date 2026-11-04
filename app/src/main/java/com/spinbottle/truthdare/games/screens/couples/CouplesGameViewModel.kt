@@ -22,11 +22,15 @@ class CouplesGameViewModel(
     val uiState: StateFlow<CouplesGameUiState> = _uiState.asStateFlow()
 
     fun initialize(session: CouplesSessionState) {
-        _uiState.value = _uiState.value.copy(session = session)
-        CouplesSessionRepository.saveSession(session)
+        val started = reducer.reduce(session, CouplesAction.StartSession)
+        _uiState.value = _uiState.value.copy(session = started)
+        CouplesSessionRepository.saveSession(started)
         if (session.currentPromptId != null) {
             val prompt = CouplesPromptCatalog.findById(session.currentPromptId)
-            _uiState.value = _uiState.value.copy(prompt = prompt)
+            val prefs = session.preferences.copy(blockedTags = session.preferences.blockedTags + session.sessionBlockedTags)
+            if (prompt != null && belongsToSelectedPack(prompt, session.selectedPackIds) && CouplesContentPolicy.isAllowed(prompt, prefs)) {
+                _uiState.value = _uiState.value.copy(prompt = prompt)
+            } else drawNextPrompt()
         } else {
             drawNextPrompt()
         }
@@ -74,7 +78,7 @@ class CouplesGameViewModel(
         }.toSet()
 
         val nextPrompt = engine.nextPrompt(
-            catalog = CouplesPromptCatalog.allPrompts,
+            catalog = CouplesPromptCatalog.allPrompts.filter { belongsToSelectedPack(it, currentSession.selectedPackIds) },
             preferences = effectivePrefs,
             recentPromptIds = currentSession.recentPromptIds.toSet(),
             preferredPackTags = preferredPackTags
@@ -91,5 +95,8 @@ class CouplesGameViewModel(
             )
         }
     }
+
+    private fun belongsToSelectedPack(prompt: CouplesPrompt, packIds: Set<String>): Boolean =
+        packIds.any { prompt.id.startsWith("couples_${it}_") }
 }
 

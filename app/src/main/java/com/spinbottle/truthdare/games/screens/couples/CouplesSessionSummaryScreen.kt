@@ -21,8 +21,17 @@ import com.spinbottle.truthdare.games.ui.theme.*
 @Composable
 fun CouplesSessionSummaryScreen(
     session: CouplesSessionState,
-    onHome: () -> Unit
+    onHome: () -> Unit,
+    onReplay: () -> Unit
 ) {
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        if (com.spinbottle.truthdare.games.data.GameSessionHolder.markCompletionRecorded()) {
+            com.spinbottle.truthdare.games.data.ThemeManager.incrementGamesPlayed()
+            com.spinbottle.truthdare.games.data.GameSessionHolder.players.forEach {
+                com.spinbottle.truthdare.games.data.PlayerProfileManager.recordGamePlayed(it.name, 0, 0, 0)
+            }
+        }
+    }
     val scrollState = rememberScrollState()
 
     val durationMinutes = if (session.startedAtEpochMs > 0L) {
@@ -78,13 +87,15 @@ fun CouplesSessionSummaryScreen(
                 ) {
                     StatRow("Prompts Completed", "${session.completedPrompts} 💕", AccentPink)
                     StatRow("Prompts Skipped", "${session.skippedPrompts}", TextMuted)
-                    StatRow("Rounds Played", "${session.round}", AccentTeal)
+                    StatRow("Rounds Played", "${session.completedPrompts + session.skippedPrompts}", AccentTeal)
                     StatRow("Session Duration", "$durationMinutes mins", AccentOrange)
                 }
             }
 
             Spacer(modifier = Modifier.height(36.dp))
 
+            GlassButton(text = "Play Again", onClick = onReplay, modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(12.dp))
             GlassButton(
                 text = "Return to Home",
                 onClick = onHome,

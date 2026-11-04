@@ -1,6 +1,8 @@
 package com.spinbottle.truthdare.games.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,6 +42,7 @@ fun PinScreen(
     allowSetupWhenMissing: Boolean = true,
     markAgeVerifiedOnSetup: Boolean = true
 ) {
+    androidx.activity.compose.BackHandler(onBack = onBack)
     val context = LocalContext.current
     val pinManager = remember { PinManager(context) }
     
@@ -77,6 +80,7 @@ fun PinScreen(
                         if (markAgeVerifiedOnSetup) {
                             pinManager.setAgeVerified(true)
                         }
+                        if (markAgeVerifiedOnSetup) com.spinbottle.truthdare.games.data.ContentAccess.grantAdultAccess()
                         onSuccess()
                     } else {
                         errorMessage = "PINs don't match. Try again."
@@ -88,6 +92,7 @@ fun PinScreen(
                 PinScreenMode.VERIFY -> {
                     when (val result = pinManager.verifyPin(pin)) {
                         is PinResult.SUCCESS -> {
+                            if (markAgeVerifiedOnSetup) com.spinbottle.truthdare.games.data.ContentAccess.grantAdultAccess()
                             onSuccess()
                         }
                         is PinResult.WRONG_PIN -> {
@@ -127,7 +132,8 @@ fun PinScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .navigationBarsPadding(),
+                .navigationBarsPadding()
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Top bar
@@ -248,7 +254,7 @@ fun PinScreen(
                 )
             }
             
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

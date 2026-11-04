@@ -217,6 +217,19 @@ fun DifficultySelectionScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 // Tournament Mode Section
+                if (GameSessionHolder.gameMode != com.spinbottle.truthdare.games.data.GameMode.QUICK_FIRE) {
+                    var roundLimit by remember { mutableStateOf(GameSessionHolder.targetRounds) }
+                    Text("Game length", fontWeight = FontWeight.Bold, color = TextWhite)
+                    Text("Tournament games use the target score instead.", fontSize = 12.sp, color = TextMuted)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf<Int?>(10, 20, null).forEach { limit ->
+                            FilterChip(selected = roundLimit == limit,
+                                onClick = { roundLimit = limit; GameSessionHolder.targetRounds = limit },
+                                label = { Text(limit?.let { "$it rounds" } ?: "Open ended") })
+                        }
+                    }
+                    Spacer(Modifier.height(12.dp))
+                }
                 Text(
                     text = "🏆 Tournament Mode",
                     fontSize = 16.sp,

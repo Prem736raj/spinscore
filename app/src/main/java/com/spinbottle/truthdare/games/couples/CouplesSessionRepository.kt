@@ -26,7 +26,15 @@ object CouplesSessionRepository {
     fun loadSession(): CouplesSessionState? {
         val json = prefs?.getString(KEY_SESSION, null) ?: return null
         return runCatching {
-            gson.fromJson(json, CouplesSessionState::class.java)
+            requireNotNull(gson.fromJson(json, CouplesSessionState::class.java)).also {
+                require(it.playerAId.isNotBlank() && it.playerBId.isNotBlank() && it.playerAId != it.playerBId)
+                require(it.currentPlayerIndex in 0..1 && it.round >= 0 && it.completedPrompts >= 0 && it.skippedPrompts >= 0)
+                require(it.preferences.maxTier in IntimacyTier.values())
+                require(it.preferences.blockedTags.all { tag -> tag in CouplesPromptTag.values() })
+                require(it.selectedPackIds.all { id -> id in setOf("date_night", "deep_connection", "flirty", "affection", "after_dark") })
+                require(it.recentPromptIds.all { id -> id.isNotBlank() })
+                require(it.sessionBlockedTags.all { tag -> tag in CouplesPromptTag.values() })
+            }
         }.onFailure {
             clearSession()
         }.getOrNull()

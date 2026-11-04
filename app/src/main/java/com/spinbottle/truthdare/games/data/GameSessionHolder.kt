@@ -129,15 +129,27 @@ object GameSessionHolder {
             .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
         val rawJson = prefs?.getString(KEY_SNAPSHOT, null) ?: return
-        val migratedPayload = com.spinbottle.truthdare.games.game.SessionMigrationPipeline.migrateToLatest(rawJson)
-        runCatching {
-            gson.fromJson(migratedPayload, SessionSnapshot::class.java)
-        }.onSuccess { snapshot ->
-            restore(snapshot)
-        }.onFailure {
-            prefs?.edit()?.remove(KEY_SNAPSHOT)?.apply()
-        }
+        if (!restoreFromJson(rawJson)) clear()
     }
+
+    internal fun restoreFromJson(rawJson: String): Boolean = runCatching {
+        val payload = com.spinbottle.truthdare.games.game.SessionMigrationPipeline.migrateToLatest(rawJson)
+        val snapshot = requireNotNull(gson.fromJson(payload, SessionSnapshot::class.java))
+        require(com.spinbottle.truthdare.games.game.SessionValidator.isValid(
+            snapshot.players.size, snapshot.currentPlayerIndex, snapshot.totalRounds))
+        // Setup drafts also survive Activity recreation; only a started game
+        // is offered by hasRestorableSession() on Home.
+        require(snapshot.players.size in 2..16 && snapshot.gameStartTime >= 0)
+        require(snapshot.players.all { it.id.isNotBlank() && it.name.isNotBlank() &&
+            it.avatar.isNotBlank() && it.score >= 0 && it.truthsCompleted >= 0 &&
+            it.daresCompleted >= 0 && it.skips >= 0 })
+        require(snapshot.players.distinctBy { it.id }.size == snapshot.players.size)
+        require(snapshot.eliminatedPlayers.all { id -> snapshot.players.any { it.id == id } })
+        require(GameMode.valueOf(snapshot.gameMode) != GameMode.COUPLES || snapshot.players.size == 2)
+        Difficulty.valueOf(snapshot.difficulty)
+        try { restore(snapshot) } finally { restoring = false }
+        true
+    }.getOrElse { clear(); false }
 
     fun hasRestorableSession(): Boolean = players.isNotEmpty() && gameStartTime > 0L
 
@@ -176,7 +188,15 @@ object GameSessionHolder {
         currentChallengeLevel = 1
         roundsInCurrentLevel = 0
         completionRecorded = false
+        currentPlayerIndex = 0
+        quickFireSecondsRemaining = 30
         persist()
+    }
+
+    /** Keep the roster and chosen mode/settings while starting a fresh scorecard. */
+    fun prepareRematch() {
+        players = players.map { it.copy(score = 0, truthsCompleted = 0, daresCompleted = 0, skips = 0) }
+        startGame()
     }
 
     /**
@@ -226,6 +246,9 @@ object GameSessionHolder {
     fun incrementRound() {
         totalRounds++
     }
+
+    fun hasReachedRoundLimit(): Boolean = !isTournament &&
+        targetRounds?.let { totalRounds >= it } == true
 
     fun getPlayerScore(playerId: String): Int =
         players.find { it.id == playerId }?.score ?: 0
@@ -294,6 +317,10 @@ object GameSessionHolder {
         if (restoring) return
         val storage = prefs ?: return
 
+        storage.edit().putString(KEY_SNAPSHOT, snapshotJson()).apply()
+    }
+
+    internal fun snapshotJson(): String {
         val snapshot = SessionSnapshot(
             players = players.map { player ->
                 StoredPlayer(
@@ -329,7 +356,7 @@ object GameSessionHolder {
             schemaVersion = com.spinbottle.truthdare.games.game.CURRENT_SESSION_SCHEMA,
             payload = gson.toJson(snapshot)
         )
-        storage.edit().putString(KEY_SNAPSHOT, gson.toJson(envelope)).apply()
+        return gson.toJson(envelope)
     }
 
     private fun restore(snapshot: SessionSnapshot) {

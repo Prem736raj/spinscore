@@ -43,7 +43,7 @@ fun SpinningBottle(
     
     // Glow pulse animation
     val infiniteTransition = rememberInfiniteTransition(label = "glow")
-    val glowAlpha by infiniteTransition.animateFloat(
+    val glowAlpha by if (com.spinbottle.truthdare.games.data.SettingsHolder.reduceMotion) androidx.compose.runtime.rememberUpdatedState(0.3f) else infiniteTransition.animateFloat(
         initialValue = 0.3f,
         targetValue = 0.7f,
         animationSpec = infiniteRepeatable(
@@ -75,7 +75,7 @@ fun SpinningBottle(
             animatedRotation.animateTo(
                 targetValue = targetRotation,
                 animationSpec = tween(
-                    durationMillis = SettingsHolder.spinDurationMillis(),
+                    durationMillis = if (SettingsHolder.reduceMotion) 0 else SettingsHolder.spinDurationMillis(),
                     easing = CubicBezierEasing(0.2f, 0.8f, 0.2f, 1.0f)
                 )
             )

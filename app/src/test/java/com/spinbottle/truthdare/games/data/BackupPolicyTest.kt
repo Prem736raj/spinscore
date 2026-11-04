@@ -17,6 +17,7 @@ class BackupPolicyTest {
         val xml = resource("src/main/res/xml/backup_rules.xml").readText()
         assertTrue(xml.contains("domain=\"sharedpref\""))
         assertTrue(xml.contains("session_state_prefs.xml"))
+        assertTrue(xml.contains("couples_session_prefs.xml"))
         assertFalse(xml.contains("domain=\"file\""))
     }
 
@@ -25,6 +26,7 @@ class BackupPolicyTest {
         val xml = resource("src/main/res/xml/data_extraction_rules.xml").readText()
         assertTrue(xml.contains("domain=\"sharedpref\""))
         assertTrue(xml.contains("session_state_prefs.xml"))
+        assertTrue(xml.contains("couples_session_prefs.xml"))
         assertFalse(xml.contains("domain=\"file\""))
     }
 }

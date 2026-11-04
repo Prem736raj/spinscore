@@ -15,6 +15,9 @@ android {
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        if (providers.gradleProperty("minifiedTests").orNull == "true") {
+            testInstrumentationRunnerArguments["class"] = "com.spinbottle.truthdare.games.screens.PersistenceRegressionTest"
+        }
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -33,7 +36,18 @@ android {
             isMinifyEnabled = false
             applicationIdSuffix = ".debug"
         }
+        // Installable local QA build uses the same shrinker as release, with a
+        // separate package and debug key. Production signing remains external.
+        create("qa") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".qa"
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += "release"
+            proguardFiles("qa-rules.pro")
+            testProguardFiles("qa-test-rules.pro")
+        }
     }
+    testBuildType = if (providers.gradleProperty("minifiedTests").orNull == "true") "qa" else "debug"
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -94,6 +108,7 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+    add("qaImplementation", "androidx.compose.ui:ui-test-manifest")
     
     // Google Play Billing
     implementation("com.android.billingclient:billing:9.1.0")

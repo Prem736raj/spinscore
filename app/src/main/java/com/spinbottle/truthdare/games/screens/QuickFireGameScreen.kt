@@ -4,6 +4,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,6 +38,10 @@ fun QuickFireGameScreen(
     onBack: () -> Unit,
     onGameComplete: () -> Unit
 ) {
+    if ((GameSessionHolder.difficulty.requiresPin || PromptPackManager.hasAdultPackEnabled()) && !ContentAccess.adultAuthorized) {
+        PinScreen(mode = PinScreenMode.VERIFY, onBack = onBack, onSuccess = {})
+        return
+    }
     val soundManager = rememberSoundManager()
     val hapticManager = rememberHapticManager()
     
@@ -90,11 +96,11 @@ fun QuickFireGameScreen(
     }
     
     // Countdown timer
-    LaunchedEffect(isTimerRunning, currentPlayerIndex, isResumed) {
-        if (isTimerRunning && isResumed) {
+    LaunchedEffect(isTimerRunning, currentPlayerIndex, isResumed, showExitDialog) {
+        if (isTimerRunning && isResumed && !showExitDialog) {
             while (timeRemaining > 0 && isResumed) {
                 delay(1000)
-                if (!isResumed || !isTimerRunning) break
+                if (!isResumed || !isTimerRunning || showExitDialog) break
                 timeRemaining--
                 GameSessionHolder.quickFireSecondsRemaining = timeRemaining
                 
@@ -156,7 +162,7 @@ fun QuickFireGameScreen(
             text = { Text("Your progress will be saved.", color = TextMuted) },
             confirmButton = {
                 Button(
-                    onClick = { onBack() },
+                    onClick = { onGameComplete() },
                     colors = ButtonDefaults.buttonColors(containerColor = SkipRed)
                 ) { Text("End Game") }
             },
@@ -179,6 +185,7 @@ fun QuickFireGameScreen(
                 .fillMaxSize()
                 .statusBarsPadding()
                 .navigationBarsPadding()
+                .verticalScroll(rememberScrollState())
         ) {
             // Top bar with Quick Fire badge
             Row(
@@ -237,7 +244,7 @@ fun QuickFireGameScreen(
             ) {
                 // Animated timer
                 val animatedSize by animateFloatAsState(
-                    targetValue = if (timeRemaining <= 5 && isTimerRunning) 1.1f else 1f,
+                    targetValue = if (timeRemaining <= 5 && isTimerRunning && !SettingsHolder.reduceMotion) 1.1f else 1f,
                     animationSpec = if (timeRemaining <= 5) {
                         infiniteRepeatable(
                             animation = tween(500),
@@ -294,13 +301,13 @@ fun QuickFireGameScreen(
                 }
             }
             
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(24.dp))
             
             // Game area
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(2f)
+                    .heightIn(min = 200.dp)
                     .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -327,6 +334,7 @@ fun QuickFireGameScreen(
                                     promptType = PromptType.TRUTH
                                     showChoosePrompt = false
                                     timeRemaining = 30
+                                    GameSessionHolder.quickFireSecondsRemaining = 30
                                     isTimerRunning = true
                                 },
                                 modifier = Modifier.size(120.dp),
@@ -347,6 +355,7 @@ fun QuickFireGameScreen(
                                     promptType = PromptType.DARE
                                     showChoosePrompt = false
                                     timeRemaining = 30
+                                    GameSessionHolder.quickFireSecondsRemaining = 30
                                     isTimerRunning = true
                                 },
                                 modifier = Modifier.size(120.dp),

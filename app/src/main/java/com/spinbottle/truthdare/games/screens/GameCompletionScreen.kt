@@ -3,6 +3,8 @@ package com.spinbottle.truthdare.games.screens
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -42,6 +44,7 @@ fun GameCompletionScreen(
     onPlayAgain: () -> Unit,
     onGoHome: () -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val soundManager = rememberSoundManager()
     var showConfetti by remember { mutableStateOf(true) }
     
@@ -88,7 +91,7 @@ fun GameCompletionScreen(
     
     // Trophy bounce animation
     val infiniteTransition = rememberInfiniteTransition(label = "trophy")
-    val trophyScale by infiniteTransition.animateFloat(
+    val trophyScale by if (com.spinbottle.truthdare.games.data.SettingsHolder.reduceMotion) androidx.compose.runtime.rememberUpdatedState(1f) else infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 1.1f,
         animationSpec = infiniteRepeatable(
@@ -118,6 +121,7 @@ fun GameCompletionScreen(
                 .fillMaxSize()
                 .statusBarsPadding()
                 .navigationBarsPadding()
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -266,11 +270,11 @@ fun GameCompletionScreen(
                     .padding(bottom = 8.dp)
             )
             
-            LazyColumn(
-                modifier = Modifier.weight(1f),
+            Column(
+                modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                itemsIndexed(rankedPlayers) { index, player ->
+                rankedPlayers.forEachIndexed { index, player ->
                     PlayerRankCard(
                         rank = index + 1,
                         player = player,
@@ -282,6 +286,17 @@ fun GameCompletionScreen(
             Spacer(modifier = Modifier.height(12.dp))
             
             // Action buttons
+            if (GameSessionHolder.gameMode != com.spinbottle.truthdare.games.data.GameMode.KIDS_SAFE) {
+                TextButton(onClick = {
+                    com.spinbottle.truthdare.games.data.AppSharing.share(context,
+                        com.spinbottle.truthdare.games.data.AppSharing.recap(players.size, totalRounds,
+                            players.sumOf { it.truthsCompleted + it.daresCompleted }))
+                }, modifier = Modifier.fillMaxWidth()) {
+                    Icon(Icons.Default.Share, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Share game night")
+                }
+            }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)

@@ -15,7 +15,20 @@ concurrency:
 
 jobs:
   instrumentation:
-    runs-on: macos-13
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - api: 34
+            variant: Debug
+            minified: false
+          - api: 36
+            variant: Debug
+            minified: false
+          - api: 34
+            variant: Qa
+            minified: true
     timeout-minutes: 60
 
     steps:
@@ -35,21 +48,28 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run instrumentation tests
+        # KVM access is required by the Linux emulator runner.
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run device tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 33
+          api-level: ${{ matrix.api }}
           target: google_apis
           arch: x86_64
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew connectedDebugAndroidTest
+          script: ./gradlew connected${{ matrix.variant }}AndroidTest -PminifiedTests=${{ matrix.minified }}
 
       - name: Upload instrumentation test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: connected-test-results
+          name: connected-test-results-${{ matrix.api }}-${{ matrix.variant }}
           path: app/build/reports/androidTests/connected/
           if-no-files-found: ignore
           retention-days: 7

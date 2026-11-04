@@ -1,0 +1,223 @@
+Starting a Gradle Daemon, 5 busy and 4 incompatible and 1 stopped Daemons could not be reused, use --status for details
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:processDebugNavigationResources UP-TO-DATE
+> Task :app:compileDebugNavigationResources UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :app:compileDebugKotlin UP-TO-DATE
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:compileDebugJavaWithJavac NO-SOURCE
+> Task :app:bundleDebugClassesToRuntimeJar UP-TO-DATE
+> Task :app:bundleDebugClassesToCompileJar UP-TO-DATE
+> Task :app:compileDebugUnitTestKotlin UP-TO-DATE
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileDebugUnitTest UP-TO-DATE
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :app:processDebugJavaRes UP-TO-DATE
+> Task :app:processDebugUnitTestJavaRes UP-TO-DATE
+> Task :app:testDebugUnitTest UP-TO-DATE
+> Task :app:extractProguardFiles UP-TO-DATE
+> Task :app:generateDebugLintReportModel
+> Task :app:generateDebugUnitTestLintModel
+> Task :app:lintAnalyzeDebug
+> Task :app:lintAnalyzeDebugUnitTest
+> Task :app:buildKotlinToolingMetadata UP-TO-DATE
+> Task :app:preReleaseBuild UP-TO-DATE
+> Task :app:checkReleaseAarMetadata UP-TO-DATE
+> Task :app:processReleaseNavigationResources UP-TO-DATE
+> Task :app:compileReleaseNavigationResources UP-TO-DATE
+> Task :app:generateReleaseResValues UP-TO-DATE
+> Task :app:mapReleaseSourceSetPaths UP-TO-DATE
+> Task :app:generateReleaseResources UP-TO-DATE
+> Task :app:mergeReleaseResources UP-TO-DATE
+> Task :app:packageReleaseResources UP-TO-DATE
+> Task :app:parseReleaseLocalResources UP-TO-DATE
+> Task :app:createReleaseCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksRelease UP-TO-DATE
+> Task :app:processReleaseMainManifest UP-TO-DATE
+> Task :app:processReleaseManifest UP-TO-DATE
+> Task :app:processReleaseManifestForPackage UP-TO-DATE
+> Task :app:processReleaseResources UP-TO-DATE
+> Task :app:compileReleaseKotlin UP-TO-DATE
+> Task :app:javaPreCompileRelease UP-TO-DATE
+> Task :app:compileReleaseJavaWithJavac NO-SOURCE
+> Task :app:generateReleaseLintReportModel
+> Task :app:bundleReleaseClassesToCompileJar UP-TO-DATE
+> Task :app:preReleaseUnitTestBuild UP-TO-DATE
+> Task :app:generateReleaseUnitTestLintModel
+> Task :app:lintAnalyzeRelease
+
+> Task :app:lintReportDebug
+Wrote HTML report to file:///P:/Projects/spinscore/app/build/reports/lint-results-debug.html
+
+> Task :app:lintDebug
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:mergeDebugShaders UP-TO-DATE
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :app:compressDebugAssets UP-TO-DATE
+> Task :app:desugarDebugFileDependencies UP-TO-DATE
+> Task :app:dexBuilderDebug UP-TO-DATE
+> Task :app:mergeDebugGlobalSynthetics UP-TO-DATE
+> Task :app:mergeDebugJavaResource UP-TO-DATE
+> Task :app:checkDebugDuplicateClasses UP-TO-DATE
+> Task :app:mergeExtDexDebug UP-TO-DATE
+> Task :app:mergeLibDexDebug UP-TO-DATE
+> Task :app:mergeProjectDexDebug UP-TO-DATE
+> Task :app:mergeDebugJniLibFolders UP-TO-DATE
+> Task :app:mergeDebugNativeLibs NO-SOURCE
+> Task :app:stripDebugDebugSymbols NO-SOURCE
+> Task :app:validateSigningDebug UP-TO-DATE
+> Task :app:writeDebugAppMetadata UP-TO-DATE
+> Task :app:writeDebugSigningConfigVersions UP-TO-DATE
+> Task :app:packageDebug UP-TO-DATE
+> Task :app:createDebugApkListingFileRedirect UP-TO-DATE
+> Task :app:assembleDebug UP-TO-DATE
+> Task :app:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :app:mergeReleaseNativeLibs NO-SOURCE
+> Task :app:stripReleaseDebugSymbols NO-SOURCE
+> Task :app:extractReleaseNativeSymbolTables NO-SOURCE
+> Task :app:mergeReleaseNativeDebugMetadata NO-SOURCE
+> Task :app:checkReleaseDuplicateClasses UP-TO-DATE
+> Task :app:mergeReleaseArtProfile UP-TO-DATE
+> Task :app:expandReleaseArtProfileWildcards UP-TO-DATE
+> Task :app:mergeReleaseGeneratedProguardFiles UP-TO-DATE
+> Task :app:processReleaseJavaRes UP-TO-DATE
+> Task :app:mergeReleaseJavaResource UP-TO-DATE
+> Task :app:mergeReleaseStartupProfile UP-TO-DATE
+> Task :app:minifyReleaseWithR8 UP-TO-DATE
+> Task :app:compileReleaseArtProfile UP-TO-DATE
+> Task :app:mergeReleaseShaders UP-TO-DATE
+> Task :app:compileReleaseShaders NO-SOURCE
+> Task :app:generateReleaseAssets UP-TO-DATE
+> Task :app:mergeReleaseAssets UP-TO-DATE
+> Task :app:compressReleaseAssets UP-TO-DATE
+> Task :app:extractReleaseVersionControlInfo UP-TO-DATE
+> Task :app:generateReleaseLintVitalReportModel
+> Task :app:lintAnalyzeReleaseUnitTest
+
+> Task :app:lintReportRelease
+Wrote HTML report to file:///P:/Projects/spinscore/app/build/reports/lint-results-release.html
+
+> Task :app:lintRelease
+> Task :app:convertShrunkResourcesToBinaryRelease UP-TO-DATE
+> Task :app:optimizeReleaseResources UP-TO-DATE
+> Task :app:collectReleaseDependencies UP-TO-DATE
+> Task :app:sdkReleaseDependencyData UP-TO-DATE
+> Task :app:writeReleaseAppMetadata UP-TO-DATE
+> Task :app:writeReleaseSigningConfigVersions UP-TO-DATE
+> Task :app:buildReleasePreBundle UP-TO-DATE
+> Task :app:configureReleaseDependencies UP-TO-DATE
+> Task :app:parseReleaseIntegrityConfig UP-TO-DATE
+> Task :app:preQaBuild UP-TO-DATE
+> Task :app:mergeQaJniLibFolders UP-TO-DATE
+> Task :app:mergeQaNativeLibs NO-SOURCE
+> Task :app:stripQaDebugSymbols NO-SOURCE
+> Task :app:extractQaNativeSymbolTables NO-SOURCE
+> Task :app:mergeQaNativeDebugMetadata NO-SOURCE
+> Task :app:checkQaDuplicateClasses UP-TO-DATE
+> Task :app:checkQaAarMetadata UP-TO-DATE
+> Task :app:processQaNavigationResources UP-TO-DATE
+> Task :app:compileQaNavigationResources UP-TO-DATE
+> Task :app:generateQaResValues UP-TO-DATE
+> Task :app:mapQaSourceSetPaths UP-TO-DATE
+> Task :app:generateQaResources UP-TO-DATE
+> Task :app:mergeQaResources UP-TO-DATE
+> Task :app:packageQaResources UP-TO-DATE
+> Task :app:parseQaLocalResources UP-TO-DATE
+> Task :app:createQaCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksQa UP-TO-DATE
+> Task :app:processQaMainManifest UP-TO-DATE
+> Task :app:processQaManifest UP-TO-DATE
+> Task :app:processQaManifestForPackage UP-TO-DATE
+> Task :app:processQaResources UP-TO-DATE
+> Task :app:compileQaKotlin UP-TO-DATE
+> Task :app:javaPreCompileQa UP-TO-DATE
+> Task :app:compileQaJavaWithJavac NO-SOURCE
+> Task :app:mergeQaArtProfile UP-TO-DATE
+> Task :app:expandQaArtProfileWildcards UP-TO-DATE
+> Task :app:mergeQaGeneratedProguardFiles UP-TO-DATE
+> Task :app:processQaJavaRes UP-TO-DATE
+> Task :app:mergeQaJavaResource UP-TO-DATE
+> Task :app:mergeQaStartupProfile UP-TO-DATE
+> Task :app:lintVitalAnalyzeRelease
+> Task :app:minifyQaWithR8
+> Task :app:lintVitalReportRelease SKIPPED
+> Task :app:lintVitalRelease SKIPPED
+> Task :app:packageRelease UP-TO-DATE
+> Task :app:createReleaseApkListingFileRedirect UP-TO-DATE
+> Task :app:assembleRelease UP-TO-DATE
+> Task :app:packageReleaseBundle UP-TO-DATE
+> Task :app:signReleaseBundle UP-TO-DATE
+> Task :app:produceReleaseBundleIdeListingFile UP-TO-DATE
+> Task :app:createReleaseBundleListingFileRedirect UP-TO-DATE
+> Task :app:bundleRelease UP-TO-DATE
+> Task :app:mergeQaShaders UP-TO-DATE
+> Task :app:compileQaShaders NO-SOURCE
+> Task :app:generateQaAssets UP-TO-DATE
+> Task :app:mergeQaAssets UP-TO-DATE
+> Task :app:compressQaAssets UP-TO-DATE
+> Task :app:extractQaVersionControlInfo UP-TO-DATE
+> Task :app:generateQaLintVitalReportModel
+> Task :app:lintVitalAnalyzeQa
+> Task :app:lintVitalReportQa
+> Task :app:lintVitalQa
+> Task :app:collectQaDependencies UP-TO-DATE
+> Task :app:sdkQaDependencyData UP-TO-DATE
+> Task :app:validateSigningQa UP-TO-DATE
+> Task :app:writeQaAppMetadata UP-TO-DATE
+> Task :app:writeQaSigningConfigVersions UP-TO-DATE
+> Task :app:bundleQaClassesToCompileJar UP-TO-DATE
+> Task :app:preQaAndroidTestBuild SKIPPED
+> Task :app:checkQaAndroidTestAarMetadata UP-TO-DATE
+> Task :app:processQaAndroidTestNavigationResources UP-TO-DATE
+> Task :app:compileQaAndroidTestNavigationResources UP-TO-DATE
+> Task :app:generateQaAndroidTestResValues UP-TO-DATE
+> Task :app:mapQaAndroidTestSourceSetPaths UP-TO-DATE
+> Task :app:generateQaAndroidTestResources UP-TO-DATE
+> Task :app:mergeQaAndroidTestResources UP-TO-DATE
+> Task :app:processQaAndroidTestManifest UP-TO-DATE
+> Task :app:processQaAndroidTestResources UP-TO-DATE
+> Task :app:compileQaAndroidTestKotlin UP-TO-DATE
+> Task :app:javaPreCompileQaAndroidTest UP-TO-DATE
+> Task :app:compileQaAndroidTestJavaWithJavac NO-SOURCE
+> Task :app:mergeQaAndroidTestShaders UP-TO-DATE
+> Task :app:compileQaAndroidTestShaders NO-SOURCE
+> Task :app:generateQaAndroidTestAssets UP-TO-DATE
+> Task :app:mergeQaAndroidTestAssets UP-TO-DATE
+> Task :app:compressQaAndroidTestAssets UP-TO-DATE
+> Task :app:checkQaAndroidTestDuplicateClasses UP-TO-DATE
+> Task :app:processQaAndroidTestJavaRes UP-TO-DATE
+> Task :app:mergeQaAndroidTestJavaResource UP-TO-DATE
+> Task :app:mergeQaAndroidTestJniLibFolders UP-TO-DATE
+> Task :app:mergeQaAndroidTestNativeLibs NO-SOURCE
+> Task :app:stripQaAndroidTestDebugSymbols NO-SOURCE
+> Task :app:validateSigningQaAndroidTest UP-TO-DATE
+> Task :app:writeQaAndroidTestSigningConfigVersions UP-TO-DATE
+> Task :app:convertShrunkResourcesToBinaryQa
+> Task :app:optimizeQaResources
+> Task :app:compileQaArtProfile
+> Task :app:packageQa
+> Task :app:createQaApkListingFileRedirect UP-TO-DATE
+> Task :app:assembleQa
+> Task :app:minifyQaAndroidTestWithR8
+> Task :app:packageQaAndroidTest
+> Task :app:createQaAndroidTestApkListingFileRedirect UP-TO-DATE
+> Task :app:assembleQaAndroidTest
+
+BUILD SUCCESSFUL in 5m 52s
+173 actionable tasks: 26 executed, 147 up-to-date

@@ -29,7 +29,7 @@ class SessionMigrationTest {
     fun `corrupt json recovers gracefully without throwing`() {
         val corrupt = "{invalid json content"
         val result = SessionMigrationPipeline.migrateToLatest(corrupt)
-        assertEquals(corrupt, result)
+        assertEquals("", result)
     }
 
     @Test

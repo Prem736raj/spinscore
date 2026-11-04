@@ -48,6 +48,7 @@ fun AdaptiveTwoPlayerHeader(
         // Player A
         PlayerAvatarBadge(
             player = playerA,
+            modifier = Modifier.weight(1f),
             isActive = activePlayerIndex == 0
         )
 
@@ -61,6 +62,7 @@ fun AdaptiveTwoPlayerHeader(
         // Player B
         PlayerAvatarBadge(
             player = playerB,
+            modifier = Modifier.weight(1f),
             isActive = activePlayerIndex == 1
         )
     }
@@ -69,6 +71,7 @@ fun AdaptiveTwoPlayerHeader(
 @Composable
 private fun PlayerAvatarBadge(
     player: Player,
+    modifier: Modifier = Modifier,
     isActive: Boolean
 ) {
     val scale by animateFloatAsState(
@@ -82,7 +85,7 @@ private fun PlayerAvatarBadge(
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.scale(scale)
+        modifier = modifier.scale(if (com.spinbottle.truthdare.games.data.SettingsHolder.reduceMotion) 1f else scale)
     ) {
         Box(
             modifier = Modifier

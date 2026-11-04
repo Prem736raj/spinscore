@@ -58,6 +58,8 @@ The app does not intentionally sell personal data or send gameplay data to a dev
 
 When you explicitly use Android sharing for a dare-proof photo, the selected receiving app becomes responsible for the copy you share under that app's own privacy practices.
 
+The optional game-night recap shares only aggregate player, round and completed-challenge counts, plus a link to the app. It excludes player names, prompt text and photos. Invitations and recaps open Android's share sheet; you choose the recipient and whether to send. Recap sharing is hidden in Kids Safe results. The rate action opens Google Play or a browser.
+
 ## Children and mature content
 
 The app includes a Kids Safe gameplay mode as well as mature/adult-gated content in other modes. Kids Safe uses a dedicated prompt path and a parent PIN exit boundary.
@@ -72,6 +74,8 @@ You can delete individual dare-proof photos from the in-app Dare Gallery.
 
 Other local application data can be removed through available in-app reset controls where provided, or by clearing the application's storage/uninstalling the application through Android. Android backup may restore data that was eligible for platform backup, subject to the user's device/account backup settings.
 
+Settings → Reset All App Data clears custom prompts, favorites, history, profiles, sessions, local proof photos, settings, theme progress, selected packs and the local PIN. Google Play purchase ownership is managed separately and is not deleted by this reset. Active Classic and Couples sessions and private proof-photo files are excluded from Android backup and device transfer.
+
 ## Security
 
 The parent/content-gate PIN is intended as a lightweight local content boundary, not as high-security authentication. It should not be reused as a banking, device-unlock, or other sensitive PIN.
@@ -82,4 +86,4 @@ If future versions add analytics, advertising, cloud accounts, online multiplaye
 
 ## Contact
 
-A support/contact address should be added here before publishing this policy as the production Google Play privacy-policy URL.
+For privacy questions, support or data-deletion assistance, contact [developeraisteps@gmail.com](mailto:developeraisteps@gmail.com).

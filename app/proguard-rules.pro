@@ -1,4 +1,12 @@
 # Spin Bottle release shrinker rules.
+# These small persisted DTOs are constructed reflectively by Gson.
+-keep class com.spinbottle.truthdare.games.game.SessionEnvelope { *; }
+-keep class com.spinbottle.truthdare.games.data.GameSessionHolder$SessionSnapshot { *; }
+-keep class com.spinbottle.truthdare.games.data.GameSessionHolder$StoredPlayer { *; }
+-keep class com.spinbottle.truthdare.games.couples.CouplesSessionState { *; }
+-keep class com.spinbottle.truthdare.games.couples.CouplesPreferences { *; }
+-keepclassmembers enum com.spinbottle.truthdare.games.couples.** { *; }
+-keepclassmembers enum com.spinbottle.truthdare.games.data.AudienceClass { *; }
 #
 # Jetpack Compose, Billing and Coil ship consumer rules where required. Do not
 # keep the entire libraries here; doing so defeats R8 optimization.

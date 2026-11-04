@@ -14,11 +14,11 @@ The repository name, application ID, and user-facing app name are intentionally 
 ## Production Hardening Status
 
 Active hardening branch:
-`astra/spinscore-9-5-upgrade` (targeting `master`)
+`codex/app-quality-growth` (based on `master`)
 
 - **Audit & Backlog**: Tracked in [AUDIT_FINDINGS.md](AUDIT_FINDINGS.md).
 - **Target Engineering Readiness**: ~9.5 / 10.
-- **Release Gating**: Automated local/CI build and test gates are active (16 test suites, 60 unit tests passing deterministically).
+- **Release Gating**: Local unit/lint/build checks and API 34/36 instrumentation CI, including a minified QA variant. Current evidence and audit resolutions are recorded in [APP_IMPROVEMENTS_2026-10-12.md](APP_IMPROVEMENTS_2026-10-12.md).
 - **Manual Gate Statement**: Do NOT treat this app as ready for production release until the required physical device / emulator verifications and Google Play Console release checks are performed.
 
 ---
@@ -33,16 +33,17 @@ Active hardening branch:
   - **Consent-First Skip UX**: Non-judgmental skip button allowing players to skip without penalty or block specific tags for the remainder of the session.
   - **5 Curated Romance Packs**: Date Night, Deep Connection, Flirty, Affection, and After Dark (300 curated prompts).
   - **Google Play Compliance**: Strictly focused on romantic tension, emotional vulnerability, flirty conversation, and sensual affection; zero graphic anatomy, explicit acts, nudity, or coercive content.
-  - **After Dark Privacy Guard**: Camera proof capture is suppressed during After Dark intimacy prompts to safeguard personal privacy.
+  - **Couples Privacy**: Couples sessions do not offer photo-proof capture.
 - **Hard Audience Isolation**: Domain-level `AudienceClass` model isolating `FAMILY`, `GENERAL`, and `ADULT_COUPLES` content paths to prevent adult leak into Family/Kids modes.
 - **Game Modes**:
   - **Classic**: Turn-based party game with scores and custom round limits.
   - **Quick Fire**: Fast-paced countdown timer with lifecycle pause protection.
   - **Couples 2.0**: Deep romantic mode with mutual comfort configuration.
   - **Kids Safe**: Strict prompt isolation and parent PIN-protected exit boundary.
-- **Session State & Schema 3 Migration**: Versioned `SessionEnvelope` with `SessionMigrationPipeline` and cold-launch "Resume Game" action on Home screen restoring exact turn state.
-- **Motion Accessibility**: Settings toggle for `reduceMotion` dampening background particle rendering for vestibular comfort.
-- **Complete App Data Reset**: Atomic wipe of session state, prompt history, profiles, and dare proofs from Settings.
+- **Session State & Schema 3 Migration**: Validated versioned envelopes with checksums and legacy migration. Home offers Resume Game; an active Kids session resumes directly into its parent-gated flow. Transient prompt-reveal and animation state restarts at the beginning of the current turn.
+- **Motion Accessibility**: Reduce Motion stops decorative infinite animation/confetti and makes bottle selection immediate.
+- **Complete App Data Reset**: Clears local content, preferences, profiles, sessions, photos and PIN; reports failures and preserves Google Play ownership. The reset is not transactional across files and preference stores.
+- **Game-Night Replay & Sharing**: One-tap rematches keep the roster/settings. Optional aggregate recaps, invitations and rating actions support repeat play and word of mouth. Classic, Party and Challenge support 10/20-round or open-ended sessions.
 - **Custom Prompts & Packs**: In-app prompt creator with character validation, prompt packs, favorites, and repeat-avoidance history.
 - **Persistent Settings & Themes**: Haptics, sound, bottle spin speed, and unlockable themes backed by gameplay achievements.
 - **Local Dare Proofs**: Optional photo capture saved strictly to app-private storage, with scoped FileProvider sharing and deletion.

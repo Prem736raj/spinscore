@@ -120,7 +120,7 @@ fun TournamentScoreboard(
 @Composable
 fun MatchPointBadge() {
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val alpha by infiniteTransition.animateFloat(
+    val alpha by if (com.spinbottle.truthdare.games.data.SettingsHolder.reduceMotion) androidx.compose.runtime.rememberUpdatedState(0.6f) else infiniteTransition.animateFloat(
         initialValue = 0.6f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
@@ -154,7 +154,7 @@ fun TournamentWinnerOverlay(
     onContinue: () -> Unit
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "crown")
-    val crownScale by infiniteTransition.animateFloat(
+    val crownScale by if (com.spinbottle.truthdare.games.data.SettingsHolder.reduceMotion) androidx.compose.runtime.rememberUpdatedState(1f) else infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 1.15f,
         animationSpec = infiniteRepeatable(
@@ -382,7 +382,7 @@ fun LevelUpOverlay(
     }
     
     val infiniteTransition = rememberInfiniteTransition(label = "levelup")
-    val scale by infiniteTransition.animateFloat(
+    val scale by if (com.spinbottle.truthdare.games.data.SettingsHolder.reduceMotion) androidx.compose.runtime.rememberUpdatedState(1f) else infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 1.1f,
         animationSpec = infiniteRepeatable(

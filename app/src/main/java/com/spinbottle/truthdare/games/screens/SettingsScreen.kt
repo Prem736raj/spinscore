@@ -37,6 +37,7 @@ import com.spinbottle.truthdare.games.data.PromptsDatabase
 import com.spinbottle.truthdare.games.data.SettingsHolder
 import com.spinbottle.truthdare.games.data.ThemeManager
 import com.spinbottle.truthdare.games.ui.theme.*
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,6 +45,9 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onViewGallery: () -> Unit = {}
 ) {
+    val scope = rememberCoroutineScope()
+    var resetBusy by remember { mutableStateOf(false) }
+    var resetError by remember { mutableStateOf<String?>(null) }
     var soundEnabled by remember { mutableStateOf(SettingsHolder.soundEnabled) }
     var hapticEnabled by remember { mutableStateOf(SettingsHolder.hapticEnabled) }
     var reduceMotion by remember { mutableStateOf(SettingsHolder.reduceMotion) }
@@ -417,6 +421,7 @@ fun SettingsScreen(
                 val context = androidx.compose.ui.platform.LocalContext.current
                 var showResetAllDialog by remember { mutableStateOf(false) }
                 OutlinedButton(
+                    enabled = !resetBusy,
                     onClick = { showResetAllDialog = true },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
@@ -428,12 +433,18 @@ fun SettingsScreen(
                     AlertDialog(
                         onDismissRequest = { showResetAllDialog = false },
                         title = { Text("Reset All App Data?", color = TextWhite) },
-                        text = { Text("This will permanently clear all prompt history, player profiles, active sessions, and local dare proof photos. Google Play purchases remain safe.", color = TextMuted) },
+                        text = { Text("This will permanently clear custom prompts, favorites, history, profiles, sessions, photos, settings, themes and your PIN. Google Play purchases remain available to restore.", color = TextMuted) },
                         confirmButton = {
                             Button(
                                 onClick = {
-                                    com.spinbottle.truthdare.games.data.AppDataResetManager.resetAllData(context)
+                                    resetBusy = true
                                     showResetAllDialog = false
+                                    scope.launch {
+                                        val reset = runCatching { com.spinbottle.truthdare.games.data.AppDataResetManager.resetAllData(context) }.getOrDefault(false)
+                                        resetBusy = false
+                                        if (reset) onBack()
+                                        else resetError = "Reset could not finish. Please try again. Some data may already have been removed."
+                                    }
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = SkipRed)
                             ) {
@@ -452,7 +463,15 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(24.dp))
                 
                 // ===== ABOUT =====
+                if (resetBusy) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                resetError?.let { Text(it, color = SkipRed, modifier = Modifier.padding(vertical = 8.dp)) }
                 SettingsSectionHeader("ℹ️ About")
+                OutlinedButton(onClick = { com.spinbottle.truthdare.games.data.AppSharing.share(context) }, modifier = Modifier.fillMaxWidth()) {
+                    Text("Invite friends to game night")
+                }
+                OutlinedButton(onClick = { com.spinbottle.truthdare.games.data.AppSharing.rate(context) }, modifier = Modifier.fillMaxWidth()) {
+                    Text("Rate Spin Bottle on Google Play")
+                }
                 
                 Box(
                     modifier = Modifier

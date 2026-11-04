@@ -37,7 +37,7 @@ fun ParticleBackground(
     val particles = remember { mutableStateListOf<Particle>() }
     
     val infiniteTransition = rememberInfiniteTransition(label = "particles")
-    val animationProgress by infiniteTransition.animateFloat(
+    val animationProgress by if (com.spinbottle.truthdare.games.data.SettingsHolder.reduceMotion) androidx.compose.runtime.rememberUpdatedState(0f) else infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(

@@ -42,7 +42,7 @@ fun SplashScreen(
     )
     
     // Glow pulse
-    val glowAlpha by infiniteTransition.animateFloat(
+    val glowAlpha by if (com.spinbottle.truthdare.games.data.SettingsHolder.reduceMotion) androidx.compose.runtime.rememberUpdatedState(0.5f) else infiniteTransition.animateFloat(
         initialValue = 0.5f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(

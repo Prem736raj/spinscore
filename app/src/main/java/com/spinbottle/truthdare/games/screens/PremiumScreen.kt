@@ -267,7 +267,7 @@ fun PremiumScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     TextButton(
-                        onClick = { billingManager.refreshPurchases() },
+                        onClick = { billingManager.retryStoreConnection() },
                         enabled = !billingUiState.isRefreshing
                     ) {
                         Text(

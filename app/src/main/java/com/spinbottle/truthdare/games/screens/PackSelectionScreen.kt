@@ -43,6 +43,13 @@ fun PackSelectionScreen(
     }
     var showPackPinScreen by remember { mutableStateOf(false) }
     var pendingPackToggle by remember { mutableStateOf<PromptPack?>(null) }
+    var unlockToContinue by remember { mutableStateOf(false) }
+    if (unlockToContinue) {
+        PinScreen(mode = PinScreenMode.VERIFY,
+            onBack = { unlockToContinue = false },
+            onSuccess = { unlockToContinue = false; onNext() })
+        return
+    }
     
     // PIN screen for adult pack toggle
     if (showPackPinScreen && pendingPackToggle != null) {
@@ -215,7 +222,11 @@ fun PackSelectionScreen(
             // Bottom button
             Column(modifier = Modifier.padding(16.dp)) {
                 Button(
-                    onClick = onNext,
+                    onClick = {
+                        if (PromptPackManager.hasAdultPackEnabled() &&
+                            !com.spinbottle.truthdare.games.data.ContentAccess.adultAuthorized) unlockToContinue = true
+                        else onNext()
+                    },
                     enabled = PromptPackManager.getEnabledPackCount() > 0,
                     modifier = Modifier
                         .fillMaxWidth()

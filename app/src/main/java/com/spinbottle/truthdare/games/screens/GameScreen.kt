@@ -1,6 +1,8 @@
 package com.spinbottle.truthdare.games.screens
 
 import android.net.Uri
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
@@ -52,9 +54,15 @@ fun GameScreen(
     onGameEnd: () -> Unit,
     onViewGallery: () -> Unit = {}
 ) {
+    if ((GameSessionHolder.gameMode.requiresPin ||
+            GameSessionHolder.difficulty.requiresPin || PromptPackManager.hasAdultPackEnabled()) && !ContentAccess.adultAuthorized) {
+        PinScreen(mode = PinScreenMode.VERIFY, onBack = onBack, onSuccess = {})
+        return
+    }
     val soundManager = rememberSoundManager()
     val hapticManager = rememberHapticManager()
     var showExitDialog by remember { mutableStateOf(false) }
+    BackHandler { showExitDialog = true }
     var showGameMenu by remember { mutableStateOf(false) }
     var isPaused by remember { mutableStateOf(false) }
     var showAddPlayerDialog by remember { mutableStateOf(false) }
@@ -71,21 +79,22 @@ fun GameScreen(
     
     // Camera state for dare proof
     val context = LocalContext.current
-    var pendingProofDare by remember { mutableStateOf("") }
-    var pendingProofPlayer by remember { mutableStateOf<Player?>(null) }
-    var pendingPhotoUri by remember { mutableStateOf<Uri?>(null) }
-    var pendingPhotoFileName by remember { mutableStateOf<String?>(null) }
+    var pendingProofDare by rememberSaveable { mutableStateOf("") }
+    var pendingProofPlayerName by rememberSaveable { mutableStateOf<String?>(null) }
+    var pendingProofPlayerAvatar by rememberSaveable { mutableStateOf<String?>(null) }
+    var pendingPhotoUri by rememberSaveable { mutableStateOf<String?>(null) }
+    var pendingPhotoFileName by rememberSaveable { mutableStateOf<String?>(null) }
     
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
         val fileName = pendingPhotoFileName
-        if (success && fileName != null && pendingProofPlayer != null) {
+        if (success && fileName != null && pendingProofPlayerName != null) {
             DareProofManager.addProof(
                 DareProof(
                     dareText = pendingProofDare,
-                    playerName = pendingProofPlayer!!.name,
-                    playerEmoji = pendingProofPlayer!!.avatar,
+                    playerName = pendingProofPlayerName!!,
+                    playerEmoji = pendingProofPlayerAvatar ?: "🙂",
                     fileName = fileName
                 )
             )
@@ -93,7 +102,8 @@ fun GameScreen(
             DareProofManager.deleteUntrackedFile(fileName)
         }
         pendingProofDare = ""
-        pendingProofPlayer = null
+        pendingProofPlayerName = null
+        pendingProofPlayerAvatar = null
         pendingPhotoUri = null
         pendingPhotoFileName = null
     }
@@ -103,20 +113,22 @@ fun GameScreen(
     ) { granted ->
         val uri = pendingPhotoUri
         if (granted && uri != null) {
-            runCatching { cameraLauncher.launch(uri) }
+            runCatching { cameraLauncher.launch(Uri.parse(uri)) }
                 .onFailure {
                     DareProofManager.deleteUntrackedFile(pendingPhotoFileName)
                     pendingPhotoUri = null
                     pendingPhotoFileName = null
                     pendingProofDare = ""
-                    pendingProofPlayer = null
+                    pendingProofPlayerName = null
+                    pendingProofPlayerAvatar = null
                 }
         } else {
             DareProofManager.deleteUntrackedFile(pendingPhotoFileName)
             pendingPhotoUri = null
             pendingPhotoFileName = null
             pendingProofDare = ""
-            pendingProofPlayer = null
+            pendingProofPlayerName = null
+            pendingProofPlayerAvatar = null
         }
     }
     
@@ -125,11 +137,15 @@ fun GameScreen(
     
     // If no players, show error state
     if (players.isEmpty()) {
+        BackHandler(onBack = onBack)
         Box(
             modifier = Modifier.fillMaxSize().background(DarkBackground),
             contentAlignment = Alignment.Center
         ) {
-            Text("No players found. Please go back and add players.", color = TextWhite)
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(24.dp)) {
+                Text("No players found. Please go back and add players.", color = TextWhite)
+                Button(onClick = onBack) { Text("Back to setup") }
+            }
         }
         return
     }
@@ -162,6 +178,10 @@ fun GameScreen(
     
 
     // Exit confirmation dialog
+    LaunchedEffect(gameState.round) {
+        if (GameSessionHolder.hasReachedRoundLimit()) onGameEnd()
+    }
+
     if (showExitDialog) {
         AlertDialog(
             onDismissRequest = { showExitDialog = false },
@@ -250,7 +270,7 @@ fun GameScreen(
                         onClick = {
                             hapticManager.mediumTap()
                             soundManager.playTruthReveal()
-                            currentPrompt = GamePrompts.getRandomTruth(gameState.difficulty)
+                            currentPrompt = GamePrompts.getRandomTruth(if (GameSessionHolder.gameMode == GameMode.CHALLENGE) GameSessionHolder.getChallengeDifficulty() else gameState.difficulty)
                             gameState = gameState.copy(
                                 currentPromptType = PromptType.TRUTH,
                                 showPrompt = true
@@ -271,7 +291,7 @@ fun GameScreen(
                         onClick = {
                             hapticManager.mediumTap()
                             soundManager.playDareReveal()
-                            currentPrompt = GamePrompts.getRandomDare(gameState.difficulty)
+                            currentPrompt = GamePrompts.getRandomDare(if (GameSessionHolder.gameMode == GameMode.CHALLENGE) GameSessionHolder.getChallengeDifficulty() else gameState.difficulty)
                             gameState = gameState.copy(
                                 currentPromptType = PromptType.DARE,
                                 showPrompt = true
@@ -354,7 +374,7 @@ fun GameScreen(
                             val cleanPrompt = currentPrompt.removePrefix("✨ ").removePrefix("❤️ ")
                             val promptType = if (gameState.currentPromptType == PromptType.TRUTH) 
                                 PromptItemType.TRUTH else PromptItemType.DARE
-                            favoriteState = FavoritesManager.toggleFavorite(cleanPrompt, promptType)
+                            favoriteState = FavoritesManager.toggleFavorite(cleanPrompt, promptType, GamePrompts.lastAudience)
                         }
                     ) {
                         Icon(
@@ -391,10 +411,11 @@ fun GameScreen(
                                                 "${context.packageName}.fileprovider",
                                                 photoFile
                                             )
-                                            pendingPhotoUri = uri
+                                            pendingPhotoUri = uri.toString()
                                             pendingPhotoFileName = photoFile.name
                                             pendingProofDare = currentPrompt.removePrefix("✨ ").removePrefix("❤️ ")
-                                            pendingProofPlayer = selectedPlayer
+                                            pendingProofPlayerName = selectedPlayer.name
+                                            pendingProofPlayerAvatar = selectedPlayer.avatar
                                             // Request camera permission
                                             permissionLauncher.launch(android.Manifest.permission.CAMERA)
                                         } catch (e: Exception) {
@@ -430,6 +451,10 @@ fun GameScreen(
                             GameSessionHolder.updatePlayerStats(selectedPlayer.id, false, false, true)
                             GameSessionHolder.incrementRound()
                             
+                            if (GameSessionHolder.gameMode == GameMode.CHALLENGE && GameSessionHolder.advanceChallengeRound()) {
+                                challengeLevel = GameSessionHolder.currentChallengeLevel
+                                showLevelUp = true
+                            }
                             // Move to next round
                             gameState = gameState.copy(
                                 showPrompt = false,
@@ -544,7 +569,8 @@ fun GameScreen(
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     Text(
-                        text = "Round ${gameState.round}",
+                        text = "Round ${gameState.round}" +
+                            (GameSessionHolder.targetRounds?.takeUnless { GameSessionHolder.isTournament }?.let { " / $it" } ?: ""),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = TextWhite
@@ -683,6 +709,7 @@ fun GameScreen(
     // Add player dialog
     if (showAddPlayerDialog) {
         AddPlayerDialog(
+            existingNames = gameState.players.map { it.name },
             usedEmojis = gameState.players.map { it.avatar }.toSet(),
             onAddPlayer = { name, avatar ->
                 val newPlayer = Player(
@@ -752,12 +779,15 @@ fun GameScreen(
 
 @Composable
 fun AddPlayerDialog(
+    existingNames: List<String>,
     usedEmojis: Set<String>,
     onAddPlayer: (String, String) -> Unit,
     onDismiss: () -> Unit
 ) {
     var name by remember { mutableStateOf("") }
     var selectedEmoji by remember { mutableStateOf<String?>(null) }
+    val nameValid = name.isNotBlank() && existingNames.size < 16 &&
+        existingNames.none { it.trim().equals(name.trim(), ignoreCase = true) }
     
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -780,6 +810,8 @@ fun AddPlayerDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(12.dp))
+                if (existingNames.size >= 16) Text("Maximum 16 players", color = SkipRed)
+                else if (name.isNotBlank() && !nameValid) Text("This player name is already in use", color = SkipRed)
                 Text("Select avatar:", color = TextMuted, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(8.dp))
                 // Simple emoji row
@@ -808,11 +840,11 @@ fun AddPlayerDialog(
         confirmButton = {
             Button(
                 onClick = { 
-                    if (name.isNotBlank()) {
-                        onAddPlayer(name, selectedEmoji ?: com.spinbottle.truthdare.games.data.Avatars.randomExcluding(usedEmojis))
+                    if (nameValid) {
+                        onAddPlayer(name.trim(), selectedEmoji ?: com.spinbottle.truthdare.games.data.Avatars.randomExcluding(usedEmojis))
                     }
                 },
-                enabled = name.isNotBlank(),
+                enabled = nameValid,
                 colors = ButtonDefaults.buttonColors(containerColor = AccentGreen)
             ) {
                 Text("Add", fontWeight = FontWeight.Bold)

@@ -1,0 +1,513 @@
+{
+  "collected_at_utc": "2026-11-02T16:31:11.171281+00:00",
+  "market": "Google Play, en-IN English-language results",
+  "requested_max_per_star_per_app": 50,
+  "sampling": "Newest reviews, filtered separately by rating 1 through 5. Non-random; each star intentionally over-sampled.",
+  "data_limits": "Keyword mentions are approximate, not manually verified sentiment; samples cannot estimate actual star or theme prevalence.",
+  "review_body_policy": "Review text, user names, review IDs deliberately not redistributed.",
+  "total_analyzed_review_records": 876,
+  "catalog": [
+    {
+      "alias": "bhrigu_truth_or_dare",
+      "package": "com.bhrigu.truthordare.party.games",
+      "title": "Truth or Dare - Party Game",
+      "developer": "Pipi Chick Studio",
+      "store_rating": 4.6113076,
+      "rating_count": 4185,
+      "text_review_count": 355,
+      "installs_floor_display": "1,000,000+",
+      "installs_floor": 1000000,
+      "genre": "Board",
+      "content_rating": "Rated for 3+",
+      "contains_ads": true,
+      "offers_iap": true,
+      "last_updated": 1768307532,
+      "store_url": "https://play.google.com/store/apps/details?id=com.bhrigu.truthordare.party.games",
+      "sample_counts": {
+        "1": 50,
+        "2": 12,
+        "3": 14,
+        "4": 50,
+        "5": 50
+      }
+    },
+    {
+      "alias": "xynapse_truth_or_dare",
+      "package": "com.xynapse.truth_or_dare",
+      "title": "Truth or Dare – Party Game",
+      "developer": "Krzysztof Koza",
+      "store_rating": 3.586207,
+      "rating_count": 6073,
+      "text_review_count": 21,
+      "installs_floor_display": "1,000,000+",
+      "installs_floor": 1000000,
+      "genre": "Casual",
+      "content_rating": "Rated for 3+",
+      "contains_ads": true,
+      "offers_iap": false,
+      "last_updated": 1771783689,
+      "store_url": "https://play.google.com/store/apps/details?id=com.xynapse.truth_or_dare",
+      "sample_counts": {
+        "1": 34,
+        "2": 7,
+        "3": 14,
+        "4": 14,
+        "5": 50
+      }
+    },
+    {
+      "alias": "korobov_spin_bottle",
+      "package": "com.truth_or_dare.spin_the_bottle",
+      "title": "Truth or dare? Spin the bottle",
+      "developer": "Alexey Korobov",
+      "store_rating": 3.95,
+      "rating_count": 5593,
+      "text_review_count": 72,
+      "installs_floor_display": "1,000,000+",
+      "installs_floor": 1000000,
+      "genre": "Board",
+      "content_rating": "Rated for 12+",
+      "contains_ads": true,
+      "offers_iap": true,
+      "last_updated": 1789825805,
+      "store_url": "https://play.google.com/store/apps/details?id=com.truth_or_dare.spin_the_bottle",
+      "sample_counts": {
+        "1": 25,
+        "2": 7,
+        "3": 12,
+        "4": 17,
+        "5": 50
+      }
+    },
+    {
+      "alias": "idayrus_truth_or_dare",
+      "package": "com.idayrus.truth_or_dare_indonesia",
+      "title": "Truth or Dare",
+      "developer": "Idayrus Studio",
+      "store_rating": null,
+      "rating_count": null,
+      "text_review_count": null,
+      "installs_floor_display": "1,000,000+",
+      "installs_floor": 1000000,
+      "genre": "Casual",
+      "content_rating": "Rated for 12+",
+      "contains_ads": true,
+      "offers_iap": false,
+      "last_updated": 1763392009,
+      "store_url": "https://play.google.com/store/apps/details?id=com.idayrus.truth_or_dare_indonesia",
+      "sample_counts": {
+        "1": 4,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 10
+      }
+    },
+    {
+      "alias": "kordia_truth_or_dare",
+      "package": "com.kordia.truthdare",
+      "title": "لعبة حقيقة أم جرأة - جلسة تحدي",
+      "developer": "Seef Droid",
+      "store_rating": null,
+      "rating_count": null,
+      "text_review_count": null,
+      "installs_floor_display": "1,000,000+",
+      "installs_floor": 1000000,
+      "genre": "Casual",
+      "content_rating": "Rated for 3+",
+      "contains_ads": true,
+      "offers_iap": true,
+      "last_updated": 1752158889,
+      "store_url": "https://play.google.com/store/apps/details?id=com.kordia.truthdare",
+      "sample_counts": {
+        "1": 2,
+        "2": 0,
+        "3": 1,
+        "4": 2,
+        "5": 6
+      }
+    },
+    {
+      "alias": "what_am_i_charades",
+      "package": "com.twominds.HeadsUpCharadas",
+      "title": "What Am I? Charades Party Game",
+      "developer": "2Minds Dev",
+      "store_rating": 3.66,
+      "rating_count": 216784,
+      "text_review_count": 99,
+      "installs_floor_display": "10,000,000+",
+      "installs_floor": 10000000,
+      "genre": "Word",
+      "content_rating": "Rated for 3+",
+      "contains_ads": true,
+      "offers_iap": true,
+      "last_updated": 1792535140,
+      "store_url": "https://play.google.com/store/apps/details?id=com.twominds.HeadsUpCharadas",
+      "sample_counts": {
+        "1": 50,
+        "2": 50,
+        "3": 50,
+        "4": 50,
+        "5": 50
+      }
+    },
+    {
+      "alias": "klikapp_charades",
+      "package": "com.klikapp.charades2",
+      "title": "Charades",
+      "developer": "Klikapp Games",
+      "store_rating": 4.0963855,
+      "rating_count": 9098,
+      "text_review_count": 15,
+      "installs_floor_display": "1,000,000+",
+      "installs_floor": 1000000,
+      "genre": "Word",
+      "content_rating": "Rated for 3+",
+      "contains_ads": true,
+      "offers_iap": true,
+      "last_updated": 1768579085,
+      "store_url": "https://play.google.com/store/apps/details?id=com.klikapp.charades2",
+      "sample_counts": {
+        "1": 50,
+        "2": 18,
+        "3": 21,
+        "4": 48,
+        "5": 50
+      }
+    },
+    {
+      "alias": "would_you_rather",
+      "package": "com.gtm.wouldyourather",
+      "title": "Would You Rather Question Game",
+      "developer": "Ultimate Party Apps",
+      "store_rating": 3.5,
+      "rating_count": 249,
+      "text_review_count": 1,
+      "installs_floor_display": "10,000+",
+      "installs_floor": 10000,
+      "genre": "Trivia",
+      "content_rating": "Rated for 3+",
+      "contains_ads": false,
+      "offers_iap": true,
+      "last_updated": 1764227211,
+      "store_url": "https://play.google.com/store/apps/details?id=com.gtm.wouldyourather",
+      "sample_counts": {
+        "1": 3,
+        "2": 0,
+        "3": 1,
+        "4": 1,
+        "5": 3
+      }
+    }
+  ],
+  "aggregates": {
+    "bhrigu_truth_or_dare": {
+      "sample_total": 176,
+      "stars": {
+        "1": 50,
+        "2": 12,
+        "3": 14,
+        "4": 50,
+        "5": 50
+      },
+      "themes_all": {
+        "repetitive_content": 8,
+        "ads": 24,
+        "design_or_usability": 5,
+        "bugs_or_crashes": 5,
+        "group_or_family": 10,
+        "paywall_or_price": 3,
+        "prompt_quality": 23,
+        "spin_or_random": 5,
+        "choice_or_customization": 2,
+        "fun_or_laughter": 20,
+        "short_generic": 12,
+        "offline_or_network": 2,
+        "privacy_or_permissions": 1
+      },
+      "themes_low_stars": {
+        "repetitive_content": 6,
+        "ads": 15,
+        "design_or_usability": 5,
+        "bugs_or_crashes": 3,
+        "group_or_family": 3,
+        "paywall_or_price": 3,
+        "prompt_quality": 11,
+        "spin_or_random": 3,
+        "choice_or_customization": 2,
+        "fun_or_laughter": 1,
+        "short_generic": 1
+      },
+      "themes_high_stars": {
+        "fun_or_laughter": 17,
+        "short_generic": 10,
+        "ads": 7,
+        "prompt_quality": 9,
+        "repetitive_content": 1,
+        "offline_or_network": 2,
+        "spin_or_random": 2,
+        "privacy_or_permissions": 1,
+        "group_or_family": 6,
+        "bugs_or_crashes": 2
+      }
+    },
+    "xynapse_truth_or_dare": {
+      "sample_total": 119,
+      "stars": {
+        "1": 34,
+        "2": 7,
+        "3": 14,
+        "4": 14,
+        "5": 50
+      },
+      "themes_all": {
+        "group_or_family": 9,
+        "short_generic": 10,
+        "repetitive_content": 10,
+        "prompt_quality": 14,
+        "ads": 5,
+        "spin_or_random": 1,
+        "fun_or_laughter": 8,
+        "choice_or_customization": 1,
+        "design_or_usability": 1
+      },
+      "themes_low_stars": {
+        "group_or_family": 4,
+        "short_generic": 2,
+        "repetitive_content": 8,
+        "prompt_quality": 6,
+        "ads": 1,
+        "spin_or_random": 1,
+        "fun_or_laughter": 1
+      },
+      "themes_high_stars": {
+        "prompt_quality": 5,
+        "choice_or_customization": 1,
+        "group_or_family": 5,
+        "short_generic": 8,
+        "fun_or_laughter": 6,
+        "ads": 1,
+        "design_or_usability": 1
+      }
+    },
+    "korobov_spin_bottle": {
+      "sample_total": 111,
+      "stars": {
+        "1": 25,
+        "2": 7,
+        "3": 12,
+        "4": 17,
+        "5": 50
+      },
+      "themes_all": {
+        "repetitive_content": 3,
+        "prompt_quality": 21,
+        "short_generic": 9,
+        "fun_or_laughter": 12,
+        "group_or_family": 8,
+        "bugs_or_crashes": 1,
+        "offline_or_network": 1,
+        "ads": 3,
+        "choice_or_customization": 1,
+        "language_or_translation": 1,
+        "spin_or_random": 1
+      },
+      "themes_low_stars": {
+        "repetitive_content": 3,
+        "prompt_quality": 8,
+        "short_generic": 3,
+        "fun_or_laughter": 1,
+        "group_or_family": 2,
+        "bugs_or_crashes": 1,
+        "offline_or_network": 1,
+        "ads": 1
+      },
+      "themes_high_stars": {
+        "fun_or_laughter": 8,
+        "prompt_quality": 12,
+        "choice_or_customization": 1,
+        "language_or_translation": 1,
+        "group_or_family": 5,
+        "short_generic": 6,
+        "ads": 1,
+        "spin_or_random": 1
+      }
+    },
+    "idayrus_truth_or_dare": {
+      "sample_total": 14,
+      "stars": {
+        "1": 4,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 10
+      },
+      "themes_all": {
+        "prompt_quality": 1,
+        "fun_or_laughter": 1
+      },
+      "themes_low_stars": {
+        "prompt_quality": 1
+      },
+      "themes_high_stars": {
+        "fun_or_laughter": 1
+      }
+    },
+    "kordia_truth_or_dare": {
+      "sample_total": 11,
+      "stars": {
+        "1": 2,
+        "2": 0,
+        "3": 1,
+        "4": 2,
+        "5": 6
+      },
+      "themes_all": {
+        "prompt_quality": 1,
+        "offline_or_network": 1,
+        "short_generic": 1,
+        "group_or_family": 1
+      },
+      "themes_low_stars": {},
+      "themes_high_stars": {
+        "prompt_quality": 1,
+        "offline_or_network": 1,
+        "short_generic": 1,
+        "group_or_family": 1
+      }
+    },
+    "what_am_i_charades": {
+      "sample_total": 250,
+      "stars": {
+        "1": 50,
+        "2": 50,
+        "3": 50,
+        "4": 50,
+        "5": 50
+      },
+      "themes_all": {
+        "ads": 48,
+        "paywall_or_price": 12,
+        "spin_or_random": 10,
+        "privacy_or_permissions": 1,
+        "fun_or_laughter": 45,
+        "prompt_quality": 12,
+        "group_or_family": 17,
+        "language_or_translation": 5,
+        "design_or_usability": 5,
+        "bugs_or_crashes": 8,
+        "choice_or_customization": 11,
+        "repetitive_content": 3,
+        "short_generic": 28
+      },
+      "themes_low_stars": {
+        "ads": 34,
+        "paywall_or_price": 9,
+        "spin_or_random": 8,
+        "privacy_or_permissions": 1,
+        "fun_or_laughter": 3,
+        "prompt_quality": 7,
+        "group_or_family": 4,
+        "language_or_translation": 4,
+        "design_or_usability": 2,
+        "bugs_or_crashes": 7,
+        "choice_or_customization": 7,
+        "repetitive_content": 3,
+        "short_generic": 2
+      },
+      "themes_high_stars": {
+        "short_generic": 20,
+        "paywall_or_price": 1,
+        "ads": 6,
+        "fun_or_laughter": 37,
+        "group_or_family": 10,
+        "choice_or_customization": 3,
+        "spin_or_random": 1,
+        "design_or_usability": 1,
+        "language_or_translation": 1
+      }
+    },
+    "klikapp_charades": {
+      "sample_total": 187,
+      "stars": {
+        "1": 50,
+        "2": 18,
+        "3": 21,
+        "4": 48,
+        "5": 50
+      },
+      "themes_all": {
+        "paywall_or_price": 9,
+        "prompt_quality": 16,
+        "choice_or_customization": 32,
+        "repetitive_content": 6,
+        "spin_or_random": 6,
+        "ads": 15,
+        "bugs_or_crashes": 5,
+        "fun_or_laughter": 34,
+        "short_generic": 12,
+        "offline_or_network": 3,
+        "language_or_translation": 3,
+        "group_or_family": 18,
+        "design_or_usability": 9,
+        "privacy_or_permissions": 1
+      },
+      "themes_low_stars": {
+        "paywall_or_price": 7,
+        "prompt_quality": 9,
+        "choice_or_customization": 13,
+        "repetitive_content": 4,
+        "spin_or_random": 3,
+        "ads": 11,
+        "bugs_or_crashes": 5,
+        "fun_or_laughter": 6,
+        "short_generic": 2,
+        "offline_or_network": 1,
+        "language_or_translation": 2,
+        "group_or_family": 2,
+        "design_or_usability": 2
+      },
+      "themes_high_stars": {
+        "paywall_or_price": 2,
+        "choice_or_customization": 15,
+        "ads": 1,
+        "fun_or_laughter": 25,
+        "short_generic": 8,
+        "prompt_quality": 6,
+        "group_or_family": 15,
+        "design_or_usability": 7,
+        "spin_or_random": 2,
+        "offline_or_network": 1,
+        "privacy_or_permissions": 1
+      }
+    },
+    "would_you_rather": {
+      "sample_total": 8,
+      "stars": {
+        "1": 3,
+        "2": 0,
+        "3": 1,
+        "4": 1,
+        "5": 3
+      },
+      "themes_all": {
+        "paywall_or_price": 2,
+        "prompt_quality": 1,
+        "fun_or_laughter": 1,
+        "group_or_family": 1,
+        "design_or_usability": 1
+      },
+      "themes_low_stars": {
+        "paywall_or_price": 1
+      },
+      "themes_high_stars": {
+        "paywall_or_price": 1,
+        "prompt_quality": 1,
+        "fun_or_laughter": 1,
+        "group_or_family": 1,
+        "design_or_usability": 1
+      }
+    }
+  },
+  "errors": []
+}

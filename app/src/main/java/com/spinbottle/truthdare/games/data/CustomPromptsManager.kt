@@ -36,6 +36,7 @@ object CustomPromptsManager {
     }
     
     private fun loadPrompts() {
+        customPrompts.clear()
         val json = prefs?.getString(KEY_CUSTOM_PROMPTS, null)
         if (json != null) {
             try {

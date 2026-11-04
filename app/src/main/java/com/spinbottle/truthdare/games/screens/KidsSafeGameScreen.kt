@@ -3,6 +3,8 @@ package com.spinbottle.truthdare.games.screens
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -64,7 +66,7 @@ fun KidsSafeGameScreen(
     
     // Fun bouncing animation
     val infiniteTransition = rememberInfiniteTransition(label = "bounce")
-    val bounce by infiniteTransition.animateFloat(
+    val bounce by if (com.spinbottle.truthdare.games.data.SettingsHolder.reduceMotion) androidx.compose.runtime.rememberUpdatedState(1f) else infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 1.05f,
         animationSpec = infiniteRepeatable(
@@ -98,7 +100,8 @@ fun KidsSafeGameScreen(
                 showPinScreen = false
                 showExitConfirm = true
             },
-            allowSetupWhenMissing = false
+            allowSetupWhenMissing = false,
+            markAgeVerifiedOnSetup = false
         )
         return
     }
@@ -148,6 +151,7 @@ fun KidsSafeGameScreen(
                 .fillMaxSize()
                 .statusBarsPadding()
                 .navigationBarsPadding()
+                .verticalScroll(rememberScrollState())
         ) {
             // Top bar - simplified, only parent button
             Row(
@@ -379,7 +383,7 @@ fun KidsSafeGameScreen(
                 }
             }
             
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(24.dp))
             
             // Next player preview
             val nextPlayer = players[(currentPlayerIndex + 1) % players.size]
@@ -406,8 +410,8 @@ fun FloatingEmojis() {
     
     repeat(8) { index ->
         val infiniteTransition = rememberInfiniteTransition(label = "emoji$index")
-        val yOffset by infiniteTransition.animateFloat(
-            initialValue = 0f,
+        val yOffset by if (com.spinbottle.truthdare.games.data.SettingsHolder.reduceMotion) androidx.compose.runtime.rememberUpdatedState(0f) else infiniteTransition.animateFloat(
+        initialValue = 0f,
             targetValue = -30f,
             animationSpec = infiniteRepeatable(
                 animation = tween(2000 + index * 200, easing = LinearEasing),

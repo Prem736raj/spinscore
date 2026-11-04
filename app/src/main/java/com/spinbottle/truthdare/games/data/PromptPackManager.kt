@@ -35,6 +35,7 @@ enum class PromptPack(
         color = AccentPink,
         difficultyRange = "Easy - Medium",
         promptCount = 150,
+        requiresPin = true,
         categories = listOf(PromptCategory.COUPLES)
     ),
     SPICY_NIGHT(
@@ -74,6 +75,7 @@ enum class PromptPack(
         color = DifficultyExtreme,
         difficultyRange = "Extreme",
         promptCount = 80,
+        requiresPin = true,
         categories = listOf(PromptCategory.FRIENDS, PromptCategory.PARTY)
     )
 }
@@ -82,6 +84,14 @@ enum class PromptPack(
  * Manager for prompt pack selection and persistence
  */
 object PromptPackManager {
+    fun isPromptEnabled(category: PromptCategory, difficulty: Difficulty): Boolean {
+        if (category == PromptCategory.COUPLES) {
+            return if (difficulty == Difficulty.HARD || difficulty == Difficulty.EXTREME)
+                isPackEnabled(PromptPack.SPICY_NIGHT)
+            else isPackEnabled(PromptPack.DATE_NIGHT)
+        }
+        return category in getEnabledCategories()
+    }
     private const val PREFS_NAME = "prompt_pack_prefs"
     private const val KEY_ENABLED_PACKS = "enabled_packs"
     
